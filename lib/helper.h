@@ -5,6 +5,8 @@
 #include <utility>
 #include <cmath>
 #include <QString>
+#include <QStringList>
+#include <QRegExp>
 
 template <class T>
 typename std::enable_if<!std::numeric_limits<T>::is_integer, bool>::type
@@ -45,6 +47,16 @@ T stringToNumber(const QString& str, bool* ok = nullptr) {
   else {
     return T(str);
   }
+}
+
+template <typename T>
+QVector<T> splitStringToNumbers(const QString& str) {
+  QStringList tmpFields = str.split(QRegExp("[(),\\s]+"), Qt::SkipEmptyParts);
+  QVector<T> result;
+  for (auto it = tmpFields.begin(); it != tmpFields.end(); ++it) {
+    result.append(stringToNumber<T>(*it));
+  }
+  return result;
 }
 
 QString boolToString(bool x);

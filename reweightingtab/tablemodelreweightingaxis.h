@@ -27,6 +27,8 @@ public:
   bool removeRows(int position, int rows, const QModelIndex &index = QModelIndex()) override;
   bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
   Qt::ItemFlags flags(const QModelIndex &index) const override;
+  void addItem(const Axis& ax, int col, bool inPMF, bool reweightingTo);
+  void clearAll();
 private:
   QList<AxisView> mAxisList;
 };

@@ -159,3 +159,24 @@ Qt::ItemFlags TableModelReweightingAxis::flags(const QModelIndex &index) const {
     return QAbstractTableModel::flags(index);
   }
 }
+
+void TableModelReweightingAxis::addItem(const Axis &ax, int col, bool inPMF, bool reweightingTo)
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  AxisView tmp;
+  tmp.mAxis = ax;
+  tmp.mInPMF = inPMF;
+  tmp.mReweightingTo = reweightingTo;
+  tmp.mColumn = col;
+  mAxisList.append(tmp);
+  emit layoutChanged();
+}
+
+void TableModelReweightingAxis::clearAll()
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  beginResetModel();
+  mAxisList.clear();
+  endResetModel();
+  emit layoutChanged();
+}

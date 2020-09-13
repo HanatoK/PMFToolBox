@@ -1,5 +1,6 @@
 #include "reweightingtab.h"
 #include "ui_reweightingtab.h"
+#include "lib/helper.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -15,6 +16,8 @@ ReweightingTab::ReweightingTab(QWidget *parent)
   connect(ui->pushButtonSaveTo, &QPushButton::clicked, this, &ReweightingTab::loadSaveFile);
   connect(ui->pushButtonAddTrajectory, &QPushButton::clicked, this, &ReweightingTab::addTrajectory);
   connect(ui->pushButtonRemoveTrajectory, &QPushButton::clicked, this, &ReweightingTab::removeTrajectory);
+  connect(ui->pushButtonReadAxes, &QPushButton::clicked, this, &ReweightingTab::readAxisData);
+  connect(&mWorkerThread, &ReweightingThread::done, this, &ReweightingTab::reweightingDone);
 }
 
 ReweightingTab::~ReweightingTab() { delete ui; }
@@ -59,4 +62,54 @@ void ReweightingTab::removeTrajectory()
   qDebug() << "Calling " << Q_FUNC_INFO;
   const QModelIndex& index = ui->listViewTrajectory->currentIndex();
   mListModel->removeItem(index);
+}
+
+void ReweightingTab::readAxisData()
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  mTableModel->clearAll();
+  const QVector<int> fromAxis = splitStringToNumbers<int>(ui->lineEditFromColumns->text());
+  const QVector<int> toAxis = splitStringToNumbers<int>(ui->lineEditToColumns->text());
+  if (fromAxis.isEmpty() || toAxis.isEmpty()) {
+    qDebug() << Q_FUNC_INFO << ": axes are empty.";
+    return;
+  }
+  if (fromAxis.size() != static_cast<int>(mPMF.dimension())) {
+    QMessageBox errorBox;
+    errorBox.critical(this, "Error",
+                      "The dimensionality of PMF input doesn't match the "
+                      "columns reweighting from.");
+    return;
+  }
+  const QVector<Axis> &ax = mPMF.axes();
+  for (int i = 0; i < ax.size(); ++i) {
+    auto find_in_reweightTo =
+        std::find(toAxis.begin(), toAxis.end(), fromAxis[i]);
+    if (find_in_reweightTo != toAxis.end()) {
+      mTableModel->addItem(ax[i], fromAxis[i], true, true);
+    } else {
+      mTableModel->addItem(ax[i], fromAxis[i], true, false);
+    }
+  }
+  for (int i = 0; i < toAxis.size(); ++i) {
+    auto find_in_reweightFrom =
+        std::find(fromAxis.begin(), fromAxis.end(), toAxis[i]);
+    if (find_in_reweightFrom == fromAxis.end()) {
+      Axis axis(0, 1, 1, false);
+      mTableModel->addItem(axis, toAxis[i], false, true);
+    }
+  }
+}
+
+void ReweightingTab::reweighting()
+{
+//  const QVector<int> fromAxis = splitStringToNumbers<int>(ui->lineEditFromColumns->text());
+//  const QVector<int> toAxis = splitStringToNumbers<int>(ui->lineEditToColumns->text());
+  // TODO
+}
+
+void ReweightingTab::reweightingDone()
+{
+  ui->pushButtonRun->setEnabled(true);
+  ui->pushButtonRun->setText(tr("Run"));
 }

@@ -23,26 +23,44 @@ void doReweighting::operator()(const QVector<double> &fields) {
 
 ReweightingThread::ReweightingThread(QObject *parent) : QThread(parent) {}
 
-void ReweightingThread::reweighting(QStringList trajectoryFileName,
-                                    HistogramScalar<double> source,
-                                    QVector<size_t> from, QVector<size_t> to,
+void ReweightingThread::reweighting(const QStringList &trajectoryFileName, const QString &outputFileName,
+                                    const HistogramScalar<double> &source,
+                                    const QVector<int> &from, const QVector<int> &to,
                                     double kbT) {
   qDebug() << Q_FUNC_INFO;
-  HistogramProbability result(source.axes());
-  doReweighting reweightingObject(source, result, from, to, kbT);
-  for (auto it = trajectoryFileName.begin(); it != trajectoryFileName.end(); ++it) {
+  mTrajectoryFileName = trajectoryFileName;
+  mOutputFileName = outputFileName;
+  mSourceHistogram = source;
+  mFromColumn = from;
+  mToColumn = to;
+  mKbT = kbT;
+  if (!isRunning()) {
+    start(LowPriority);
+  }
+}
+
+void ReweightingThread::run()
+{
+  HistogramProbability result(mSourceHistogram.axes());
+  doReweighting reweightingObject(mSourceHistogram, result, mFromColumn, mToColumn, mKbT);
+  size_t numFile = 0;
+  for (auto it = mTrajectoryFileName.begin(); it != mTrajectoryFileName.end(); ++it) {
     qDebug() << "Reading file " << (*it);
     QFile trajectoryFile(*it);
+    const auto fileSize = it->size();
     if (trajectoryFile.open(QFile::ReadOnly)) {
+      ++numFile;
       QTextStream ifs(&trajectoryFile);
       QString line;
       QStringList tmpFields;
       QVector<double> fields;
-      size_t lineNumber = 0;
+      double readSize = 0;
       bool read_ok = true;
       while (!ifs.atEnd()) {
         ifs.readLineInto(&line);
-        emit currentLineNumber(lineNumber);
+        readSize += line.size();
+        const double readingProgress = readSize / fileSize * 100;
+        emit progress(numFile, readingProgress);
         tmpFields = line.split(QRegExp("[(),\\s]+"), Qt::SkipEmptyParts);
         // skip blank lines
         if (tmpFields.size() <= 0) continue;
@@ -56,11 +74,11 @@ void ReweightingThread::reweighting(QStringList trajectoryFileName,
           }
         }
         reweightingObject(fields);
-        ++lineNumber;
       }
-      emit done(result);
     } else {
-      emit error("Failed to open file!");
+      emit error("Failed to open file " + (*it));
     }
   }
+  result.writeToFile(mOutputFileName);
+  emit done(result);
 }

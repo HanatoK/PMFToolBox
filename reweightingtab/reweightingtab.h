@@ -24,7 +24,9 @@ public slots:
   void loadSaveFile();
   void addTrajectory();
   void removeTrajectory();
+  void readAxisData();
   void reweighting();
+  void reweightingDone();
 
 private:
   Ui::ReweightingTab *ui;
