@@ -28,7 +28,7 @@ public:
   ReweightingThread(QObject *parent = nullptr);
   void reweighting(const QStringList& trajectoryFileName, const QString& outputFileName,
                    const HistogramScalar<double>& source, const QVector<int>& from,
-                   const QVector<int>& to, double kbT);
+                   const QVector<int>& to, const QVector<Axis>& targetAxis, double kbT);
 signals:
   void error(QString err);
   void done(HistogramProbability targetHistogram);
@@ -43,6 +43,7 @@ private:
   HistogramScalar<double> mSourceHistogram;
   QVector<int> mFromColumn;
   QVector<int> mToColumn;
+  QVector<Axis> mTargetAxis;
   double mKbT;
 };
 

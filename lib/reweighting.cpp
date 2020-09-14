@@ -26,13 +26,14 @@ ReweightingThread::ReweightingThread(QObject *parent) : QThread(parent) {}
 void ReweightingThread::reweighting(const QStringList &trajectoryFileName, const QString &outputFileName,
                                     const HistogramScalar<double> &source,
                                     const QVector<int> &from, const QVector<int> &to,
-                                    double kbT) {
+                                    const QVector<Axis>& targetAxis, double kbT) {
   qDebug() << Q_FUNC_INFO;
   mTrajectoryFileName = trajectoryFileName;
   mOutputFileName = outputFileName;
   mSourceHistogram = source;
   mFromColumn = from;
   mToColumn = to;
+  mTargetAxis = targetAxis;
   mKbT = kbT;
   if (!isRunning()) {
     start(LowPriority);
@@ -41,7 +42,12 @@ void ReweightingThread::reweighting(const QStringList &trajectoryFileName, const
 
 void ReweightingThread::run()
 {
-  HistogramProbability result(mSourceHistogram.axes());
+  qDebug() << Q_FUNC_INFO;
+  qDebug() << ": from columns " << mFromColumn;
+  qDebug() << ": to columns " << mToColumn;
+  qDebug() << ": using kbt = " << mKbT;
+  qDebug() << ": target axis " << mTargetAxis;
+  HistogramProbability result(mTargetAxis);
   doReweighting reweightingObject(mSourceHistogram, result, mFromColumn, mToColumn, mKbT);
   size_t numFile = 0;
   for (auto it = mTrajectoryFileName.begin(); it != mTrajectoryFileName.end(); ++it) {

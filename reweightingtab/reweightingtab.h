@@ -18,6 +18,7 @@ class ReweightingTab : public QWidget
 public:
   explicit ReweightingTab(QWidget *parent = nullptr);
   ~ReweightingTab();
+  double getKbT() const;
 
 public slots:
   void loadPMF();

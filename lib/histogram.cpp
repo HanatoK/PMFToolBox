@@ -459,3 +459,9 @@ void HistogramProbability::convertToFreeEnergy(double kbt)
   }
   this->mData = f_data;
 }
+
+QDebug operator<<(QDebug dbg, const Axis &ax)
+{
+  dbg << "{" << ax.lowerBound() << ", " << ax.upperBound() << ", " << ax.width() << "}";
+  return dbg;
+}

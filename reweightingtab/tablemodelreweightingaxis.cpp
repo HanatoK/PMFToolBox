@@ -130,11 +130,13 @@ bool TableModelReweightingAxis::setData(const QModelIndex &index,
       const double newUpperBound = ax.setUpperBound(value.toDouble());
       qDebug() << "New upper bound of axis " << index.row() << " is changed to "
                << newUpperBound;
+      break;
     }
     case 3: {
       const double newWidth = ax.setWidth(value.toDouble());
       qDebug() << "New width of axis " << index.row() << " is changed to "
                << newWidth;
+      break;
     }
     }
     emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
@@ -170,6 +172,33 @@ void TableModelReweightingAxis::addItem(const Axis &ax, int col, bool inPMF, boo
   tmp.mColumn = col;
   mAxisList.append(tmp);
   emit layoutChanged();
+}
+
+QVector<int> TableModelReweightingAxis::fromColumns() const
+{
+  QVector<int> result;
+  for (auto it = mAxisList.begin(); it != mAxisList.end(); ++it) {
+    if (it->mInPMF) result.append(it->mColumn);
+  }
+  return result;
+}
+
+QVector<Axis> TableModelReweightingAxis::targetAxis() const
+{
+  QVector<Axis> result;
+  for (auto it = mAxisList.begin(); it != mAxisList.end(); ++it) {
+    if (it->mReweightingTo) result.append(it->mAxis);
+  }
+  return result;
+}
+
+QVector<int> TableModelReweightingAxis::toColumns() const
+{
+  QVector<int> result;
+  for (auto it = mAxisList.begin(); it != mAxisList.end(); ++it) {
+    if (it->mReweightingTo) result.append(it->mColumn);
+  }
+  return result;
 }
 
 void TableModelReweightingAxis::clearAll()

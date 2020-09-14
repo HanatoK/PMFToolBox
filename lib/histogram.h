@@ -53,6 +53,8 @@ private:
   double mPeriodicUpperBound;
 };
 
+QDebug operator<<(QDebug dbg, const Axis& ax);
+
 class HistogramBase {
 public:
   HistogramBase();

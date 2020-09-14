@@ -17,10 +17,28 @@ ReweightingTab::ReweightingTab(QWidget *parent)
   connect(ui->pushButtonAddTrajectory, &QPushButton::clicked, this, &ReweightingTab::addTrajectory);
   connect(ui->pushButtonRemoveTrajectory, &QPushButton::clicked, this, &ReweightingTab::removeTrajectory);
   connect(ui->pushButtonReadAxes, &QPushButton::clicked, this, &ReweightingTab::readAxisData);
+  connect(ui->pushButtonRun, &QPushButton::clicked, this, &ReweightingTab::reweighting);
   connect(&mWorkerThread, &ReweightingThread::done, this, &ReweightingTab::reweightingDone);
 }
 
 ReweightingTab::~ReweightingTab() { delete ui; }
+
+double ReweightingTab::getKbT() const
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  const double temperature = ui->lineEditTemperature->text().toDouble();
+  const QString unit = ui->comboBoxUnit->currentText();
+  double factor = 1.0;
+  if (unit.compare("kcal/mol", Qt::CaseInsensitive) == 0) {
+    factor = 0.001985875;
+  } else if (unit.compare("kj/mol", Qt::CaseInsensitive) == 0) {
+    factor = 0.008314463;
+  } else {
+    qDebug() << Q_FUNC_INFO << ": undefined unit factor, use " << factor;
+  }
+  const double kbt = temperature * factor;
+  return kbt;
+}
 
 void ReweightingTab::loadPMF()
 {
@@ -103,9 +121,33 @@ void ReweightingTab::readAxisData()
 
 void ReweightingTab::reweighting()
 {
-//  const QVector<int> fromAxis = splitStringToNumbers<int>(ui->lineEditFromColumns->text());
-//  const QVector<int> toAxis = splitStringToNumbers<int>(ui->lineEditToColumns->text());
-  // TODO
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  const QStringList fileList = mListModel->trajectoryFileNameList();
+  const QVector<int> fromColumns = mTableModel->fromColumns();
+  const QVector<int> toColumns = mTableModel->toColumns();
+  const QVector<Axis> targetAxis = mTableModel->targetAxis();
+  const QString outputFileName = ui->lineEditOutput->text();
+  if (fileList.isEmpty()) {
+    const QString errorMsg("No trajectory file selected.");
+    qDebug() << errorMsg;
+    qDebug() << "Trajectory file list: " << fileList;
+    QMessageBox errorBox;
+    errorBox.critical(this, "Error", errorMsg);
+    return;
+  }
+  if (fromColumns.isEmpty() || toColumns.isEmpty() || targetAxis.isEmpty()) {
+    const QString errorMsg("Incorrect axis settings.");
+    qDebug() << errorMsg;
+    qDebug() << "From columns: " << fromColumns;
+    qDebug() << "To columns: " << toColumns;
+    qDebug() << "Target histogram axis: " << targetAxis;
+    QMessageBox errorBox;
+    errorBox.critical(this, "Error", errorMsg);
+    return;
+  }
+  ui->pushButtonRun->setText(tr("Running"));
+  ui->pushButtonRun->setEnabled(false);
+  mWorkerThread.reweighting(fileList, outputFileName, mPMF, fromColumns, toColumns, targetAxis, getKbT());
 }
 
 void ReweightingTab::reweightingDone()
