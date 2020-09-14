@@ -3,7 +3,7 @@
 
 #include "reweightingtab/tablemodelreweightingaxis.h"
 #include "reweightingtab/listmodeltrajectory.h"
-#include "lib/reweighting.h"
+#include "base/reweighting.h"
 
 #include <QWidget>
 

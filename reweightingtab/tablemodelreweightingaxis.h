@@ -1,7 +1,7 @@
 #ifndef REWEIGHTINGAXISTABLEMODEL_H
 #define REWEIGHTINGAXISTABLEMODEL_H
 
-#include "lib/histogram.h"
+#include "base/histogram.h"
 
 #include <QAbstractTableModel>
 #include <QObject>

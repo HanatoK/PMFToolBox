@@ -1,7 +1,7 @@
 #ifndef REWEIGHTINGTHREAD_H
 #define REWEIGHTINGTHREAD_H
 
-#include "lib/histogram.h"
+#include "base/histogram.h"
 
 #include <QObject>
 #include <QThread>

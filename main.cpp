@@ -1,5 +1,5 @@
 #include "mainwindow.h"
-#include "lib/histogram.h"
+#include "base/histogram.h"
 
 #include <QApplication>
 

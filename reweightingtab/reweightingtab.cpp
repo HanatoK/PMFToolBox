@@ -1,6 +1,6 @@
 #include "reweightingtab.h"
 #include "ui_reweightingtab.h"
-#include "lib/helper.h"
+#include "base/helper.h"
 
 #include <QFileDialog>
 #include <QMessageBox>

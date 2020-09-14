@@ -9,26 +9,29 @@ CONFIG += c++2a
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    lib/helper.cpp \
-    lib/histogram.cpp \
-    lib/reweighting.cpp \
+    base/helper.cpp \
+    base/histogram.cpp \
+    base/reweighting.cpp \
     main.cpp \
     mainwindow.cpp \
+    projectpmftab/projectpmf.cpp \
     reweightingtab/reweightingtab.cpp \
     reweightingtab/listmodeltrajectory.cpp \
     reweightingtab/tablemodelreweightingaxis.cpp
 
 HEADERS += \
-    lib/helper.h \
-    lib/histogram.h \
-    lib/reweighting.h \
+    base/helper.h \
+    base/histogram.h \
+    base/reweighting.h \
     mainwindow.h \
+    projectpmftab/projectpmf.h \
     reweightingtab/reweightingtab.h \
     reweightingtab/listmodeltrajectory.h \
     reweightingtab/tablemodelreweightingaxis.h
 
 FORMS += \
     mainwindow.ui \
+    projectpmftab/projectpmf.ui \
     reweightingtab/reweightingtab.ui
 
 # Default rules for deployment.
