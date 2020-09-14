@@ -29,7 +29,7 @@ HEADERS += \
 
 FORMS += \
     mainwindow.ui \
-    reweightingtab.ui
+    reweightingtab/reweightingtab.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
