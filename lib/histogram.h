@@ -611,4 +611,7 @@ public:
   void convertToFreeEnergy(double kbt);
 };
 
+Q_DECLARE_METATYPE(HistogramPMF);
+Q_DECLARE_METATYPE(HistogramProbability);
+
 #endif // HISTOGRAMBASE_H

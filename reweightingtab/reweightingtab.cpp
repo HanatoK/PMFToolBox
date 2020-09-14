@@ -18,6 +18,7 @@ ReweightingTab::ReweightingTab(QWidget *parent)
   connect(ui->pushButtonRemoveTrajectory, &QPushButton::clicked, this, &ReweightingTab::removeTrajectory);
   connect(ui->pushButtonReadAxes, &QPushButton::clicked, this, &ReweightingTab::readAxisData);
   connect(ui->pushButtonRun, &QPushButton::clicked, this, &ReweightingTab::reweighting);
+  connect(&mWorkerThread, &ReweightingThread::progress, this, &ReweightingTab::showReweightingProgress);
   connect(&mWorkerThread, &ReweightingThread::done, this, &ReweightingTab::reweightingDone);
 }
 
@@ -30,9 +31,17 @@ double ReweightingTab::getKbT() const
   const QString unit = ui->comboBoxUnit->currentText();
   double factor = 1.0;
   if (unit.compare("kcal/mol", Qt::CaseInsensitive) == 0) {
+#ifdef SI2019
     factor = 0.001985875;
+#else
+    factor = 0.0019872041;
+#endif
   } else if (unit.compare("kj/mol", Qt::CaseInsensitive) == 0) {
+#ifdef SI2019
     factor = 0.008314463;
+#else
+    factor = 0.0083144621;
+#endif
   } else {
     qDebug() << Q_FUNC_INFO << ": undefined unit factor, use " << factor;
   }
@@ -127,6 +136,7 @@ void ReweightingTab::reweighting()
   const QVector<int> toColumns = mTableModel->toColumns();
   const QVector<Axis> targetAxis = mTableModel->targetAxis();
   const QString outputFileName = ui->lineEditOutput->text();
+  const bool usePMF = ui->checkBoxConvertToPMF->isChecked();
   if (fileList.isEmpty()) {
     const QString errorMsg("No trajectory file selected.");
     qDebug() << errorMsg;
@@ -147,7 +157,14 @@ void ReweightingTab::reweighting()
   }
   ui->pushButtonRun->setText(tr("Running"));
   ui->pushButtonRun->setEnabled(false);
-  mWorkerThread.reweighting(fileList, outputFileName, mPMF, fromColumns, toColumns, targetAxis, getKbT());
+  mWorkerThread.reweighting(fileList, outputFileName, mPMF, fromColumns, toColumns, targetAxis, getKbT(), usePMF);
+}
+
+void ReweightingTab::showReweightingProgress(int fileRead, double percent)
+{
+  const int numFiles = mListModel->trajectoryFileNameList().size();
+  const QString newText = "Running " + QString(" (%1/%2) %3").arg(fileRead).arg(numFiles).arg(percent, 0, 'g', 2) + "%";
+  ui->pushButtonRun->setText(newText);
 }
 
 void ReweightingTab::reweightingDone()

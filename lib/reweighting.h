@@ -28,10 +28,11 @@ public:
   ReweightingThread(QObject *parent = nullptr);
   void reweighting(const QStringList& trajectoryFileName, const QString& outputFileName,
                    const HistogramScalar<double>& source, const QVector<int>& from,
-                   const QVector<int>& to, const QVector<Axis>& targetAxis, double kbT);
+                   const QVector<int>& to, const QVector<Axis>& targetAxis, double kbT, bool usePMF);
 signals:
   void error(QString err);
-  void done(HistogramProbability targetHistogram);
+  void doneReturnTarget(HistogramProbability targetHistogram);
+  void done();
   void progress(int fileRead, double percent);
 protected:
   void run() override;
@@ -45,6 +46,7 @@ private:
   QVector<int> mToColumn;
   QVector<Axis> mTargetAxis;
   double mKbT;
+  bool mUsePMF;
 };
 
 #endif // REWEIGHTINGTHREAD_H

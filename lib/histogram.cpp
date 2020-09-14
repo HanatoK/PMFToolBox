@@ -422,6 +422,11 @@ void HistogramPMF::fromProbability(const HistogramScalar<double> &probability,
   }
 }
 
+HistogramProbability::HistogramProbability(): HistogramBase(), HistogramScalar<double>()
+{
+
+}
+
 HistogramProbability::HistogramProbability(const QVector<Axis> &ax): HistogramBase(ax), HistogramScalar<double>(ax)
 {
 
