@@ -441,16 +441,16 @@ void HistogramProbability::convertToFreeEnergy(double kbt)
 {
   QVector<double> f_data(this->data());
   bool first_non_zero_value = true;
-  double max_val;
+  double max_val = 0;
   for (auto &i : f_data) {
     if (i > 0) {
       i = -kbt * std::log(i);
+      if (first_non_zero_value) {
+        max_val = i;
+        first_non_zero_value = false;
+      }
+      max_val = std::max(max_val, i);
     }
-    if (first_non_zero_value) {
-      max_val = i;
-      first_non_zero_value = false;
-    }
-    max_val = std::max(max_val, i);
   }
   const QVector<double> &p_data = this->data();
   for (int i = 0; i < p_data.size(); ++i) {

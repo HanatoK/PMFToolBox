@@ -18,7 +18,9 @@ ReweightingTab::ReweightingTab(QWidget *parent)
   connect(ui->pushButtonRemoveTrajectory, &QPushButton::clicked, this, &ReweightingTab::removeTrajectory);
   connect(ui->pushButtonReadAxes, &QPushButton::clicked, this, &ReweightingTab::readAxisData);
   connect(ui->pushButtonRun, &QPushButton::clicked, this, &ReweightingTab::reweighting);
-  connect(&mWorkerThread, &ReweightingThread::progress, this, &ReweightingTab::showReweightingProgress);
+  connect(ui->pushButtonHelp, &QPushButton::clicked, this, &ReweightingTab::help);
+  connect(&mWorkerThread, &ReweightingThread::error, this, &ReweightingTab::reweightingError);
+  connect(&mWorkerThread, &ReweightingThread::progress, this, &ReweightingTab::reweightingProgress);
   connect(&mWorkerThread, &ReweightingThread::done, this, &ReweightingTab::reweightingDone);
 }
 
@@ -69,7 +71,9 @@ void ReweightingTab::loadPMF()
 void ReweightingTab::loadSaveFile()
 {
   qDebug() << "Calling " << Q_FUNC_INFO;
-  const QString outputFileName = QFileDialog::getSaveFileName(this, tr("Save to"), "");
+  const QString outputFileName = QFileDialog::getSaveFileName(
+      this, tr("Save reweighted PMF file to"), "",
+      tr("Potential of Mean force (*.pmf);;All Files (*)"));
   ui->lineEditOutput->setText(outputFileName);
 }
 
@@ -155,20 +159,41 @@ void ReweightingTab::reweighting()
     errorBox.critical(this, "Error", errorMsg);
     return;
   }
+  if (outputFileName.isEmpty()) {
+    const QString errorMsg("No output file specified.");
+    qDebug() << errorMsg;
+    qDebug() << "Selected output file: " << outputFileName;
+    QMessageBox errorBox;
+    errorBox.critical(this, "Error", errorMsg);
+    return;
+  }
   ui->pushButtonRun->setText(tr("Running"));
   ui->pushButtonRun->setEnabled(false);
   mWorkerThread.reweighting(fileList, outputFileName, mPMF, fromColumns, toColumns, targetAxis, getKbT(), usePMF);
 }
 
-void ReweightingTab::showReweightingProgress(int fileRead, double percent)
+void ReweightingTab::reweightingProgress(int fileRead, int percent)
 {
   const int numFiles = mListModel->trajectoryFileNameList().size();
-  const QString newText = "Running " + QString(" (%1/%2) %3").arg(fileRead).arg(numFiles).arg(percent, 0, 'g', 2) + "%";
+  const QString newText = "Running " + QString(" (%1/%2) %3").arg(fileRead).arg(numFiles).arg(percent) + "%";
   ui->pushButtonRun->setText(newText);
+}
+
+void ReweightingTab::reweightingError(QString msg)
+{
+  QMessageBox errorBox;
+  errorBox.critical(this, "Error", msg);
+  ui->pushButtonRun->setEnabled(true);
+  ui->pushButtonRun->setText(tr("Run"));
 }
 
 void ReweightingTab::reweightingDone()
 {
   ui->pushButtonRun->setEnabled(true);
   ui->pushButtonRun->setText(tr("Run"));
+}
+
+void ReweightingTab::help()
+{
+  // TODO
 }

@@ -33,12 +33,12 @@ signals:
   void error(QString err);
   void doneReturnTarget(HistogramProbability targetHistogram);
   void done();
-  void progress(int fileRead, double percent);
+  void progress(int fileRead, int percent);
 protected:
   void run() override;
 private:
   // do we need a lock here?
-//  QMutex mutex;
+  QMutex mutex;
   QStringList mTrajectoryFileName;
   QString mOutputFileName;
   HistogramScalar<double> mSourceHistogram;
@@ -47,6 +47,7 @@ private:
   QVector<Axis> mTargetAxis;
   double mKbT;
   bool mUsePMF;
+  static const int refreshPeriod = 5;
 };
 
 #endif // REWEIGHTINGTHREAD_H

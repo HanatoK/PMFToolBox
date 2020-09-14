@@ -27,8 +27,10 @@ public slots:
   void removeTrajectory();
   void readAxisData();
   void reweighting();
-  void showReweightingProgress(int fileRead, double percent);
+  void reweightingProgress(int fileRead, int percent);
+  void reweightingError(QString msg);
   void reweightingDone();
+  void help();
 
 private:
   Ui::ReweightingTab *ui;

@@ -28,6 +28,7 @@ void ReweightingThread::reweighting(const QStringList &trajectoryFileName, const
                                     const QVector<int> &from, const QVector<int> &to,
                                     const QVector<Axis>& targetAxis, double kbT, bool usePMF) {
   qDebug() << Q_FUNC_INFO;
+  QMutexLocker locker(&mutex);
   mTrajectoryFileName = trajectoryFileName;
   mOutputFileName = outputFileName;
   mSourceHistogram = source;
@@ -48,13 +49,14 @@ void ReweightingThread::run()
   qDebug() << Q_FUNC_INFO << ": to columns " << mToColumn;
   qDebug() << Q_FUNC_INFO << ": using kbt = " << mKbT;
   qDebug() << Q_FUNC_INFO << ": target axis " << mTargetAxis;
+  mutex.lock();
   HistogramProbability result(mTargetAxis);
   doReweighting reweightingObject(mSourceHistogram, result, mFromColumn, mToColumn, mKbT);
   size_t numFile = 0;
   for (auto it = mTrajectoryFileName.begin(); it != mTrajectoryFileName.end(); ++it) {
     qDebug() << "Reading file " << (*it);
     QFile trajectoryFile(*it);
-    const auto fileSize = trajectoryFile.size();
+    const int fileSize = trajectoryFile.size();
     if (trajectoryFile.open(QFile::ReadOnly)) {
       QTextStream ifs(&trajectoryFile);
       QString line;
@@ -67,8 +69,10 @@ void ReweightingThread::run()
         line.clear();
         ifs.readLineInto(&line);
         readSize += line.size();
-        const double readingProgress = readSize / fileSize * 100;
-        emit progress(numFile, readingProgress);
+        const int readingProgress = readSize / fileSize * 100;
+        if (readingProgress % refreshPeriod == 0 || readingProgress == 100) {
+          emit progress(numFile, readingProgress);
+        }
         tmpFields = line.split(QRegExp("[(),\\s]+"), Qt::SkipEmptyParts);
         // skip blank lines
         if (tmpFields.size() <= 0) continue;
@@ -94,4 +98,5 @@ void ReweightingThread::run()
   result.writeToFile(mOutputFileName);
   emit done();
   emit doneReturnTarget(result);
+  mutex.unlock();
 }
