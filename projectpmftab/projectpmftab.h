@@ -1,6 +1,8 @@
 #ifndef PROJECTPMF_H
 #define PROJECTPMF_H
 
+#include "base/pmfplot.h"
+
 #include <QWidget>
 
 namespace Ui {

@@ -25,6 +25,7 @@ HEADERS += \
     base/histogram.h \
     base/pmfplot.h \
     base/reweighting.h \
+    base/turbocolormap.h \
     mainwindow.h \
     projectpmftab/projectpmftab.h \
     reweightingtab/reweightingtab.h \

@@ -14,6 +14,7 @@ public:
   PMFPlot(QWidget *parent = nullptr);
   PMFPlot(const QwtText &title, QWidget *parent = nullptr);
   bool plotPMF2D(const HistogramScalar<double>& histogram);
+  bool plotPMF1D(const HistogramScalar<double>& histogram);
 protected:
   virtual void initialize();
 private:
