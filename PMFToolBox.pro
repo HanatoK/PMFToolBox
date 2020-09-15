@@ -2,7 +2,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++2a
+CONFIG += c++2a qwt
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -11,10 +11,11 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs depr
 SOURCES += \
     base/helper.cpp \
     base/histogram.cpp \
+    base/pmfplot.cpp \
     base/reweighting.cpp \
     main.cpp \
     mainwindow.cpp \
-    projectpmftab/projectpmf.cpp \
+    projectpmftab/projectpmftab.cpp \
     reweightingtab/reweightingtab.cpp \
     reweightingtab/listmodeltrajectory.cpp \
     reweightingtab/tablemodelreweightingaxis.cpp
@@ -22,16 +23,17 @@ SOURCES += \
 HEADERS += \
     base/helper.h \
     base/histogram.h \
+    base/pmfplot.h \
     base/reweighting.h \
     mainwindow.h \
-    projectpmftab/projectpmf.h \
+    projectpmftab/projectpmftab.h \
     reweightingtab/reweightingtab.h \
     reweightingtab/listmodeltrajectory.h \
     reweightingtab/tablemodelreweightingaxis.h
 
 FORMS += \
     mainwindow.ui \
-    projectpmftab/projectpmf.ui \
+    projectpmftab/projectpmftab.ui \
     reweightingtab/reweightingtab.ui
 
 # Default rules for deployment.

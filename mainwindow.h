@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "reweightingtab/reweightingtab.h"
+#include "projectpmftab/projectpmftab.h"
 
 #include <QMainWindow>
 
@@ -17,8 +18,12 @@ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
 
+public slots:
+  void updateSizes(int index);
+
 private:
   Ui::MainWindow *ui;
   ReweightingTab *mReweightingTab;
+  ProjectPMFTab *mProjectPMFTab;
 };
 #endif // MAINWINDOW_H

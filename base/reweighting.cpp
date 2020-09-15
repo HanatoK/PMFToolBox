@@ -1,4 +1,4 @@
-#include "lib/reweighting.h"
+#include "base/reweighting.h"
 
 void doReweighting::operator()(const QVector<double> &fields) {
   QVector<double> pos_origin(originHistogram.dimension());

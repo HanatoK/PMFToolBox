@@ -61,4 +61,6 @@ QVector<T> splitStringToNumbers(const QString& str) {
 
 QString boolToString(bool x);
 
+double kbT(const double temperature, const QString& unit);
+
 #endif // HELPER_H
