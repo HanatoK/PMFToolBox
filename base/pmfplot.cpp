@@ -78,6 +78,7 @@ bool PMFPlot::plotPMF2D(const HistogramScalar<double> &histogram)
 
 bool PMFPlot::plotPMF1D(const HistogramScalar<double> &histogram)
 {
+  qDebug() << "Calling " << Q_FUNC_INFO;
   if (histogram.dimension() != 1) return false;
   detachItems();
   enableAxis(QwtPlot::Axis::yLeft, true);

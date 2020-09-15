@@ -13,7 +13,7 @@ ReweightingTab::ReweightingTab(QWidget *parent)
   ui->tableViewReweightingAxis->setModel(mTableModel);
   ui->listViewTrajectory->setModel(mListModel);
   connect(ui->pushButtonOpen, &QPushButton::clicked, this, &ReweightingTab::loadPMF);
-  connect(ui->pushButtonSaveTo, &QPushButton::clicked, this, &ReweightingTab::loadSaveFile);
+  connect(ui->pushButtonSaveTo, &QPushButton::clicked, this, &ReweightingTab::saveFile);
   connect(ui->pushButtonAddTrajectory, &QPushButton::clicked, this, &ReweightingTab::addTrajectory);
   connect(ui->pushButtonRemoveTrajectory, &QPushButton::clicked, this, &ReweightingTab::removeTrajectory);
   connect(ui->pushButtonReadAxes, &QPushButton::clicked, this, &ReweightingTab::readAxisData);
@@ -51,7 +51,7 @@ void ReweightingTab::loadPMF()
   }
 }
 
-void ReweightingTab::loadSaveFile()
+void ReweightingTab::saveFile()
 {
   qDebug() << "Calling " << Q_FUNC_INFO;
   const QString outputFileName = QFileDialog::getSaveFileName(

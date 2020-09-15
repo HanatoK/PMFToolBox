@@ -6,68 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>690</width>
-    <height>345</height>
+    <width>688</width>
+    <height>174</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Input PMF</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2">
-    <widget class="QPushButton" name="pushButton">
-     <property name="text">
-      <string>Open</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="lineEdit"/>
-   </item>
-   <item row="3" column="0" colspan="3">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QPushButton" name="pushButton_4">
-       <property name="text">
-        <string>Project and save</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButton_5">
-       <property name="text">
-        <string>Plot origin PMF</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButton_6">
-       <property name="text">
-        <string>Plot projected PMF</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Output</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="lineEdit_2"/>
-   </item>
    <item row="1" column="2">
-    <widget class="QPushButton" name="pushButton_2">
+    <widget class="QPushButton" name="pushButtonSaveTo">
      <property name="text">
       <string>Save to</string>
      </property>
@@ -76,30 +24,52 @@
    <item row="2" column="0" colspan="3">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="labelProjectTo">
        <property name="text">
         <string>Project to</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit_3"/>
+      <widget class="QLineEdit" name="lineEditProjectTo"/>
      </item>
      <item>
-      <widget class="QLabel" name="label_4">
+      <widget class="QLabel" name="labelTemperature">
        <property name="text">
         <string>Temperature</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit_4"/>
+      <widget class="QLineEdit" name="lineEditTemperature">
+       <property name="text">
+        <string>300.0</string>
+       </property>
+      </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="comboBox"/>
+      <widget class="QLabel" name="labelUnit">
+       <property name="text">
+        <string>Unit</string>
+       </property>
+      </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_3">
+      <widget class="QComboBox" name="comboBoxUnit">
+       <item>
+        <property name="text">
+         <string>kcal/mol</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>kJ/mol</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonHelp">
        <property name="text">
         <string>Help</string>
        </property>
@@ -107,8 +77,60 @@
      </item>
     </layout>
    </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="labelOutput">
+     <property name="text">
+      <string>Output</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QPushButton" name="pushButtonOpen">
+     <property name="text">
+      <string>Open</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="labelInputPMF">
+     <property name="text">
+      <string>Input PMF</string>
+     </property>
+    </widget>
+   </item>
    <item row="4" column="0" colspan="3">
-    <widget class="PMFPlot" name="widget" native="true"/>
+    <widget class="PMFPlot" name="widgetPlotPMF" native="true"/>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="lineEditInputPMF"/>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="lineEditOutput"/>
+   </item>
+   <item row="3" column="0" colspan="3">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="pushButtonProjectAndSave">
+       <property name="text">
+        <string>Project and save</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonPlotOriginPMF">
+       <property name="text">
+        <string>Plot origin PMF</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonPlotProjectedPMF">
+       <property name="text">
+        <string>Plot projected PMF</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
@@ -120,6 +142,19 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>lineEditInputPMF</tabstop>
+  <tabstop>pushButtonOpen</tabstop>
+  <tabstop>lineEditOutput</tabstop>
+  <tabstop>pushButtonSaveTo</tabstop>
+  <tabstop>lineEditProjectTo</tabstop>
+  <tabstop>lineEditTemperature</tabstop>
+  <tabstop>comboBoxUnit</tabstop>
+  <tabstop>pushButtonHelp</tabstop>
+  <tabstop>pushButtonProjectAndSave</tabstop>
+  <tabstop>pushButtonPlotOriginPMF</tabstop>
+  <tabstop>pushButtonPlotProjectedPMF</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

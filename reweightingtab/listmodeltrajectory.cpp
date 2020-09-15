@@ -56,7 +56,8 @@ bool ListModelTrajectory::removeRows(int row, int count, const QModelIndex &pare
 {
   beginRemoveRows(parent, row, row + count - 1);
   for (int i = 0; i < count; ++i) {
-    mTrajectoryFileNameList.removeAt(row);
+    if (row >= 0 && row < mTrajectoryFileNameList.size())
+      mTrajectoryFileNameList.removeAt(row);
   }
   endRemoveRows();
   return true;

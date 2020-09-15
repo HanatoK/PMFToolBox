@@ -408,12 +408,12 @@ HistogramScalar<T>::reduceDimension(const QVector<size_t> &new_dims) const {
   }
   HistogramScalar<T> new_hist(new_ax);
   QVector<double> pos(mNdim, 0.0);
-  QVector<double> new_pos(new_hist.getDimension(), 0.0);
+  QVector<double> new_pos(new_hist.dimension(), 0.0);
   for (size_t i = 0; i < mHistogramSize; ++i) {
     for (size_t j = 0; j < mNdim; ++j) {
       pos[j] = mPointTable[j][i];
     }
-    for (size_t k = 0; k < new_hist.getDimension(); ++k) {
+    for (size_t k = 0; k < new_hist.dimension(); ++k) {
       new_pos[k] = pos[new_dims[k]];
     }
     bool in_grid = true;

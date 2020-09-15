@@ -22,7 +22,7 @@ public:
 
 public slots:
   void loadPMF();
-  void loadSaveFile();
+  void saveFile();
   void addTrajectory();
   void removeTrajectory();
   void readAxisData();
