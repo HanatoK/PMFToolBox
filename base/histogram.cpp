@@ -470,3 +470,35 @@ QDebug operator<<(QDebug dbg, const Axis &ax)
   dbg << "{" << ax.lowerBound() << ", " << ax.upperBound() << ", " << ax.width() << "}";
   return dbg;
 }
+
+HistogramGradient::HistogramGradient(): HistogramBase(), HistogramVector<double>()
+{
+
+}
+
+HistogramGradient::HistogramGradient(const QVector<Axis> &ax): HistogramBase(ax), HistogramVector<double>(ax, ax.size())
+{
+
+}
+
+double HistogramGradient::GaussianHill::GaussianBasis(const QVector<double> &pos, const QVector<double> &pos_k)
+{
+  double result = 0;
+  for (int i = 0; i < pos.size(); ++i) {
+    const double diff = pos[i] - pos_k[i];
+    result += diff * diff / (mSigma[i] * mSigma[i]);
+  }
+  result = mWeight * std::exp(-0.5 * result);
+  return result;
+}
+
+QVector<double> HistogramGradient::GaussianHill::GaussianBasisGradient(const QVector<double> &pos, const QVector<double> &pos_k)
+{
+  QVector<double> result(pos.size());
+  const double gaussian = GaussianBasis(pos, pos_k);
+  for (int i = 0; i < pos.size(); ++i) {
+    const double diff = pos[i] - pos_k[i];
+    result[i] = gaussian * (-1.0 * diff / (mSigma[i] * mSigma[i]));
+  }
+  return result;
+}

@@ -433,9 +433,10 @@ public:
   static_assert(std::is_arithmetic<T>::value,
                 "HistogramVector requires a scalar type!");
   HistogramVector();
+  explicit HistogramVector(const size_t multiplicity);
   HistogramVector(const QVector<Axis> &, const size_t);
   virtual ~HistogramVector();
-  virtual bool readFromStream(QTextStream &ifs, const size_t multiplicity = 0);
+  virtual bool readFromStream(QTextStream &ifs) override;
   virtual bool writeToStream(QTextStream &ofs) const override;
   virtual QVector<T> operator()(const QVector<T> &);
   T &operator[](int);
@@ -459,6 +460,13 @@ template <typename T> HistogramVector<T>::HistogramVector() : HistogramBase() {
   mMultiplicity = 0;
 }
 
+template<typename T>
+HistogramVector<T>::HistogramVector(const size_t multiplicity)
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  mMultiplicity = multiplicity;
+}
+
 template <typename T>
 HistogramVector<T>::HistogramVector(const QVector<Axis> &ax,
                                     const size_t multiplicity)
@@ -474,14 +482,13 @@ template <typename T> HistogramVector<T>::~HistogramVector() {
 }
 
 template <typename T>
-bool HistogramVector<T>::readFromStream(QTextStream &ifs,
-                                        const size_t multiplicity) {
+bool HistogramVector<T>::readFromStream(QTextStream &ifs) {
   qDebug() << "Calling " << Q_FUNC_INFO;
   bool file_opened = HistogramBase::readFromStream(ifs);
   if (!file_opened)
     return file_opened;
   // try to use the dimensionality as multiplicity if it is not specified
-  mMultiplicity = multiplicity > 0 ? multiplicity : mNdim;
+  mMultiplicity = mMultiplicity > 0 ? mMultiplicity : mNdim;
   QString line;
   QVector<double> pos(mNdim, 0);
   QStringList tmp_fields;
@@ -609,6 +616,24 @@ public:
   explicit HistogramProbability(const QVector<Axis> &ax);
   virtual ~HistogramProbability();
   void convertToFreeEnergy(double kbt);
+};
+
+// TODO: use the algorithm described by
+// Maragliano, L.; Vanden-Eijnden, E. J. Chem. Phys., 2008, 128 (18), 184110. https://doi.org/10.1063/1.2907241.
+// to integrate the gradients
+class HistogramGradient : public HistogramVector<double> {
+public:
+  HistogramGradient();
+  explicit HistogramGradient(const QVector<Axis> &ax);
+  struct GaussianHill {
+    // for integration
+    double GaussianBasis(const QVector<double>& pos, const QVector<double>& pos_k);
+    QVector<double> GaussianBasisGradient(const QVector<double>& pos, const QVector<double>& pos_k);
+    QVector<double> mSigma;
+    double mWeight;
+  };
+private:
+  QVector<GaussianHill> mHills;
 };
 
 Q_DECLARE_METATYPE(HistogramPMF);
