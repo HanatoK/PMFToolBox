@@ -116,7 +116,6 @@ public:
   T minimum() const;
   const QVector<T> &data() const;
   QVector<T> &data();
-  HistogramScalar reduceDimension(const QVector<size_t> &new_dims) const;
   virtual QVector<T> getDerivative(const QVector<double> &pos,
                                    bool *inBoundary = nullptr) const;
   virtual void generate(std::function<T(const QVector<double> &)> &func);
@@ -125,14 +124,12 @@ public:
 
 protected:
   QVector<T> mData;
-
-private:
   static const int OUTPUT_PRECISION = 7;
   static const int OUTPUT_POSITION_PRECISION = 5;
   static const int OUTPUT_WIDTH = 14;
 };
 
-template <typename T> HistogramScalar<T>::HistogramScalar() {
+template <typename T> HistogramScalar<T>::HistogramScalar(): mData(0) {
   qDebug() << "Calling " << Q_FUNC_INFO;
 }
 
@@ -398,35 +395,6 @@ void HistogramScalar<T>::merge(const HistogramScalar<T> &source) {
   }
 }
 
-template <typename T>
-HistogramScalar<T>
-HistogramScalar<T>::reduceDimension(const QVector<size_t> &new_dims) const {
-  qDebug() << "Calling " << Q_FUNC_INFO;
-  QVector<Axis> new_ax;
-  for (int i = 0; i < new_dims.size(); ++i) {
-    new_ax.push_back(this->mAxes[new_dims[i]]);
-  }
-  HistogramScalar<T> new_hist(new_ax);
-  QVector<double> pos(mNdim, 0.0);
-  QVector<double> new_pos(new_hist.dimension(), 0.0);
-  for (size_t i = 0; i < mHistogramSize; ++i) {
-    for (size_t j = 0; j < mNdim; ++j) {
-      pos[j] = mPointTable[j][i];
-    }
-    for (size_t k = 0; k < new_hist.dimension(); ++k) {
-      new_pos[k] = pos[new_dims[k]];
-    }
-    bool in_grid = true;
-    bool in_new_grid = true;
-    const size_t addr = address(pos, &in_grid);
-    const size_t new_addr = new_hist.address(new_pos, &in_new_grid);
-    if (in_grid && in_new_grid) {
-      new_hist[new_addr] += (*this)[addr];
-    }
-  }
-  return new_hist;
-}
-
 // nD histogram
 template <typename T> class HistogramVector : public virtual HistogramBase {
 public:
@@ -454,9 +422,8 @@ private:
   static const int OUTPUT_WIDTH = 14;
 };
 
-template <typename T> HistogramVector<T>::HistogramVector() : HistogramBase() {
+template <typename T> HistogramVector<T>::HistogramVector() : HistogramBase(), mMultiplicity(0), mData(0) {
   qDebug() << "Calling " << Q_FUNC_INFO;
-  mMultiplicity = 0;
 }
 
 template <typename T>
@@ -609,6 +576,7 @@ public:
   explicit HistogramProbability(const QVector<Axis> &ax);
   virtual ~HistogramProbability();
   void convertToFreeEnergy(double kbt);
+  HistogramProbability reduceDimension(const QVector<size_t> &new_dims) const;
 };
 
 Q_DECLARE_METATYPE(HistogramPMF);

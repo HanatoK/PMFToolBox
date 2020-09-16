@@ -4,7 +4,9 @@
 #include <cmath>
 #include <iterator>
 
-HistogramBase::HistogramBase() {}
+HistogramBase::HistogramBase(): mNdim(0), mHistogramSize(0), mAxes(0), mPointTable(0), mAccu(0) {
+
+}
 
 HistogramBase::~HistogramBase() { qDebug() << "Calling " << Q_FUNC_INFO; }
 
@@ -463,6 +465,33 @@ void HistogramProbability::convertToFreeEnergy(double kbt)
     i = i - min_val;
   }
   this->mData = f_data;
+}
+
+HistogramProbability HistogramProbability::reduceDimension(const QVector<size_t> &new_dims) const {
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  QVector<Axis> new_ax;
+  for (int i = 0; i < new_dims.size(); ++i) {
+    new_ax.push_back(this->mAxes[new_dims[i]]);
+  }
+  HistogramProbability new_hist(new_ax);
+  QVector<double> pos(mNdim, 0.0);
+  QVector<double> new_pos(new_hist.dimension(), 0.0);
+  for (size_t i = 0; i < mHistogramSize; ++i) {
+    for (size_t j = 0; j < mNdim; ++j) {
+      pos[j] = mPointTable[j][i];
+    }
+    for (size_t k = 0; k < new_hist.dimension(); ++k) {
+      new_pos[k] = pos[new_dims[k]];
+    }
+    bool in_grid = true;
+    bool in_new_grid = true;
+    const size_t addr = address(pos, &in_grid);
+    const size_t new_addr = new_hist.address(new_pos, &in_new_grid);
+    if (in_grid && in_new_grid) {
+      new_hist[new_addr] += (*this)[addr];
+    }
+  }
+  return new_hist;
 }
 
 QDebug operator<<(QDebug dbg, const Axis &ax)

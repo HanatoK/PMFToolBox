@@ -66,7 +66,7 @@ void ProjectPMFTab::projectPMF()
   HistogramProbability p;
   mOriginPMF.toProbability(p, kbt);
   // marginalize the probability
-  mOriginPMF.reduceDimension(toAxis);
+  p = p.reduceDimension(toAxis);
   // convert the marginal probability back to the target PMF
   mProjectedPMF.fromProbability(p, kbt);
   // output
@@ -90,7 +90,7 @@ void ProjectPMFTab::plotOriginPMF()
     break;
   }
   case 2: {
-    qDebug() << Q_FUNC_INFO << ": plot 1D PMF";
+    qDebug() << Q_FUNC_INFO << ": plot 2D PMF";
     ui->widgetPlotPMF->plotPMF2D(mOriginPMF);
     break;
   }
@@ -122,7 +122,7 @@ void ProjectPMFTab::plotProjectedPMF()
     break;
   }
   case 2: {
-    qDebug() << Q_FUNC_INFO << ": plot 1D PMF";
+    qDebug() << Q_FUNC_INFO << ": plot 2D PMF";
     ui->widgetPlotPMF->plotPMF2D(mProjectedPMF);
     break;
   }
