@@ -17,7 +17,9 @@ void testHistogram() {
 int main(int argc, char *argv[])
 {
   QApplication a(argc, argv);
+  qRegisterMetaType<HistogramPMF>("HistogramPMF");
   qRegisterMetaType<HistogramProbability>("HistogramProbability");
+  qRegisterMetaType<HistogramPMF>("HistogramPMFHistory");
 //  testHistogram();
   MainWindow w;
   w.show();

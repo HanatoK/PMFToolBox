@@ -29,6 +29,7 @@ public:
   void reweighting(const QStringList& trajectoryFileName, const QString& outputFileName,
                    const HistogramScalar<double>& source, const QVector<int>& from,
                    const QVector<int>& to, const QVector<Axis>& targetAxis, double kbT, bool usePMF);
+  ~ReweightingThread();
 signals:
   void error(QString err);
   void doneReturnTarget(HistogramProbability targetHistogram);

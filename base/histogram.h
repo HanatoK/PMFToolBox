@@ -579,7 +579,17 @@ public:
   HistogramProbability reduceDimension(const QVector<size_t> &new_dims) const;
 };
 
+class HistogramPMFHistory: public HistogramBase {
+public:
+  HistogramPMFHistory();
+  HistogramPMFHistory(const QVector<Axis>& ax);
+  void appendHistogram(const QVector<double>& data);
+private:
+  QList<QVector<double>> mHistoryData;
+};
+
 Q_DECLARE_METATYPE(HistogramPMF);
 Q_DECLARE_METATYPE(HistogramProbability);
+Q_DECLARE_METATYPE(HistogramPMFHistory);
 
 #endif // HISTOGRAMBASE_H

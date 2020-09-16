@@ -499,3 +499,18 @@ QDebug operator<<(QDebug dbg, const Axis &ax)
   dbg << "{" << ax.lowerBound() << ", " << ax.upperBound() << ", " << ax.width() << "}";
   return dbg;
 }
+
+HistogramPMFHistory::HistogramPMFHistory(): HistogramBase()
+{
+
+}
+
+HistogramPMFHistory::HistogramPMFHistory(const QVector<Axis> &ax): HistogramBase(ax)
+{
+
+}
+
+void HistogramPMFHistory::appendHistogram(const QVector<double> &data)
+{
+  mHistoryData.append(data);
+}

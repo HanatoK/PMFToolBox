@@ -11,6 +11,7 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs depr
 SOURCES += \
     base/helper.cpp \
     base/histogram.cpp \
+    base/historyfile.cpp \
     base/pmfplot.cpp \
     base/reweighting.cpp \
     main.cpp \
@@ -23,6 +24,7 @@ SOURCES += \
 HEADERS += \
     base/helper.h \
     base/histogram.h \
+    base/historyfile.h \
     base/pmfplot.h \
     base/reweighting.h \
     base/turbocolormap.h \

@@ -42,6 +42,16 @@ void ReweightingThread::reweighting(const QStringList &trajectoryFileName, const
   }
 }
 
+ReweightingThread::~ReweightingThread()
+{
+  // am I doing the right things?
+  qDebug() << Q_FUNC_INFO;
+  mutex.lock();
+  mutex.unlock();
+  wait();
+  quit();
+}
+
 void ReweightingThread::run()
 {
   qDebug() << Q_FUNC_INFO;
