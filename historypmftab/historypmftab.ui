@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>HistoryPMFTab</class>
+ <widget class="QWidget" name="HistoryPMFTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>566</width>
+    <height>506</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="lineEditReferencePMF"/>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="lineEditOutputPrefix"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="labelReferencePMF">
+     <property name="text">
+      <string>Reference PMF</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QPushButton" name="pushButtonSaveTo">
+     <property name="text">
+      <string>Save to</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="labelOutputPrefix">
+     <property name="text">
+      <string>Output prefix</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QPushButton" name="pushButtonOpen">
+     <property name="text">
+      <string>Open</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="3">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>History PMF files</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0" colspan="2">
+       <widget class="QListView" name="listView"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="pushButtonAdd">
+        <property name="text">
+         <string>Add</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="pushButtonRemove">
+        <property name="text">
+         <string>Remove</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QPushButton" name="pushButtonSplit">
+        <property name="text">
+         <string>Split</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="pushButtonComputeRMSD">
+        <property name="text">
+         <string>Compute RMSD</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="3">
+    <widget class="PMFPlot" name="widget" native="true"/>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PMFPlot</class>
+   <extends>QWidget</extends>
+   <header>base/pmfplot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>lineEditReferencePMF</tabstop>
+  <tabstop>pushButtonOpen</tabstop>
+  <tabstop>lineEditOutputPrefix</tabstop>
+  <tabstop>pushButtonSaveTo</tabstop>
+  <tabstop>listView</tabstop>
+  <tabstop>pushButtonAdd</tabstop>
+  <tabstop>pushButtonRemove</tabstop>
+  <tabstop>pushButtonSplit</tabstop>
+  <tabstop>pushButtonComputeRMSD</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

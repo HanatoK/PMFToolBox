@@ -14,6 +14,7 @@ SOURCES += \
     base/historyfile.cpp \
     base/pmfplot.cpp \
     base/reweighting.cpp \
+    historypmftab/historypmftab.cpp \
     main.cpp \
     mainwindow.cpp \
     projectpmftab/projectpmftab.cpp \
@@ -28,6 +29,7 @@ HEADERS += \
     base/pmfplot.h \
     base/reweighting.h \
     base/turbocolormap.h \
+    historypmftab/historypmftab.h \
     mainwindow.h \
     projectpmftab/projectpmftab.h \
     reweightingtab/reweightingtab.h \
@@ -35,6 +37,7 @@ HEADERS += \
     reweightingtab/tablemodelreweightingaxis.h
 
 FORMS += \
+    historypmftab/historypmftab.ui \
     mainwindow.ui \
     projectpmftab/projectpmftab.ui \
     reweightingtab/reweightingtab.ui

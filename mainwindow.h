@@ -3,6 +3,7 @@
 
 #include "reweightingtab/reweightingtab.h"
 #include "projectpmftab/projectpmftab.h"
+#include "historypmftab/historypmftab.h"
 
 #include <QMainWindow>
 
@@ -25,5 +26,6 @@ private:
   Ui::MainWindow *ui;
   ReweightingTab *mReweightingTab;
   ProjectPMFTab *mProjectPMFTab;
+  HistoryPMFTab *mHistoryPMFTab;
 };
 #endif // MAINWINDOW_H
