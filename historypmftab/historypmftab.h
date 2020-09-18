@@ -2,6 +2,8 @@
 #define HISTORYPMFTAB_H
 
 #include "base/historyfile.h"
+// Need to change the directory of this header
+#include "reweightingtab/listmodelfilelist.h"
 
 #include <QWidget>
 
@@ -20,9 +22,13 @@ public:
 public slots:
   void loadReferencePMF();
   void saveFile();
+  void addHistoryFile();
+  void removeHistoryFile();
+  void computeRMSD();
 
 private:
   Ui::HistoryPMFTab *ui;
+  ListModelFileList *mListModel;
   HistogramPMF mReferencePMF;
 };
 

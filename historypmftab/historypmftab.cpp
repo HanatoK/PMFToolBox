@@ -6,11 +6,15 @@
 
 HistoryPMFTab::HistoryPMFTab(QWidget *parent) :
   QWidget(parent),
-  ui(new Ui::HistoryPMFTab)
+  ui(new Ui::HistoryPMFTab),
+  mListModel(new ListModelFileList(this))
 {
   ui->setupUi(this);
+  ui->listViewHistoryFile->setModel(mListModel);
   connect(ui->pushButtonOpen, &QPushButton::clicked, this, &HistoryPMFTab::loadReferencePMF);
   connect(ui->pushButtonSaveTo, &QPushButton::clicked, this, &HistoryPMFTab::saveFile);
+  connect(ui->pushButtonAdd, &QPushButton::clicked, this, &HistoryPMFTab::addHistoryFile);
+  connect(ui->pushButtonRemove, &QPushButton::clicked, this, &HistoryPMFTab::removeHistoryFile);
 }
 
 HistoryPMFTab::~HistoryPMFTab()
@@ -41,4 +45,27 @@ void HistoryPMFTab::saveFile()
   const QString outputFileName = QFileDialog::getSaveFileName(
       this, tr("Save output to"), "");
   ui->lineEditOutputPrefix->setText(outputFileName);
+}
+
+void HistoryPMFTab::addHistoryFile()
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  const QString inputFileName = QFileDialog::getOpenFileName(
+      this, tr("Open history PMF file"), "",
+      tr("History PMF file (*.pmf);;All Files (*)"));
+  if (inputFileName.isEmpty()) return;
+  const QModelIndex& index = ui->listViewHistoryFile->currentIndex();
+  mListModel->addItem(inputFileName, index);
+}
+
+void HistoryPMFTab::removeHistoryFile()
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  const QModelIndex& index = ui->listViewHistoryFile->currentIndex();
+  mListModel->removeItem(index);
+}
+
+void HistoryPMFTab::computeRMSD()
+{
+  // TODO
 }

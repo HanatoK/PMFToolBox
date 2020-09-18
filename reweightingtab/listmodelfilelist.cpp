@@ -1,13 +1,13 @@
-#include "listmodeltrajectory.h"
+#include "listmodelfilelist.h"
 
 #include <QDebug>
 
-ListModelTrajectory::ListModelTrajectory(QObject *parent)
+ListModelFileList::ListModelFileList(QObject *parent)
   : QAbstractListModel(parent)
 {
 }
 
-QVariant ListModelTrajectory::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant ListModelFileList::headerData(int section, Qt::Orientation orientation, int role) const
 {
   if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
       switch (section) {
@@ -20,73 +20,73 @@ QVariant ListModelTrajectory::headerData(int section, Qt::Orientation orientatio
   return QVariant();
 }
 
-int ListModelTrajectory::rowCount(const QModelIndex &parent) const
+int ListModelFileList::rowCount(const QModelIndex &parent) const
 {
   // For list models only the root node (an invalid parent) should return the list's size. For all
   // other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
   if (parent.isValid())
     return 0;
 
-  return mTrajectoryFileNameList.size();
+  return mFileNameList.size();
 }
 
-QVariant ListModelTrajectory::data(const QModelIndex &index, int role) const
+QVariant ListModelFileList::data(const QModelIndex &index, int role) const
 {
   if (!index.isValid())
     return QVariant();
 
   if (role == Qt::DisplayRole) {
-    return mTrajectoryFileNameList[index.row()];
+    return mFileNameList[index.row()];
   }
   return QVariant();
 }
 
-bool ListModelTrajectory::insertRows(int row, int count, const QModelIndex &parent)
+bool ListModelFileList::insertRows(int row, int count, const QModelIndex &parent)
 {
   beginInsertRows(parent, row, row + count - 1);
   row = qBound(0, row, row);
   for (int i = 0; i < count; ++i) {
-    mTrajectoryFileNameList.insert(row, "");
+    mFileNameList.insert(row, "");
   }
   endInsertRows();
   return true;
 }
 
-bool ListModelTrajectory::removeRows(int row, int count, const QModelIndex &parent)
+bool ListModelFileList::removeRows(int row, int count, const QModelIndex &parent)
 {
   beginRemoveRows(parent, row, row + count - 1);
   for (int i = 0; i < count; ++i) {
-    if (row >= 0 && row < mTrajectoryFileNameList.size())
-      mTrajectoryFileNameList.removeAt(row);
+    if (row >= 0 && row < mFileNameList.size())
+      mFileNameList.removeAt(row);
   }
   endRemoveRows();
   return true;
 }
 
-void ListModelTrajectory::addItem(const QString &name, const QModelIndex &currentIndex)
+void ListModelFileList::addItem(const QString &name, const QModelIndex &currentIndex)
 {
   qDebug() << Q_FUNC_INFO;
   insertRows(currentIndex.row(), 1);
   int row = qBound(0, currentIndex.row(), currentIndex.row());
-  mTrajectoryFileNameList[row] = name;
+  mFileNameList[row] = name;
   emit layoutChanged();
   dumpList();
 }
 
-void ListModelTrajectory::removeItem(const QModelIndex &currentIndex)
+void ListModelFileList::removeItem(const QModelIndex &currentIndex)
 {
   removeRows(currentIndex.row(), 1);
   emit layoutChanged();
 }
 
-QStringList ListModelTrajectory::trajectoryFileNameList() const
+QStringList ListModelFileList::trajectoryFileNameList() const
 {
-  return mTrajectoryFileNameList;
+  return mFileNameList;
 }
 
 // for debug
-void ListModelTrajectory::dumpList() const
+void ListModelFileList::dumpList() const
 {
   qDebug() << "Current file name list:";
-  qDebug() << mTrajectoryFileNameList;
+  qDebug() << mFileNameList;
 }

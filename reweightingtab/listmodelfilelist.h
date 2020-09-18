@@ -3,11 +3,11 @@
 
 #include <QAbstractListModel>
 
-class ListModelTrajectory : public QAbstractListModel {
+class ListModelFileList : public QAbstractListModel {
   Q_OBJECT
 
 public:
-  explicit ListModelTrajectory(QObject *parent = nullptr);
+  explicit ListModelFileList(QObject *parent = nullptr);
   QVariant headerData(int section, Qt::Orientation orientation,
                       int role = Qt::DisplayRole) const override;
   int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -22,7 +22,7 @@ public:
   QStringList trajectoryFileNameList() const;
   void dumpList() const;
 private:
-  QStringList mTrajectoryFileNameList;
+  QStringList mFileNameList;
 };
 
 #endif // LISTMODELTRAJECTORY_H

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>566</width>
-    <height>506</height>
+    <width>564</width>
+    <height>504</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -70,7 +70,7 @@
        <number>0</number>
       </property>
       <item row="0" column="0" colspan="2">
-       <widget class="QListView" name="listView"/>
+       <widget class="QListView" name="listViewHistoryFile"/>
       </item>
       <item row="1" column="0">
        <widget class="QPushButton" name="pushButtonAdd">
@@ -104,7 +104,7 @@
     </widget>
    </item>
    <item row="3" column="0" colspan="3">
-    <widget class="PMFPlot" name="widget" native="true"/>
+    <widget class="PMFPlot" name="RMSDPlot" native="true"/>
    </item>
   </layout>
  </widget>
@@ -121,7 +121,7 @@
   <tabstop>pushButtonOpen</tabstop>
   <tabstop>lineEditOutputPrefix</tabstop>
   <tabstop>pushButtonSaveTo</tabstop>
-  <tabstop>listView</tabstop>
+  <tabstop>listViewHistoryFile</tabstop>
   <tabstop>pushButtonAdd</tabstop>
   <tabstop>pushButtonRemove</tabstop>
   <tabstop>pushButtonSplit</tabstop>

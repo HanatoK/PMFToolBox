@@ -2,7 +2,7 @@
 #define REWEIGHTINGTAB_H
 
 #include "reweightingtab/tablemodelreweightingaxis.h"
-#include "reweightingtab/listmodeltrajectory.h"
+#include "reweightingtab/listmodelfilelist.h"
 #include "base/reweighting.h"
 
 #include <QWidget>
@@ -35,7 +35,7 @@ public slots:
 private:
   Ui::ReweightingTab *ui;
   TableModelReweightingAxis *mTableModel;
-  ListModelTrajectory *mListModel;
+  ListModelFileList *mListModel;
   ReweightingThread mWorkerThread;
   HistogramPMF mPMF;
 };

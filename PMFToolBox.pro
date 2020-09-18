@@ -18,8 +18,8 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     projectpmftab/projectpmftab.cpp \
+    reweightingtab/listmodelfilelist.cpp \
     reweightingtab/reweightingtab.cpp \
-    reweightingtab/listmodeltrajectory.cpp \
     reweightingtab/tablemodelreweightingaxis.cpp
 
 HEADERS += \
@@ -32,8 +32,8 @@ HEADERS += \
     historypmftab/historypmftab.h \
     mainwindow.h \
     projectpmftab/projectpmftab.h \
+    reweightingtab/listmodelfilelist.h \
     reweightingtab/reweightingtab.h \
-    reweightingtab/listmodeltrajectory.h \
     reweightingtab/tablemodelreweightingaxis.h
 
 FORMS += \

@@ -8,7 +8,7 @@
 ReweightingTab::ReweightingTab(QWidget *parent)
     : QWidget(parent), ui(new Ui::ReweightingTab),
       mTableModel(new TableModelReweightingAxis(this)),
-      mListModel(new ListModelTrajectory(this)) {
+      mListModel(new ListModelFileList(this)) {
   ui->setupUi(this);
   ui->tableViewReweightingAxis->setModel(mTableModel);
   ui->listViewTrajectory->setModel(mListModel);
