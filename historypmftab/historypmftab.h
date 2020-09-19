@@ -25,11 +25,15 @@ public slots:
   void addHistoryFile();
   void removeHistoryFile();
   void computeRMSD();
+  void split();
+  void splitDone(const HistogramPMFHistory& hist);
 
 private:
   Ui::HistoryPMFTab *ui;
   ListModelFileList *mListModel;
   HistogramPMF mReferencePMF;
+  HistoryReaderThread mReaderThread;
+  HistogramPMFHistory mPMFHistory;
 };
 
 #endif // HISTORYPMFTAB_H

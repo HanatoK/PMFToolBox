@@ -514,3 +514,59 @@ void HistogramPMFHistory::appendHistogram(const QVector<double> &data)
 {
   mHistoryData.append(data);
 }
+
+QVector<double> HistogramPMFHistory::computeRMSD() const
+{
+  const QVector<double>& lastFrame = mHistoryData.back();
+  return computeRMSD(lastFrame);
+}
+
+QVector<double> HistogramPMFHistory::computeRMSD(const QVector<double>& referenceData) const
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  QVector<double> result;
+  for (int i = 0; i < mHistoryData.size(); ++i) {
+    const QVector<double>& currentData = mHistoryData[i];
+    double rmsd = 0;
+    for (int j = 0; j < referenceData.size(); ++j) {
+      const double diff = referenceData[j] - currentData[j];
+      rmsd += diff * diff;
+    }
+    rmsd /= referenceData.size();
+    result.append(std::sqrt(rmsd));
+  }
+  return result;
+}
+
+// Does it need threading?
+void HistogramPMFHistory::splitToFile(const QString &prefix) const
+{
+  const int numPMFs = mHistoryData.size();
+  const int numDigits = QString::number(numPMFs).size();
+  for (int i = 0; i < numPMFs; ++i) {
+    const QString suffix = QStringLiteral("%1").arg(i, numDigits, 10, QLatin1Char('0'));
+    const QString filename = prefix + "_" + suffix + ".pmf";
+    QFile outputFile(filename);
+    if (outputFile.open(QIODevice::WriteOnly)) {
+      QVector<double> pos(mNdim, 0);
+      QTextStream ofs(&outputFile);
+      HistogramBase::writeToStream(ofs);
+      ofs.setRealNumberNotation(QTextStream::FixedNotation);
+      for (size_t j = 0; j < mHistogramSize; ++j) {
+        for (size_t k = 0; k < mNdim; ++k) {
+          pos[k] = mPointTable[k][j];
+          ofs << qSetFieldWidth(OUTPUT_WIDTH);
+          ofs.setRealNumberPrecision(OUTPUT_POSITION_PRECISION);
+          ofs << pos[j];
+          ofs << qSetFieldWidth(0) << ' ';
+        }
+        ofs.setRealNumberPrecision(OUTPUT_PRECISION);
+        const size_t addr = address(pos);
+        ofs << qSetFieldWidth(OUTPUT_WIDTH) << mHistoryData[i][addr] << qSetFieldWidth(0);
+        ofs << '\n';
+      }
+      ofs.flush();
+    }
+    outputFile.close();
+  }
+}

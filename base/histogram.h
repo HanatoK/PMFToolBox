@@ -584,6 +584,13 @@ public:
   HistogramPMFHistory();
   HistogramPMFHistory(const QVector<Axis>& ax);
   void appendHistogram(const QVector<double>& data);
+  QVector<double> computeRMSD() const;
+  QVector<double> computeRMSD(const QVector<double> &referenceData) const;
+  void splitToFile(const QString& prefix) const;
+protected:
+  static const int OUTPUT_PRECISION = 7;
+  static const int OUTPUT_POSITION_PRECISION = 5;
+  static const int OUTPUT_WIDTH = 14;
 private:
   QList<QVector<double>> mHistoryData;
 };

@@ -20,7 +20,7 @@ signals:
 protected:
   void run() override;
 private:
-  bool readFromStream(QTextStream& ifs, HistogramPMFHistory& PMFHistory);
+  bool readFromStream(QTextStream& ifs, HistogramPMFHistory& PMFHistory, int fileIndex, int fileSize);
   QMutex mutex;
   QStringList mHistoryFileName;
 };

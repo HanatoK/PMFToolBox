@@ -49,13 +49,13 @@ void HistoryReaderThread::run()
     if (ok) {
       QFile histFile(mHistoryFileName[i]);
       stream.setDevice(&histFile);
-      ok = readFromStream(stream, result);
+      ok = readFromStream(stream, result, i, histFile.size());
     }
   }
   mutex.unlock();
 }
 
-bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &PMFHistory)
+bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &PMFHistory, int fileIndex, int fileSize)
 {
   qDebug() << Q_FUNC_INFO;
   QString line;
@@ -63,10 +63,13 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &
   QVector<double> pmfData(PMFHistory.histogramSize(), 0);
   QStringList tmp_fields;
   bool firsttime = true;
+  int readSize = 0;
   while (!ifs.atEnd()) {
     line.clear();
     tmp_fields.clear();
     ifs.readLineInto(&line);
+    readSize += line.size();
+    emit progress(fileIndex, readSize / fileSize * 100);
     tmp_fields = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
     if (tmp_fields.size() == 0) continue;
     // header lines

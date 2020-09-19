@@ -69,3 +69,33 @@ void HistoryPMFTab::computeRMSD()
 {
   // TODO
 }
+
+void HistoryPMFTab::split()
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  connect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::splitDone);
+  const QStringList& inputFile = mListModel->trajectoryFileNameList();
+  const QString& outputPrefix = ui->lineEditOutputPrefix->text();
+  if (inputFile.isEmpty()) {
+    const QString errorMsg{"No input file."};
+    qDebug() << Q_FUNC_INFO << errorMsg;
+    QMessageBox errorBox;
+    errorBox.critical(this, "Error", errorMsg);
+    return;
+  }
+  if (outputPrefix.isEmpty()) {
+    const QString errorMsg{"Output prefix is empty."};
+    qDebug() << Q_FUNC_INFO << errorMsg;
+    QMessageBox errorBox;
+    errorBox.critical(this, "Error", errorMsg);
+    return;
+  }
+  // TODO
+}
+
+void HistoryPMFTab::splitDone(const HistogramPMFHistory &hist)
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  mPMFHistory = hist;
+  disconnect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::splitDone);
+}
