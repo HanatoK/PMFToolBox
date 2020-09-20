@@ -66,13 +66,22 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &
   QVector<double> pmfData(PMFHistory.histogramSize(), 0);
   QStringList tmp_fields;
   bool firsttime = true;
-  int readSize = 0;
+  double readSize = 0;
+  int previousProgress = 0;
   while (!ifs.atEnd()) {
     line.clear();
     tmp_fields.clear();
     ifs.readLineInto(&line);
-    readSize += line.size();
-    emit progress(fileIndex, readSize / fileSize * 100);
+    readSize += line.size() + 1;
+    const int readingProgress = std::nearbyint(readSize / fileSize * 100);
+    if (readingProgress % refreshPeriod == 0 || readingProgress == 100) {
+      if (previousProgress != readingProgress) {
+        previousProgress = readingProgress;
+        qDebug() << Q_FUNC_INFO << "reading " << readingProgress << "%";
+        if (readingProgress == 100) fileIndex += 1;
+        emit progress(fileIndex, readingProgress);
+      }
+    }
     tmp_fields = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
     if (tmp_fields.size() == 0) continue;
     // header lines

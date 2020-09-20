@@ -73,15 +73,23 @@ void ReweightingThread::run()
       QStringList tmpFields;
       QVector<double> fields;
       double readSize = 0;
+      int previousProgress = 0;
       bool read_ok = true;
       while (!ifs.atEnd()) {
         fields.clear();
         line.clear();
         ifs.readLineInto(&line);
-        readSize += line.size();
-        const int readingProgress = readSize / fileSize * 100;
+        readSize += line.size() + 1;
+        const int readingProgress = std::nearbyint(readSize / fileSize * 100);
         if (readingProgress % refreshPeriod == 0 || readingProgress == 100) {
-          emit progress(numFile, readingProgress);
+          if (previousProgress != readingProgress) {
+            previousProgress = readingProgress;
+            qDebug() << Q_FUNC_INFO << "reading " << readingProgress << "%";
+            if (readingProgress == 100)
+              emit progress(numFile+1, readingProgress);
+            else
+              emit progress(numFile, readingProgress);
+          }
         }
         tmpFields = line.split(QRegExp("[(),\\s]+"), Qt::SkipEmptyParts);
         // skip blank lines

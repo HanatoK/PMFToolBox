@@ -26,8 +26,10 @@ public slots:
   void addHistoryFile();
   void removeHistoryFile();
   void computeRMSD();
+  void computeRMSDProgress(int fileRead, int percent);
   void computeRMSDDone(const HistogramPMFHistory& hist);
   void split();
+  void splitProgress(int fileRead, int percent);
   void splitDone(const HistogramPMFHistory& hist);
 
 private:

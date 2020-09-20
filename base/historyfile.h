@@ -23,6 +23,7 @@ private:
   bool readFromStream(QTextStream& ifs, HistogramPMFHistory& PMFHistory, int fileIndex, int fileSize);
   QMutex mutex;
   QStringList mHistoryFileName;
+  static const int refreshPeriod = 5;
 };
 
 #endif // HISOTRYFILE_H

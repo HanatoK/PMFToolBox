@@ -97,6 +97,7 @@ void HistoryPMFTab::computeRMSD()
 {
   qDebug() << "Calling " << Q_FUNC_INFO;
   connect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::computeRMSDDone);
+  connect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryPMFTab::computeRMSDProgress);
   const QStringList& inputFile = mListModel->trajectoryFileNameList();
   if (inputFile.isEmpty()) {
     const QString errorMsg{"No input file."};
@@ -107,13 +108,21 @@ void HistoryPMFTab::computeRMSD()
   }
   ui->pushButtonSplit->setEnabled(false);
   ui->pushButtonComputeRMSD->setEnabled(false);
-  ui->pushButtonComputeRMSD->setText("Running");
+  ui->pushButtonComputeRMSD->setText(tr("Running"));
   mReaderThread.readFromFile(inputFile);
+}
+
+void HistoryPMFTab::computeRMSDProgress(int fileRead, int percent)
+{
+  const int numFiles = mListModel->trajectoryFileNameList().size();
+  const QString newText = "Reading " + QString(" (%1/%2) %3").arg(fileRead).arg(numFiles).arg(percent) + "%";
+  ui->pushButtonComputeRMSD->setText(newText);
 }
 
 void HistoryPMFTab::computeRMSDDone(const HistogramPMFHistory& hist) {
   qDebug() << "Calling " << Q_FUNC_INFO;
   mPMFHistory = hist;
+  disconnect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryPMFTab::computeRMSDProgress);
   disconnect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::computeRMSDDone);
   QVector<double> rmsd;
   if (mReferencePMF.dimension() > 0) {
@@ -139,6 +148,7 @@ void HistoryPMFTab::split()
 {
   qDebug() << "Calling " << Q_FUNC_INFO;
   connect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::splitDone);
+  connect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryPMFTab::splitProgress);
   const QStringList& inputFile = mListModel->trajectoryFileNameList();
   const QString& outputPrefix = ui->lineEditOutputPrefix->text();
   if (inputFile.isEmpty()) {
@@ -161,10 +171,18 @@ void HistoryPMFTab::split()
   mReaderThread.readFromFile(inputFile);
 }
 
+void HistoryPMFTab::splitProgress(int fileRead, int percent)
+{
+  const int numFiles = mListModel->trajectoryFileNameList().size();
+  const QString newText = "Reading " + QString(" (%1/%2) %3").arg(fileRead).arg(numFiles).arg(percent) + "%";
+  ui->pushButtonSplit->setText(newText);
+}
+
 void HistoryPMFTab::splitDone(const HistogramPMFHistory &hist)
 {
   qDebug() << "Calling " << Q_FUNC_INFO;
   mPMFHistory = hist;
+  disconnect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryPMFTab::splitProgress);
   disconnect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::splitDone);
   const QString& outputPrefix = ui->lineEditOutputPrefix->text();
   if (outputPrefix.isEmpty()) {
