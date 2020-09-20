@@ -48,10 +48,13 @@ void HistoryReaderThread::run()
   for (int i = 0; i < mHistoryFileName.size(); ++i) {
     if (ok) {
       QFile histFile(mHistoryFileName[i]);
-      stream.setDevice(&histFile);
-      ok = readFromStream(stream, result, i, histFile.size());
+      if (histFile.open(QFile::ReadOnly)) {
+        stream.setDevice(&histFile);
+        ok = readFromStream(stream, result, i, histFile.size());
+      }
     }
   }
+  emit done(result);
   mutex.unlock();
 }
 
@@ -76,6 +79,7 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &
     if (tmp_fields[0].startsWith("#")) {
       if (tmp_fields.size() == 2 && !firsttime) {
         PMFHistory.appendHistogram(pmfData);
+        continue;
       } else {
         continue;
       }
@@ -90,5 +94,6 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &
       pmfData[addr] = tmp_fields[PMFHistory.dimension()].toDouble();
     }
   }
+  PMFHistory.appendHistogram(pmfData);
   return true;
 }

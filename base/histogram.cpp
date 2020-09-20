@@ -541,13 +541,16 @@ QVector<double> HistogramPMFHistory::computeRMSD(const QVector<double>& referenc
 // Does it need threading?
 void HistogramPMFHistory::splitToFile(const QString &prefix) const
 {
+  qDebug() << "Calling " << Q_FUNC_INFO;
   const int numPMFs = mHistoryData.size();
   const int numDigits = QString::number(numPMFs).size();
+  qDebug() << Q_FUNC_INFO << ": number of PMFs = " << numPMFs;
   for (int i = 0; i < numPMFs; ++i) {
     const QString suffix = QStringLiteral("%1").arg(i, numDigits, 10, QLatin1Char('0'));
     const QString filename = prefix + "_" + suffix + ".pmf";
     QFile outputFile(filename);
     if (outputFile.open(QIODevice::WriteOnly)) {
+      qDebug() << Q_FUNC_INFO << ": writing " << filename;
       QVector<double> pos(mNdim, 0);
       QTextStream ofs(&outputFile);
       HistogramBase::writeToStream(ofs);
@@ -557,7 +560,7 @@ void HistogramPMFHistory::splitToFile(const QString &prefix) const
           pos[k] = mPointTable[k][j];
           ofs << qSetFieldWidth(OUTPUT_WIDTH);
           ofs.setRealNumberPrecision(OUTPUT_POSITION_PRECISION);
-          ofs << pos[j];
+          ofs << pos[k];
           ofs << qSetFieldWidth(0) << ' ';
         }
         ofs.setRealNumberPrecision(OUTPUT_PRECISION);

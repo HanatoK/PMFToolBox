@@ -15,6 +15,7 @@ HistoryPMFTab::HistoryPMFTab(QWidget *parent) :
   connect(ui->pushButtonSaveTo, &QPushButton::clicked, this, &HistoryPMFTab::saveFile);
   connect(ui->pushButtonAdd, &QPushButton::clicked, this, &HistoryPMFTab::addHistoryFile);
   connect(ui->pushButtonRemove, &QPushButton::clicked, this, &HistoryPMFTab::removeHistoryFile);
+  connect(ui->pushButtonSplit, &QPushButton::clicked, this, &HistoryPMFTab::split);
 }
 
 HistoryPMFTab::~HistoryPMFTab()
@@ -90,7 +91,10 @@ void HistoryPMFTab::split()
     errorBox.critical(this, "Error", errorMsg);
     return;
   }
-  // TODO
+  ui->pushButtonSplit->setEnabled(false);
+  ui->pushButtonComputeRMSD->setEnabled(false);
+  ui->pushButtonSplit->setText("Running");
+  mReaderThread.readFromFile(inputFile);
 }
 
 void HistoryPMFTab::splitDone(const HistogramPMFHistory &hist)
@@ -98,4 +102,16 @@ void HistoryPMFTab::splitDone(const HistogramPMFHistory &hist)
   qDebug() << "Calling " << Q_FUNC_INFO;
   mPMFHistory = hist;
   disconnect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::splitDone);
+  const QString& outputPrefix = ui->lineEditOutputPrefix->text();
+  if (outputPrefix.isEmpty()) {
+    const QString errorMsg{"Output prefix is empty."};
+    qDebug() << Q_FUNC_INFO << errorMsg;
+    QMessageBox errorBox;
+    errorBox.critical(this, "Error", errorMsg);
+    return;
+  }
+  mPMFHistory.splitToFile(outputPrefix);
+  ui->pushButtonSplit->setEnabled(true);
+  ui->pushButtonComputeRMSD->setEnabled(true);
+  ui->pushButtonSplit->setText(tr("Split"));
 }
