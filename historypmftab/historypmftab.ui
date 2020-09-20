@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>564</width>
-    <height>504</height>
+    <width>560</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -104,15 +104,15 @@
     </widget>
    </item>
    <item row="3" column="0" colspan="3">
-    <widget class="PMFPlot" name="RMSDPlot" native="true"/>
+    <widget class="RMSDPlot" name="widgetRMSDPlot" native="true"/>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PMFPlot</class>
+   <class>RMSDPlot</class>
    <extends>QWidget</extends>
-   <header>base/pmfplot.h</header>
+   <header>base/plot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -12,7 +12,7 @@ SOURCES += \
     base/helper.cpp \
     base/histogram.cpp \
     base/historyfile.cpp \
-    base/pmfplot.cpp \
+    base/plot.cpp \
     base/reweighting.cpp \
     historypmftab/historypmftab.cpp \
     main.cpp \
@@ -26,7 +26,7 @@ HEADERS += \
     base/helper.h \
     base/histogram.h \
     base/historyfile.h \
-    base/pmfplot.h \
+    base/plot.h \
     base/reweighting.h \
     base/turbocolormap.h \
     historypmftab/historypmftab.h \

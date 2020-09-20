@@ -16,6 +16,33 @@ HistoryPMFTab::HistoryPMFTab(QWidget *parent) :
   connect(ui->pushButtonAdd, &QPushButton::clicked, this, &HistoryPMFTab::addHistoryFile);
   connect(ui->pushButtonRemove, &QPushButton::clicked, this, &HistoryPMFTab::removeHistoryFile);
   connect(ui->pushButtonSplit, &QPushButton::clicked, this, &HistoryPMFTab::split);
+  connect(ui->pushButtonComputeRMSD, &QPushButton::clicked, this, &HistoryPMFTab::computeRMSD);
+}
+
+void HistoryPMFTab::writeRMSDToFile(const QVector<double>& rmsd, const QString &filename)
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << Q_FUNC_INFO << ": trying to open file " << filename;
+  QFile RMSDFile(filename);
+  if (RMSDFile.open(QIODevice::WriteOnly)) {
+    QTextStream ofs(&RMSDFile);
+    ofs.setRealNumberNotation(QTextStream::FixedNotation);
+    for (int i = 0; i < rmsd.size(); ++i) {
+      ofs << qSetFieldWidth(OUTPUT_WIDTH);
+      ofs << i;
+      ofs << qSetFieldWidth(0) << ' ';
+      ofs << qSetFieldWidth(OUTPUT_WIDTH);
+      ofs.setRealNumberPrecision(OUTPUT_PRECISION);
+      ofs << rmsd[i];
+      ofs << qSetFieldWidth(0) << '\n';
+    }
+  } else {
+    const QString errorMsg{"Cannot open output file for writing RMSD."};
+    qDebug() << Q_FUNC_INFO << errorMsg;
+    QMessageBox errorBox;
+    errorBox.critical(this, "Error", errorMsg);
+    return;
+  }
 }
 
 HistoryPMFTab::~HistoryPMFTab()
@@ -68,7 +95,44 @@ void HistoryPMFTab::removeHistoryFile()
 
 void HistoryPMFTab::computeRMSD()
 {
-  // TODO
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  connect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::computeRMSDDone);
+  const QStringList& inputFile = mListModel->trajectoryFileNameList();
+  if (inputFile.isEmpty()) {
+    const QString errorMsg{"No input file."};
+    qDebug() << Q_FUNC_INFO << errorMsg;
+    QMessageBox errorBox;
+    errorBox.critical(this, "Error", errorMsg);
+    return;
+  }
+  ui->pushButtonSplit->setEnabled(false);
+  ui->pushButtonComputeRMSD->setEnabled(false);
+  ui->pushButtonComputeRMSD->setText("Running");
+  mReaderThread.readFromFile(inputFile);
+}
+
+void HistoryPMFTab::computeRMSDDone(const HistogramPMFHistory& hist) {
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  mPMFHistory = hist;
+  disconnect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::computeRMSDDone);
+  QVector<double> rmsd;
+  if (mReferencePMF.dimension() > 0) {
+    qDebug() << Q_FUNC_INFO << ": compute rmsd with respect to the reference PMF.";
+    rmsd = mPMFHistory.computeRMSD(mReferencePMF.data());
+  } else {
+    qDebug() << Q_FUNC_INFO << ": compute rmsd with respect to the last frame of the history file.";
+    rmsd = mPMFHistory.computeRMSD();
+  }
+  const QString& outputPrefix = ui->lineEditOutputPrefix->text();
+  // write RMSD if output prefix is available
+  if (outputPrefix.size() > 0) {
+    writeRMSDToFile(rmsd, outputPrefix + "_rmsd.dat");
+  }
+  // plot RMSD
+  ui->widgetRMSDPlot->PlotRMSD(rmsd);
+  ui->pushButtonSplit->setEnabled(true);
+  ui->pushButtonComputeRMSD->setEnabled(true);
+  ui->pushButtonComputeRMSD->setText(tr("Compute RMSD"));
 }
 
 void HistoryPMFTab::split()
@@ -110,6 +174,7 @@ void HistoryPMFTab::splitDone(const HistogramPMFHistory &hist)
     errorBox.critical(this, "Error", errorMsg);
     return;
   }
+  ui->pushButtonSplit->setText(tr("Writing files"));
   mPMFHistory.splitToFile(outputPrefix);
   ui->pushButtonSplit->setEnabled(true);
   ui->pushButtonComputeRMSD->setEnabled(true);

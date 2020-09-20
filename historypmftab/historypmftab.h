@@ -17,6 +17,7 @@ class HistoryPMFTab : public QWidget
 
 public:
   explicit HistoryPMFTab(QWidget *parent = nullptr);
+  void writeRMSDToFile(const QVector<double> &rmsd, const QString& filename);
   ~HistoryPMFTab();
 
 public slots:
@@ -25,6 +26,7 @@ public slots:
   void addHistoryFile();
   void removeHistoryFile();
   void computeRMSD();
+  void computeRMSDDone(const HistogramPMFHistory& hist);
   void split();
   void splitDone(const HistogramPMFHistory& hist);
 
@@ -34,6 +36,8 @@ private:
   HistogramPMF mReferencePMF;
   HistoryReaderThread mReaderThread;
   HistogramPMFHistory mPMFHistory;
+  static const int OUTPUT_PRECISION = 7;
+  static const int OUTPUT_WIDTH = 14;
 };
 
 #endif // HISTORYPMFTAB_H

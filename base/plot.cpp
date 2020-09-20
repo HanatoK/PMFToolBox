@@ -1,4 +1,4 @@
-#include "pmfplot.h"
+#include "plot.h"
 #include "base/turbocolormap.h"
 
 #include <qwt_scale_widget.h>
@@ -15,6 +15,11 @@ PMFPlot::PMFPlot(QWidget *parent): QwtPlot(parent)
 PMFPlot::PMFPlot(const QwtText &title, QWidget *parent): QwtPlot(title, parent)
 {
   initialize();
+}
+
+PMFPlot::~PMFPlot()
+{
+
 }
 
 bool PMFPlot::plotPMF2D(const HistogramScalar<double> &histogram)
@@ -125,4 +130,64 @@ void PMFPlot::initialize()
   mTitleFont.setPointSize(18);
   mColorbarFont.setFamilies(font_list);
   mColorbarFont.setPointSize(14);
+}
+
+RMSDPlot::RMSDPlot(QWidget *parent): QwtPlot(parent)
+{
+  initialize();
+}
+
+RMSDPlot::RMSDPlot(const QwtText &title, QWidget *parent): QwtPlot(title, parent)
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+
+}
+
+void RMSDPlot::PlotRMSD(const QVector<double> &rmsd)
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  detachItems();
+  enableAxis(QwtPlot::Axis::yLeft, true);
+  enableAxis(QwtPlot::Axis::xBottom, true);
+  enableAxis(QwtPlot::Axis::yRight, false);
+  enableAxis(QwtPlot::Axis::xTop, false);
+  const int lowerBound = 0;
+  const int upperBound = rmsd.size() - 1;
+  setAxisScale(QwtPlot::xBottom, lowerBound, upperBound);
+  const double yMin =
+      *std::min_element(rmsd.begin(), rmsd.end());
+  const double yMax =
+      *std::max_element(rmsd.begin(), rmsd.end());
+  setAxisScale(QwtPlot::yLeft, yMin, yMax);
+  axisWidget(QwtPlot::Axis::yLeft)->setFont(mPlotFont);
+  axisWidget(QwtPlot::Axis::xBottom)->setFont(mPlotFont);
+  QwtPlotCurve *curve = new QwtPlotCurve("curve");
+  curve->setPen(Qt::red, 2);
+  curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+  QPolygonF points;
+  for (int i = 0; i < rmsd.size(); ++i) {
+    points.append(QPointF(i, rmsd[i]));
+  }
+  curve->setSamples(points);
+  curve->attach(this);
+  replot();
+}
+
+RMSDPlot::~RMSDPlot()
+{
+
+}
+
+void RMSDPlot::initialize()
+{
+  setCanvasBackground(Qt::white);
+  enableAxis(QwtPlot::Axis::yLeft, false);
+  enableAxis(QwtPlot::Axis::xBottom, false);
+  setAutoReplot(true);
+  const QStringList font_list{"Arimo", "Liberation Sans", "Helvetica", "Arial",
+                              "Sans Serif"};
+  mPlotFont.setFamilies(font_list);
+  mPlotFont.setPointSize(16);
+  mTitleFont.setFamilies(font_list);
+  mTitleFont.setPointSize(18);
 }

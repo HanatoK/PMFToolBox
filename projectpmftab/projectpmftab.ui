@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>688</width>
-    <height>174</height>
+    <width>686</width>
+    <height>172</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -138,7 +138,7 @@
   <customwidget>
    <class>PMFPlot</class>
    <extends>QWidget</extends>
-   <header>base/pmfplot.h</header>
+   <header>base/plot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

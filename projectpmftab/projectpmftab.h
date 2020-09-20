@@ -1,7 +1,7 @@
 #ifndef PROJECTPMF_H
 #define PROJECTPMF_H
 
-#include "base/pmfplot.h"
+#include "base/plot.h"
 
 #include <QWidget>
 
