@@ -17,6 +17,7 @@ SOURCES += \
     historypmftab/historypmftab.cpp \
     main.cpp \
     mainwindow.cpp \
+    base/namdlogparser.cpp \
     projectpmftab/projectpmftab.cpp \
     reweightingtab/listmodelfilelist.cpp \
     reweightingtab/reweightingtab.cpp \
@@ -31,6 +32,7 @@ HEADERS += \
     base/turbocolormap.h \
     historypmftab/historypmftab.h \
     mainwindow.h \
+    base/namdlogparser.h \
     projectpmftab/projectpmftab.h \
     reweightingtab/listmodelfilelist.h \
     reweightingtab/reweightingtab.h \
