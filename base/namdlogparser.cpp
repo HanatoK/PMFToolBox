@@ -1,18 +1,18 @@
 #include "namdlogparser.h"
 
-NAMDLogParser::NAMDLogParser()
+NAMDLog::NAMDLog()
 {
 
 }
 
-void NAMDLogParser::clearData()
+void NAMDLog::clearData()
 {
   mEnergyTitle.clear();
   mEnergyData.clear();
   mPairData.clear();
 }
 
-void NAMDLogParser::readFromStream(QTextStream &ifs)
+void NAMDLog::readFromStream(QTextStream &ifs)
 {
   QString line;
   bool firsttime = true;
@@ -46,4 +46,41 @@ void NAMDLogParser::readFromStream(QTextStream &ifs)
       }
     }
   }
+}
+
+QVector<double> NAMDLog::getStep() const
+{
+  return getEnergyData("TS");
+}
+
+QVector<double> NAMDLog::getVdW() const
+{
+  return getEnergyData("VDW");
+}
+
+QVector<double> NAMDLog::getElectrostatic() const
+{
+  return getEnergyData("ELECT");
+}
+
+QVector<double> NAMDLog::getEnergyData(const QString &title, bool *ok) const
+{
+  const auto keyFound = mEnergyData.find(title);
+  if (keyFound == mEnergyData.end()) {
+    if (ok != nullptr) *ok = false;
+    return QVector<double>();
+  } else {
+    if (ok != nullptr) *ok = true;
+    return mEnergyData.value(title);
+  }
+}
+
+QVector<ForceType> NAMDLog::getVdWForce() const
+{
+  return mPairData.value("VDW_FORCE");
+}
+
+QVector<ForceType> NAMDLog::getElectrostaticForce() const
+{
+  return mPairData.value("ELECT_FORCE");
 }

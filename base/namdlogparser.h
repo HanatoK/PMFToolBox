@@ -9,12 +9,18 @@
 
 using ForceType = QVector3D;
 
-class NAMDLogParser
+class NAMDLog
 {
 public:
-  NAMDLogParser();
+  NAMDLog();
   void clearData();
   void readFromStream(QTextStream& ifs);
+  QVector<double> getStep() const;
+  QVector<double> getVdW() const;
+  QVector<double> getElectrostatic() const;
+  QVector<double> getEnergyData(const QString& title, bool* ok = nullptr) const;
+  QVector<ForceType> getVdWForce() const;
+  QVector<ForceType> getElectrostaticForce() const;
 private:
   QStringList mEnergyTitle;
   QMap<QString, QVector<double>> mEnergyData;
