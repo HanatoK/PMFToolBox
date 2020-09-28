@@ -68,6 +68,7 @@ private:
   QString mTrajectoryFileName;
   QVector<Axis> mAxis;
   QVector<int> mColumn;
+  static const int refreshPeriod = 5;
 };
 
 #endif // NAMDLOGPARSER_H

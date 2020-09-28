@@ -19,7 +19,6 @@ void NAMDLog::readFromStream(QTextStream &ifs) {
         QStringList titles =
             line.split(QRegExp("(ETITLE:|\\s+)"), Qt::SkipEmptyParts);
         for (auto it = titles.begin(); it != titles.end(); ++it) {
-          // +1 to skip the "ETITLE" field
           const auto keyFound = mEnergyData.find(*it);
           if (keyFound == mEnergyData.end()) {
             mEnergyTitle.append(*it);
@@ -125,5 +124,73 @@ void ParsePairInteractionThread::invokeThread(const QString &logFileName,
 }
 
 void ParsePairInteractionThread::run() {
-  // TODO
+  mutex.lock();
+  HistogramScalar<double> histEnergy(mAxis);
+  HistogramScalar<size_t> histCount(mAxis);
+  doBinning binning(histEnergy, histCount, mColumn);
+  // parse the log file
+  QFile logFile(mLogFileName);
+  NAMDLog logObject;
+  if (logFile.open(QIODevice::ReadOnly)) {
+    QTextStream ifs_log(&logFile);
+    logObject.readFromStream(ifs_log);
+    emit progress("Reading log file", 0);
+    emit doneLog(logObject);
+    // parse the trajectory file
+    QFile trajFile(mTrajectoryFileName);
+    if (trajFile.open(QIODevice::ReadOnly)) {
+      QTextStream ifs_traj(&trajFile);
+      QStringList tmpFields;
+      size_t lineNumber = 0;
+      QString line;
+      QVector<double> fields;
+      double readSize = 0;
+      int previousProgress = 0;
+      bool read_ok = true;
+      const size_t fileSize = trajFile.size();
+      while (!ifs_traj.atEnd()) {
+        ifs_traj.readLineInto(&line);
+        readSize += line.size() + 1;
+        const int readingProgress = std::nearbyint(readSize / fileSize * 100);
+        if (readingProgress % refreshPeriod == 0 || readingProgress == 100) {
+          if (previousProgress != readingProgress) {
+            previousProgress = readingProgress;
+            qDebug() << Q_FUNC_INFO << "reading " << readingProgress << "%";
+            if (readingProgress == 100)
+              emit progress("Reading trajectory file", readingProgress);
+            else
+              emit progress("Reading trajectory file", readingProgress);
+          }
+        }
+        tmpFields = line.split(QRegExp("[(),\\s]+"), Qt::SkipEmptyParts);
+        // skip blank lines
+        if (tmpFields.size() <= 0) continue;
+        // skip comment lines start with #
+        if (tmpFields[0].startsWith("#")) continue;
+        for (const auto& i : tmpFields) {
+          fields.append(i.toDouble(&read_ok));
+          if (read_ok == false) {
+            emit error("Failed to convert " + i + " to number!");
+            break;
+          }
+        }
+        bool in_grid = false;
+        const size_t addr = histEnergy.address(fields, &in_grid);
+        if (in_grid) {
+          histEnergy[addr] += logObject.getEnergyData(mTitle)[lineNumber];
+          histCount[addr] += 1;
+        }
+        ++lineNumber;
+      }
+      for (size_t i = 0; i < histEnergy.histogramSize(); ++i) {
+        if (histCount[i] > 0) {
+          histEnergy[i] /= histCount[i];
+        }
+      }
+      emit doneHistogram(histEnergy);
+    }
+  } else {
+    emit error("Error on opening the log file" + mLogFileName);
+  }
+  mutex.unlock();
 }
