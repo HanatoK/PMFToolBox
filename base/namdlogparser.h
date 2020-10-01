@@ -30,6 +30,7 @@ public:
   QVector<double> getEnergyData(const QString &title, bool *ok = nullptr) const;
   QVector<ForceType> getVdWForce() const;
   QVector<ForceType> getElectrostaticForce() const;
+  QStringList getEnergyTitle() const;
   friend class NAMDLogReaderThread;
 
 private:

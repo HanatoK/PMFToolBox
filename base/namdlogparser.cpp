@@ -87,6 +87,11 @@ QVector<ForceType> NAMDLog::getElectrostaticForce() const {
   return mPairData.value("ELECT_FORCE");
 }
 
+QStringList NAMDLog::getEnergyTitle() const
+{
+  return mEnergyTitle;
+}
+
 doBinning::doBinning(HistogramScalar<double> &histogram,
                      HistogramScalar<size_t> &count, const QVector<int> &column)
     : mHistogram(histogram), mCount(count), mColumn(column) {}
