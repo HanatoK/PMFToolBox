@@ -13,22 +13,48 @@
 
 using ForceType = QVector3D;
 
+class NAMDLogReaderThread;
+
 class NAMDLog {
 public:
   NAMDLog();
   void clearData();
-  void readFromStream(QTextStream &ifs);
+  // I don't want to use QObject since it prohibits the copy constructor
+  // but I need to show the progress, so use a callback function here
+  void readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread = nullptr,
+                      void (NAMDLogReaderThread::*progress)(int) = nullptr,
+                      qint64 fileSize = -1);
   QVector<double> getStep() const;
   QVector<double> getVdW() const;
   QVector<double> getElectrostatic() const;
   QVector<double> getEnergyData(const QString &title, bool *ok = nullptr) const;
   QVector<ForceType> getVdWForce() const;
   QVector<ForceType> getElectrostaticForce() const;
+  friend class NAMDLogReaderThread;
 
 private:
   QStringList mEnergyTitle;
   QMap<QString, QVector<double>> mEnergyData;
   QMap<QString, QVector<ForceType>> mPairData;
+  static const int refreshPeriod = 5;
+};
+
+class NAMDLogReaderThread : public QThread {
+  Q_OBJECT
+public:
+  NAMDLogReaderThread(QObject *parent = nullptr);
+  ~NAMDLogReaderThread();
+  void invokeThread(const QString &filename);
+signals:
+  void done(NAMDLog logObject);
+  void progress(int percent);
+
+protected:
+  void run() override;
+
+private:
+  QMutex mutex;
+  QString mLogFileName;
 };
 
 struct doBinning {
@@ -46,29 +72,29 @@ class ParsePairInteractionThread : public QThread {
 public:
   ParsePairInteractionThread(QObject *parent = nullptr);
   ~ParsePairInteractionThread();
-  void invokeThread(const QString &logFileName, const QString &title,
-                    const QString &trajectoryFileName,
-                    const QVector<Axis>& ax,
+  void invokeThread(const NAMDLog &log, const QString &title,
+                    const QString &trajectoryFileName, const QVector<Axis> &ax,
                     const QVector<int> &column);
 
 signals:
   void error(QString err);
   void done();
   void doneHistogram(HistogramScalar<double> histogram);
-  void doneLog(NAMDLog logObject);
   void progress(QString stage, int percent);
 
 protected:
-  void run();
+  void run() override;
 
 private:
   QMutex mutex;
-  QString mLogFileName;
+  NAMDLog mLog;
   QString mTitle;
   QString mTrajectoryFileName;
   QVector<Axis> mAxis;
   QVector<int> mColumn;
   static const int refreshPeriod = 5;
 };
+
+Q_DECLARE_METATYPE(NAMDLog);
 
 #endif // NAMDLOGPARSER_H

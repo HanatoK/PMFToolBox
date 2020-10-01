@@ -4,6 +4,7 @@
 #include "reweightingtab/reweightingtab.h"
 #include "projectpmftab/projectpmftab.h"
 #include "historypmftab/historypmftab.h"
+#include "namdlogtab/namdlogtab.h"
 
 #include <QMainWindow>
 
@@ -27,5 +28,6 @@ private:
   ReweightingTab *mReweightingTab;
   ProjectPMFTab *mProjectPMFTab;
   HistoryPMFTab *mHistoryPMFTab;
+  NAMDLogTab *mNAMDLogTab;
 };
 #endif // MAINWINDOW_H

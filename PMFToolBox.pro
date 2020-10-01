@@ -18,6 +18,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     base/namdlogparser.cpp \
+    namdlogtab/namdlogtab.cpp \
     projectpmftab/projectpmftab.cpp \
     reweightingtab/listmodelfilelist.cpp \
     reweightingtab/reweightingtab.cpp \
@@ -33,6 +34,7 @@ HEADERS += \
     historypmftab/historypmftab.h \
     mainwindow.h \
     base/namdlogparser.h \
+    namdlogtab/namdlogtab.h \
     projectpmftab/projectpmftab.h \
     reweightingtab/listmodelfilelist.h \
     reweightingtab/reweightingtab.h \
@@ -41,6 +43,7 @@ HEADERS += \
 FORMS += \
     historypmftab/historypmftab.ui \
     mainwindow.ui \
+    namdlogtab/namdlogtab.ui \
     projectpmftab/projectpmftab.ui \
     reweightingtab/reweightingtab.ui
 

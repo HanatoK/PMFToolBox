@@ -9,9 +9,11 @@ MainWindow::MainWindow(QWidget *parent)
   mReweightingTab = new ReweightingTab(this);
   mProjectPMFTab = new ProjectPMFTab(this);
   mHistoryPMFTab = new HistoryPMFTab(this);
+  mNAMDLogTab = new NAMDLogTab(this);
   ui->tabWidget->addTab(mReweightingTab, "Reweighting");
   ui->tabWidget->addTab(mProjectPMFTab, "Project PMF");
   ui->tabWidget->addTab(mHistoryPMFTab, "History PMF");
+  ui->tabWidget->addTab(mNAMDLogTab, "NAMD log");
 //  connect(ui->tabWidget, &QTabWidget::currentChanged, this, &MainWindow::updateSizes);
 }
 
