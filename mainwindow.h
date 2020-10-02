@@ -19,6 +19,8 @@ class MainWindow : public QMainWindow
 public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
+  void resizeEvent(QResizeEvent* event) override;
+//  bool event(QEvent* event) override;
 
 public slots:
   void updateSizes(int index);

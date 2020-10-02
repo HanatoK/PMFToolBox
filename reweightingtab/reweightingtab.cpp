@@ -11,6 +11,8 @@ ReweightingTab::ReweightingTab(QWidget *parent)
       mListModel(new ListModelFileList(this)) {
   ui->setupUi(this);
   ui->tableViewReweightingAxis->setModel(mTableModel);
+  ui->tableViewReweightingAxis->horizontalHeader()->setSectionResizeMode(
+      QHeaderView::Stretch);
   ui->listViewTrajectory->setModel(mListModel);
   connect(ui->pushButtonOpen, &QPushButton::clicked, this, &ReweightingTab::loadPMF);
   connect(ui->pushButtonSaveTo, &QPushButton::clicked, this, &ReweightingTab::saveFile);

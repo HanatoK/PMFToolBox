@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>664</width>
-    <height>725</height>
+    <width>662</width>
+    <height>723</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -167,12 +167,21 @@
        </property>
        <item row="0" column="0">
         <widget class="QTableView" name="tableViewReweightingAxis">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>100</height>
+          </size>
+         </property>
          <property name="font">
           <font>
            <weight>50</weight>
            <bold>false</bold>
           </font>
          </property>
+         <attribute name="horizontalHeaderCascadingSectionResizes">
+          <bool>false</bool>
+         </attribute>
         </widget>
        </item>
       </layout>

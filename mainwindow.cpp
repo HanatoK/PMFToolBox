@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QResizeEvent>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
       , ui(new Ui::MainWindow)
@@ -14,12 +16,19 @@ MainWindow::MainWindow(QWidget *parent)
   ui->tabWidget->addTab(mProjectPMFTab, "Project PMF");
   ui->tabWidget->addTab(mHistoryPMFTab, "History PMF");
   ui->tabWidget->addTab(mNAMDLogTab, "NAMD log");
-//  connect(ui->tabWidget, &QTabWidget::currentChanged, this, &MainWindow::updateSizes);
+  connect(ui->tabWidget, &QTabWidget::currentChanged, this, &MainWindow::updateSizes);
 }
 
 MainWindow::~MainWindow()
 {
   delete ui;
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+  qDebug() << "old size: " << event->oldSize() << " ; new size:" << event->size();
+  QMainWindow::resizeEvent(event);
+  qDebug() << "After resize: " << this->size();
 }
 
 void MainWindow::updateSizes(int index)
@@ -33,13 +42,21 @@ void MainWindow::updateSizes(int index)
     }
   }
   ui->tabWidget->widget(index)->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+  qDebug() << "tab widget " << index << " size hint: " << ui->tabWidget->widget(index)->minimumSizeHint();
   ui->tabWidget->widget(index)->resize(ui->tabWidget->widget(index)->minimumSizeHint());
   ui->tabWidget->widget(index)->adjustSize();
-  ui->tabWidget->resize(ui->tabWidget->widget(index)->minimumSizeHint());
-  ui->tabWidget->adjustSize();
-  resize(ui->tabWidget->widget(index)->minimumSizeHint());
-  const auto size = ui->tabWidget->widget(index)->minimumSizeHint();
-  qDebug() << size;
-  adjustSize();
+  qDebug() << "tab widget " << index << " size after resizing: " << ui->tabWidget->widget(index)->size();
+  qDebug() << "tab size hint: " << ui->tabWidget->minimumSizeHint();
+  ui->tabWidget->resize(ui->tabWidget->minimumSizeHint());
+//  ui->tabWidget->adjustSize();
+  qDebug() << "tab size after resizing: " << ui->tabWidget->size();
+  qDebug() << "central layout size hint: " << ui->centralwidget->minimumSizeHint();
+  ui->centralwidget->resize(ui->centralwidget->minimumSizeHint());
+//  ui->centralwidget->adjustSize();
+  qDebug() << "central layout size after resizing: " << ui->centralwidget->size();
+  qDebug() << "mainwindow size hint: " << this->minimumSizeHint();
+  this->resize(this->minimumSizeHint());
+//  this->adjustSize();
+  qDebug() << "mainwindow size after resizing: " << this->size();
 }
 

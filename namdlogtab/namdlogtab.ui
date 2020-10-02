@@ -6,38 +6,25 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>404</width>
-    <height>154</height>
+    <width>541</width>
+    <height>199</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="labelNAMDLog">
+   <item row="1" column="2">
+    <widget class="QPushButton" name="pushButtonOpenColvarsTrajectory">
      <property name="text">
-      <string>NAMD log</string>
+      <string>Open</string>
      </property>
     </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="lineEditOutput"/>
    </item>
    <item row="2" column="2">
     <widget class="QPushButton" name="pushButtonSaveTo">
      <property name="text">
       <string>Save to</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="lineEditNAMDLog"/>
-   </item>
-   <item row="0" column="2">
-    <widget class="QPushButton" name="pushButtonOpenNAMDLog">
-     <property name="text">
-      <string>Open</string>
      </property>
     </widget>
    </item>
@@ -48,17 +35,23 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="2">
-    <widget class="QPushButton" name="pushButtonOpenColvarsTrajectory">
-     <property name="text">
-      <string>Open</string>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="lineEditColvarsTrajectory">
+     <property name="minimumSize">
+      <size>
+       <width>300</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="lineEditColvarsTrajectory">
-     <property name="readOnly">
-      <bool>true</bool>
+   <item row="0" column="0">
+    <widget class="QLabel" name="labelNAMDLog">
+     <property name="text">
+      <string>NAMD log</string>
      </property>
     </widget>
    </item>
@@ -69,12 +62,55 @@
      </property>
     </widget>
    </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="lineEditOutput">
+     <property name="minimumSize">
+      <size>
+       <width>300</width>
+       <height>0</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QPushButton" name="pushButtonOpenNAMDLog">
+     <property name="text">
+      <string>Open</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="lineEditNAMDLog">
+     <property name="minimumSize">
+      <size>
+       <width>300</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
    <item row="3" column="0" colspan="3">
     <widget class="QPushButton" name="pushButtonRun">
      <property name="text">
       <string>Run</string>
      </property>
     </widget>
+   </item>
+   <item row="4" column="0" colspan="3">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

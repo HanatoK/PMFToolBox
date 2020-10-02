@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>686</width>
-    <height>172</height>
+    <width>684</width>
+    <height>364</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -99,13 +99,34 @@
     </widget>
    </item>
    <item row="4" column="0" colspan="3">
-    <widget class="PMFPlot" name="widgetPlotPMF" native="true"/>
+    <widget class="PMFPlot" name="widgetPlotPMF" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>200</height>
+      </size>
+     </property>
+    </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QLineEdit" name="lineEditInputPMF"/>
+    <widget class="QLineEdit" name="lineEditInputPMF">
+     <property name="minimumSize">
+      <size>
+       <width>300</width>
+       <height>0</height>
+      </size>
+     </property>
+    </widget>
    </item>
    <item row="1" column="1">
-    <widget class="QLineEdit" name="lineEditOutput"/>
+    <widget class="QLineEdit" name="lineEditOutput">
+     <property name="minimumSize">
+      <size>
+       <width>300</width>
+       <height>0</height>
+      </size>
+     </property>
+    </widget>
    </item>
    <item row="3" column="0" colspan="3">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
