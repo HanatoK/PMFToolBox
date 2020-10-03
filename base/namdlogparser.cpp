@@ -92,9 +92,8 @@ QStringList NAMDLog::getEnergyTitle() const
   return mEnergyTitle;
 }
 
-doBinning::doBinning(HistogramScalar<double> &histogram,
-                     HistogramScalar<size_t> &count, const QVector<int> &column)
-    : mHistogram(histogram), mCount(count), mColumn(column) {}
+doBinning::doBinning(HistogramScalar<double> &histogram, const QVector<int> &column)
+    : mHistogram(histogram), mColumn(column) {}
 
 void doBinning::operator()(const QVector<double> &fields, double energy) {
   // get the position of current point from trajectory
@@ -106,14 +105,13 @@ void doBinning::operator()(const QVector<double> &fields, double energy) {
   const size_t addr = mHistogram.address(pos, &inBoundary);
   if (inBoundary) {
     mHistogram[addr] += energy;
-    ++mCount[addr];
   }
 }
 
-ParsePairInteractionThread::ParsePairInteractionThread(QObject *parent)
+BinNAMDLogThread::BinNAMDLogThread(QObject *parent)
   : QThread(parent) {}
 
-ParsePairInteractionThread::~ParsePairInteractionThread()
+BinNAMDLogThread::~BinNAMDLogThread()
 {
   // am I doing the right things?
   qDebug() << Q_FUNC_INFO;
@@ -123,8 +121,8 @@ ParsePairInteractionThread::~ParsePairInteractionThread()
   quit();
 }
 
-void ParsePairInteractionThread::invokeThread(const NAMDLog &log,
-                                              const QString &title,
+void BinNAMDLogThread::invokeThread(const NAMDLog &log,
+                                              const QStringList &title,
                                               const QString &trajectoryFileName, const QVector<Axis> &ax,
                                               const QVector<int> &column) {
   qDebug() << Q_FUNC_INFO;
@@ -139,11 +137,16 @@ void ParsePairInteractionThread::invokeThread(const NAMDLog &log,
   }
 }
 
-void ParsePairInteractionThread::run() {
+void BinNAMDLogThread::run() {
   mutex.lock();
-  HistogramScalar<double> histEnergy(mAxis);
-  HistogramScalar<size_t> histCount(mAxis);
-  doBinning binning(histEnergy, histCount, mColumn);
+  QVector<HistogramScalar<double>> histEnergy(mTitle.size(), HistogramScalar<double>(mAxis));
+  QVector<doBinning> binning;
+  for (int i = 0; i < mTitle.size(); ++i) {
+    binning.append(doBinning(histEnergy[i], mColumn));
+  }
+  HistogramScalar<double> histCount(mAxis);
+  doBinning countBinning(histCount, mColumn);
+  // TODO: rewrite it to support binning multiple energy terms
   // parse the trajectory file
   QFile trajFile(mTrajectoryFileName);
   if (trajFile.open(QIODevice::ReadOnly)) {
@@ -182,17 +185,17 @@ void ParsePairInteractionThread::run() {
           break;
         }
       }
-      bool in_grid = false;
-      const size_t addr = histEnergy.address(fields, &in_grid);
-      if (in_grid) {
-        histEnergy[addr] += mLog.getEnergyData(mTitle)[lineNumber];
-        histCount[addr] += 1;
+      for (int i = 0; i < mTitle.size(); ++i) {
+        binning[i](fields, mLog.getEnergyData(mTitle[i])[lineNumber]);
       }
+      countBinning(fields, 1.0);
       ++lineNumber;
     }
-    for (size_t i = 0; i < histEnergy.histogramSize(); ++i) {
-      if (histCount[i] > 0) {
-        histEnergy[i] /= histCount[i];
+    for (int i = 0; i < mTitle.size(); ++i) {
+      for (size_t j = 0; j < histEnergy[i].histogramSize(); ++j) {
+        if (histCount[j] > 0) {
+          histEnergy[i][j] /= histCount[j];
+        }
       }
     }
     emit doneHistogram(histEnergy);

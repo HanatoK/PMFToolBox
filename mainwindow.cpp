@@ -16,7 +16,9 @@ MainWindow::MainWindow(QWidget *parent)
   ui->tabWidget->addTab(mProjectPMFTab, "Project PMF");
   ui->tabWidget->addTab(mHistoryPMFTab, "History PMF");
   ui->tabWidget->addTab(mNAMDLogTab, "NAMD log");
-  connect(ui->tabWidget, &QTabWidget::currentChanged, this, &MainWindow::updateSizes);
+  // I'm still wondering if this is a good idea to auto resize the main window
+  // https://forum.qt.io/topic/119614/auto-resize-the-mainwindow-to-fit-the-content-in-the-tab-widget/4
+//  connect(ui->tabWidget, &QTabWidget::currentChanged, this, &MainWindow::updateSizes);
 }
 
 MainWindow::~MainWindow()

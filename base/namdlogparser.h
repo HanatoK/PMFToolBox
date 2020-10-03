@@ -60,27 +60,26 @@ private:
 
 struct doBinning {
 public:
-  doBinning(HistogramScalar<double> &histogram, HistogramScalar<size_t> &count,
+  doBinning(HistogramScalar<double> &histogram,
             const QVector<int> &column);
   void operator()(const QVector<double> &fields, double energy);
   HistogramScalar<double> &mHistogram;
-  HistogramScalar<size_t> &mCount;
   const QVector<int> mColumn;
 };
 
-class ParsePairInteractionThread : public QThread {
+class BinNAMDLogThread : public QThread {
   Q_OBJECT
 public:
-  ParsePairInteractionThread(QObject *parent = nullptr);
-  ~ParsePairInteractionThread();
-  void invokeThread(const NAMDLog &log, const QString &title,
+  BinNAMDLogThread(QObject *parent = nullptr);
+  ~BinNAMDLogThread();
+  void invokeThread(const NAMDLog &log, const QStringList &title,
                     const QString &trajectoryFileName, const QVector<Axis> &ax,
                     const QVector<int> &column);
 
 signals:
   void error(QString err);
   void done();
-  void doneHistogram(HistogramScalar<double> histogram);
+  void doneHistogram(QVector<HistogramScalar<double>> histogram);
   void progress(QString stage, int percent);
 
 protected:
@@ -89,7 +88,7 @@ protected:
 private:
   QMutex mutex;
   NAMDLog mLog;
-  QString mTitle;
+  QStringList mTitle;
   QString mTrajectoryFileName;
   QVector<Axis> mAxis;
   QVector<int> mColumn;
