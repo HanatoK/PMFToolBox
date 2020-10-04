@@ -19,6 +19,7 @@ SOURCES += \
     mainwindow.cpp \
     base/namdlogparser.cpp \
     namdlogtab/namdlogtab.cpp \
+    namdlogtab/tablemodelbinning.cpp \
     projectpmftab/projectpmftab.cpp \
     reweightingtab/listmodelfilelist.cpp \
     reweightingtab/reweightingtab.cpp \
@@ -35,6 +36,7 @@ HEADERS += \
     mainwindow.h \
     base/namdlogparser.h \
     namdlogtab/namdlogtab.h \
+    namdlogtab/tablemodelbinning.h \
     projectpmftab/projectpmftab.h \
     reweightingtab/listmodelfilelist.h \
     reweightingtab/reweightingtab.h \

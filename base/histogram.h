@@ -53,6 +53,14 @@ private:
   double mPeriodicUpperBound;
 };
 
+struct AxisView {
+  AxisView();
+  int mColumn;
+  Axis mAxis;
+  bool mInPMF;
+  bool mReweightingTo;
+};
+
 QDebug operator<<(QDebug dbg, const Axis& ax);
 
 class HistogramBase {

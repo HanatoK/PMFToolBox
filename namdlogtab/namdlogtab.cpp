@@ -6,15 +6,22 @@
 
 NAMDLogTab::NAMDLogTab(QWidget *parent) :
   QWidget(parent),
-  ui(new Ui::NAMDLogTab)
+  ui(new Ui::NAMDLogTab),
+  mTableModel(new TableModelBinning)
 {
   ui->setupUi(this);
+  ui->tableViewAxis->setModel(mTableModel);
+  ui->tableViewAxis->horizontalHeader()->setSectionResizeMode(
+      QHeaderView::Stretch);
   connect(ui->pushButtonOpenNAMDLog, &QPushButton::clicked, this, &NAMDLogTab::loadNAMDLog);
   connect(ui->pushButtonOpenColvarsTrajectory, &QPushButton::clicked, this, &NAMDLogTab::openTrajectory);
   connect(ui->pushButtonRun, &QPushButton::clicked, this, &NAMDLogTab::runBinning);
   connect(ui->pushButtonSaveTo, &QPushButton::clicked, this, &NAMDLogTab::saveFile);
+  connect(ui->pushButtonAddAxis, &QPushButton::clicked, this, &NAMDLogTab::addAxis);
+  connect(ui->pushButtonRemoveAxis, &QPushButton::clicked, this, &NAMDLogTab::removeAxis);
   connect(&mLogReaderThread, &NAMDLogReaderThread::done, this, &NAMDLogTab::loadNAMDLogDone);
   connect(&mLogReaderThread, &NAMDLogReaderThread::progress, this, &NAMDLogTab::logReadingProgress);
+  connect(&mBinningThread, &BinNAMDLogThread::doneHistogram, this, &NAMDLogTab::binningDone);
 }
 
 NAMDLogTab::~NAMDLogTab()
@@ -79,10 +86,33 @@ void NAMDLogTab::runBinning()
   if (availableTitle.size() <= 0) return;
   selectEnergyTermDialog dialog(availableTitle, this);
   if (dialog.exec()) {
-    const QStringList selectedTitle = dialog.selectedTitle();
-    qDebug() << Q_FUNC_INFO << ": seleted titles" << selectedTitle;
-    // TODO
+    mSeletedTitle = dialog.selectedTitle();
+    qDebug() << Q_FUNC_INFO << ": seleted titles" << mSeletedTitle;
+    ui->pushButtonRun->setEnabled(false);
+//    mBinningThread.invokeThread(mLog, mSeletedTitle, )
   }
+}
+
+void NAMDLogTab::addAxis()
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  const QModelIndex& index = ui->tableViewAxis->currentIndex();
+  mTableModel->insertRows(index.row(), 1);
+  mTableModel->layoutChanged();
+}
+
+void NAMDLogTab::removeAxis()
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  const QModelIndex& index = ui->tableViewAxis->currentIndex();
+  mTableModel->removeRows(index.row(), 1);
+  mTableModel->layoutChanged();
+}
+
+void NAMDLogTab::binningDone(QVector<HistogramScalar<double> > data)
+{
+  mHistogram = data;
+  ui->pushButtonRun->setEnabled(true);
 }
 
 

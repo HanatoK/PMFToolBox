@@ -1,8 +1,5 @@
 #include "tablemodelreweightingaxis.h"
 
-AxisView::AxisView()
-    : mColumn(0), mAxis(), mInPMF(false), mReweightingTo(false) {}
-
 TableModelReweightingAxis::TableModelReweightingAxis(QObject *parent)
     : QAbstractTableModel(parent) {}
 

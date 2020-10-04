@@ -2,6 +2,7 @@
 #define NAMDLOGTAB_H
 
 #include "base/namdlogparser.h"
+#include "namdlogtab/tablemodelbinning.h"
 
 #include <QWidget>
 #include <QDialog>
@@ -38,11 +39,18 @@ public slots:
   void openTrajectory();
   void saveFile();
   void runBinning();
+  void addAxis();
+  void removeAxis();
+  void binningDone(QVector<HistogramScalar<double> > data);
 
 private:
   Ui::NAMDLogTab *ui;
+  TableModelBinning *mTableModel;
   NAMDLogReaderThread mLogReaderThread;
   NAMDLog mLog;
+  BinNAMDLogThread mBinningThread;
+  QStringList mSeletedTitle;
+  QVector<HistogramScalar<double>> mHistogram;
 };
 
 #endif // NAMDLOGTAB_H

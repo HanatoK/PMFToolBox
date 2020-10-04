@@ -399,6 +399,9 @@ double Axis::period() const {
   return mPeriodicUpperBound - mPeriodicLowerBound;
 }
 
+AxisView::AxisView()
+    : mColumn(0), mAxis(), mInPMF(false), mReweightingTo(false) {}
+
 HistogramPMF::HistogramPMF() : HistogramBase(), HistogramScalar<double>() {}
 
 HistogramPMF::HistogramPMF(const QVector<Axis> &ax)

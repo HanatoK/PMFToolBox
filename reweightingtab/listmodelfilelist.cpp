@@ -43,8 +43,8 @@ QVariant ListModelFileList::data(const QModelIndex &index, int role) const
 
 bool ListModelFileList::insertRows(int row, int count, const QModelIndex &parent)
 {
-  beginInsertRows(parent, row, row + count - 1);
   row = qBound(0, row, row);
+  beginInsertRows(parent, row, row + count - 1);
   for (int i = 0; i < count; ++i) {
     mFileNameList.insert(row, "");
   }
