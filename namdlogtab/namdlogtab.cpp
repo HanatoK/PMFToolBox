@@ -22,6 +22,7 @@ NAMDLogTab::NAMDLogTab(QWidget *parent) :
   connect(&mLogReaderThread, &NAMDLogReaderThread::done, this, &NAMDLogTab::loadNAMDLogDone);
   connect(&mLogReaderThread, &NAMDLogReaderThread::progress, this, &NAMDLogTab::logReadingProgress);
   connect(&mBinningThread, &BinNAMDLogThread::doneHistogram, this, &NAMDLogTab::binningDone);
+  connect(&mBinningThread, &BinNAMDLogThread::progress, this, &NAMDLogTab::binningProgress);
 }
 
 NAMDLogTab::~NAMDLogTab()
@@ -88,9 +89,22 @@ void NAMDLogTab::runBinning()
   if (dialog.exec()) {
     mSeletedTitle = dialog.selectedTitle();
     qDebug() << Q_FUNC_INFO << ": seleted titles" << mSeletedTitle;
-    ui->pushButtonRun->setEnabled(false);
-//    mBinningThread.invokeThread(mLog, mSeletedTitle, )
   }
+  const QVector<int> columns = mTableModel->fromColumns();
+  const QVector<Axis> axes = mTableModel->targetAxis();
+  const QString trajectoryFileName = ui->lineEditColvarsTrajectory->text();
+//  const QString outputFilePrefix = ui->lineEditOutput->text();
+  if (mSeletedTitle.empty() || columns.empty() || axes.empty() /*|| outputFilePrefix.isEmpty()*/ || trajectoryFileName.isEmpty()) {
+    qDebug() << Q_FUNC_INFO << ": invalid input";
+    return;
+  }
+  ui->pushButtonRun->setEnabled(false);
+  mBinningThread.invokeThread(mLog, mSeletedTitle, trajectoryFileName, axes, columns);
+}
+
+void NAMDLogTab::binningProgress(QString status, int x)
+{
+  ui->pushButtonRun->setText(status + " " + QString::number(x) + "%");
 }
 
 void NAMDLogTab::addAxis()
@@ -111,7 +125,14 @@ void NAMDLogTab::removeAxis()
 
 void NAMDLogTab::binningDone(QVector<HistogramScalar<double> > data)
 {
+  qDebug() << "Calling " << Q_FUNC_INFO;
   mHistogram = data;
+  const QString outputFilePrefix = ui->lineEditOutput->text();
+  if (outputFilePrefix.isEmpty()) return;
+  for (int i = 0; i < mSeletedTitle.size(); ++i) {
+    const QString outputFileName = outputFilePrefix + "_" + mSeletedTitle[i].toLower() + ".dat";
+    mHistogram[i].writeToFile(outputFileName);
+  }
   ui->pushButtonRun->setEnabled(true);
 }
 

@@ -39,6 +39,7 @@ public slots:
   void openTrajectory();
   void saveFile();
   void runBinning();
+  void binningProgress(QString status, int x);
   void addAxis();
   void removeAxis();
   void binningDone(QVector<HistogramScalar<double> > data);

@@ -110,6 +110,7 @@ bool TableModelBinning::setData(const QModelIndex &index, const QVariant &value,
     const int row = index.row();
     Axis &ax = mAxisList[row].mAxis;
     switch (index.column()) {
+    // FIXME: actually unable to setup the lower, upper and width
     case 0: {
       qDebug() << "Change the column of axis " << row << " from " << mAxisList[row].mColumn << " to " << value;
       mAxisList[row].mColumn = value.toInt();

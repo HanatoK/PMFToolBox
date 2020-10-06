@@ -8,7 +8,9 @@ void NAMDLog::clearData() {
   mPairData.clear();
 }
 
-void NAMDLog::readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread, void(NAMDLogReaderThread::*progress)(int x), qint64 fileSize) {
+void NAMDLog::readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread,
+                             void (NAMDLogReaderThread::*progress)(int x),
+                             qint64 fileSize) {
   QString line;
   bool firsttime = true;
   qint64 readSize = 0;
@@ -20,7 +22,8 @@ void NAMDLog::readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread, void
       readSize += line.size() + 1;
       currentProgress = std::nearbyint(double(readSize) / fileSize * 100.0);
     }
-    if (currentProgress != previousProgress && currentProgress % refreshPeriod == 0 && progress != nullptr) {
+    if (currentProgress != previousProgress &&
+        currentProgress % refreshPeriod == 0 && progress != nullptr) {
       (thread->*progress)(currentProgress);
       previousProgress = currentProgress;
     }
@@ -87,12 +90,10 @@ QVector<ForceType> NAMDLog::getElectrostaticForce() const {
   return mPairData.value("ELECT_FORCE");
 }
 
-QStringList NAMDLog::getEnergyTitle() const
-{
-  return mEnergyTitle;
-}
+QStringList NAMDLog::getEnergyTitle() const { return mEnergyTitle; }
 
-doBinning::doBinning(HistogramScalar<double> &histogram, const QVector<int> &column)
+doBinning::doBinning(HistogramScalar<double> &histogram,
+                     const QVector<int> &column)
     : mHistogram(histogram), mColumn(column) {}
 
 void doBinning::operator()(const QVector<double> &fields, double energy) {
@@ -108,11 +109,9 @@ void doBinning::operator()(const QVector<double> &fields, double energy) {
   }
 }
 
-BinNAMDLogThread::BinNAMDLogThread(QObject *parent)
-  : QThread(parent) {}
+BinNAMDLogThread::BinNAMDLogThread(QObject *parent) : QThread(parent) {}
 
-BinNAMDLogThread::~BinNAMDLogThread()
-{
+BinNAMDLogThread::~BinNAMDLogThread() {
   // am I doing the right things?
   qDebug() << Q_FUNC_INFO;
   mutex.lock();
@@ -122,9 +121,10 @@ BinNAMDLogThread::~BinNAMDLogThread()
 }
 
 void BinNAMDLogThread::invokeThread(const NAMDLog &log,
-                                              const QStringList &title,
-                                              const QString &trajectoryFileName, const QVector<Axis> &ax,
-                                              const QVector<int> &column) {
+                                    const QStringList &title,
+                                    const QString &trajectoryFileName,
+                                    const QVector<Axis> &ax,
+                                    const QVector<int> &column) {
   qDebug() << Q_FUNC_INFO;
   QMutexLocker locker(&mutex);
   mLog = log;
@@ -139,14 +139,14 @@ void BinNAMDLogThread::invokeThread(const NAMDLog &log,
 
 void BinNAMDLogThread::run() {
   mutex.lock();
-  QVector<HistogramScalar<double>> histEnergy(mTitle.size(), HistogramScalar<double>(mAxis));
+  QVector<HistogramScalar<double>> histEnergy(mTitle.size(),
+                                              HistogramScalar<double>(mAxis));
   QVector<doBinning> binning;
   for (int i = 0; i < mTitle.size(); ++i) {
     binning.append(doBinning(histEnergy[i], mColumn));
   }
   HistogramScalar<double> histCount(mAxis);
   doBinning countBinning(histCount, mColumn);
-  // TODO: rewrite it to support binning multiple energy terms
   // parse the trajectory file
   QFile trajFile(mTrajectoryFileName);
   if (trajFile.open(QIODevice::ReadOnly)) {
@@ -175,10 +175,12 @@ void BinNAMDLogThread::run() {
       }
       tmpFields = line.split(QRegExp("[(),\\s]+"), Qt::SkipEmptyParts);
       // skip blank lines
-      if (tmpFields.size() <= 0) continue;
+      if (tmpFields.size() <= 0)
+        continue;
       // skip comment lines start with #
-      if (tmpFields[0].startsWith("#")) continue;
-      for (const auto& i : tmpFields) {
+      if (tmpFields[0].startsWith("#"))
+        continue;
+      for (const auto &i : tmpFields) {
         fields.append(i.toDouble(&read_ok));
         if (read_ok == false) {
           emit error("Failed to convert " + i + " to number!");
@@ -203,13 +205,9 @@ void BinNAMDLogThread::run() {
   mutex.unlock();
 }
 
-NAMDLogReaderThread::NAMDLogReaderThread(QObject *parent): QThread(parent)
-{
+NAMDLogReaderThread::NAMDLogReaderThread(QObject *parent) : QThread(parent) {}
 
-}
-
-NAMDLogReaderThread::~NAMDLogReaderThread()
-{
+NAMDLogReaderThread::~NAMDLogReaderThread() {
   qDebug() << Q_FUNC_INFO;
   mutex.lock();
   mutex.unlock();
@@ -217,8 +215,7 @@ NAMDLogReaderThread::~NAMDLogReaderThread()
   quit();
 }
 
-void NAMDLogReaderThread::invokeThread(const QString &filename)
-{
+void NAMDLogReaderThread::invokeThread(const QString &filename) {
   qDebug() << Q_FUNC_INFO;
   QMutexLocker locker(&mutex);
   mLogFileName = filename;
@@ -227,15 +224,15 @@ void NAMDLogReaderThread::invokeThread(const QString &filename)
   }
 }
 
-void NAMDLogReaderThread::run()
-{
+void NAMDLogReaderThread::run() {
   qDebug() << Q_FUNC_INFO;
   mutex.lock();
   NAMDLog logObject;
   QFile logFile(mLogFileName);
   if (logFile.open(QIODevice::ReadOnly)) {
     QTextStream ifs(&logFile);
-    logObject.readFromStream(ifs, this, &NAMDLogReaderThread::progress, logFile.size());
+    logObject.readFromStream(ifs, this, &NAMDLogReaderThread::progress,
+                             logFile.size());
     emit done(logObject);
   }
   mutex.unlock();
