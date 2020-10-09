@@ -6,52 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>541</width>
-    <height>364</height>
+    <width>539</width>
+    <height>362</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="lineEditOutput">
-     <property name="minimumSize">
-      <size>
-       <width>300</width>
-       <height>0</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="labelNAMDLog">
-     <property name="text">
-      <string>NAMD log</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="labelColvarsTrajectory">
-     <property name="text">
-      <string>Colvars trajectory</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="labelOutput">
-     <property name="text">
-      <string>Output</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="3">
-    <widget class="QPushButton" name="pushButtonRun">
-     <property name="text">
-      <string>Run binning</string>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="1">
     <widget class="QLineEdit" name="lineEditColvarsTrajectory">
      <property name="minimumSize">
@@ -65,8 +27,63 @@
      </property>
     </widget>
    </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="lineEditNAMDLog">
+     <property name="minimumSize">
+      <size>
+       <width>300</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="labelNAMDLog">
+     <property name="text">
+      <string>NAMD log</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QPushButton" name="pushButtonSaveTo">
+     <property name="text">
+      <string>Save to</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="3">
+    <widget class="QPushButton" name="pushButtonRun">
+     <property name="text">
+      <string>Run binning</string>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="2">
     <widget class="QPushButton" name="pushButtonOpenNAMDLog">
+     <property name="text">
+      <string>Open</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="labelOutput">
+     <property name="text">
+      <string>Output</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="labelColvarsTrajectory">
+     <property name="text">
+      <string>Colvars trajectory</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QPushButton" name="pushButtonOpenColvarsTrajectory">
      <property name="text">
       <string>Open</string>
      </property>
@@ -117,30 +134,20 @@
      </layout>
     </widget>
    </item>
-   <item row="2" column="2">
-    <widget class="QPushButton" name="pushButtonSaveTo">
-     <property name="text">
-      <string>Save to</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="QPushButton" name="pushButtonOpenColvarsTrajectory">
-     <property name="text">
-      <string>Open</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="lineEditNAMDLog">
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="lineEditOutput">
      <property name="minimumSize">
       <size>
        <width>300</width>
        <height>0</height>
       </size>
      </property>
-     <property name="readOnly">
-      <bool>true</bool>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="3">
+    <widget class="QPushButton" name="pushButtonHelp">
+     <property name="text">
+      <string>Help</string>
      </property>
     </widget>
    </item>

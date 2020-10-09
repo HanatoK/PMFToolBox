@@ -133,7 +133,7 @@ void NAMDLogTab::binningDone(QVector<HistogramScalar<double> > data)
     const QString outputFileName = outputFilePrefix + "_" + mSeletedTitle[i].toLower() + ".dat";
     mHistogram[i].writeToFile(outputFileName);
   }
-  ui->pushButtonRun->setText("Run");
+  ui->pushButtonRun->setText("Run binning");
   ui->pushButtonRun->setEnabled(true);
 }
 
