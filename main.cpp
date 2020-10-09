@@ -11,6 +11,7 @@ int main(int argc, char *argv[])
   qRegisterMetaType<HistogramProbability>("HistogramProbability");
   qRegisterMetaType<HistogramPMFHistory>("HistogramPMFHistory");
   qRegisterMetaType<NAMDLog>("NAMDLog");
+  qRegisterMetaType<QVector<HistogramScalar<double>>>("QVector<HistogramScalar<double>>");
   MainWindow w;
   w.show();
   return a.exec();

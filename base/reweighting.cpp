@@ -66,7 +66,7 @@ void ReweightingThread::run()
   for (auto it = mTrajectoryFileName.begin(); it != mTrajectoryFileName.end(); ++it) {
     qDebug() << "Reading file " << (*it);
     QFile trajectoryFile(*it);
-    const int fileSize = trajectoryFile.size();
+    const double fileSize = trajectoryFile.size();
     if (trajectoryFile.open(QFile::ReadOnly)) {
       QTextStream ifs(&trajectoryFile);
       QString line;

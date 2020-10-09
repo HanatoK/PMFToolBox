@@ -360,15 +360,15 @@ double Axis::upperBound() const { return mUpperBound; }
 
 double Axis::setLowerBound(double newLowerBound) {
   // keep bin width and reset lower bound
-  mBins = std::nearbyintl((mUpperBound - newLowerBound) / mWidth);
-  mLowerBound = mUpperBound - double(mBins) * mWidth;
+  mBins = mWidth > 0 ? std::nearbyintl((mUpperBound - newLowerBound) / mWidth) : 0;
+  mLowerBound = mBins == 0 ? newLowerBound : mUpperBound - double(mBins) * mWidth;
   return mLowerBound;
 }
 
 double Axis::setUpperBound(double newUpperBound) {
   // keep bin width and reset upper bound
-  mBins = std::nearbyintl((newUpperBound - mLowerBound) / mWidth);
-  mUpperBound = mLowerBound + double(mBins) * mWidth;
+  mBins = mWidth > 0 ? std::nearbyintl((newUpperBound - mLowerBound) / mWidth) : 0;
+  mUpperBound = mBins == 0 ? newUpperBound : mLowerBound + double(mBins) * mWidth;
   return mUpperBound;
 }
 
@@ -376,7 +376,7 @@ double Axis::setWidth(double new_width) {
   if (new_width <= 0)
     return -1.0;
   mBins = std::nearbyintl((mUpperBound - mLowerBound) / new_width);
-  mWidth = (mUpperBound - mLowerBound) / double(mBins);
+  mWidth = mBins == 0 ? new_width : (mUpperBound - mLowerBound) / double(mBins);
   return mWidth;
 }
 
@@ -499,7 +499,11 @@ HistogramProbability HistogramProbability::reduceDimension(const QVector<size_t>
 
 QDebug operator<<(QDebug dbg, const Axis &ax)
 {
-  dbg << "{" << ax.lowerBound() << ", " << ax.upperBound() << ", " << ax.width() << "}";
+  dbg << "{" << "lowerbound:" << ax.lowerBound()
+      << ", upperbound:" << ax.upperBound()
+      << ", width:" << ax.width()
+      << ", bin:" << ax.bin()
+      << "}";
   return dbg;
 }
 

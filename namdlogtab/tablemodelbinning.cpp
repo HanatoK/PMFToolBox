@@ -136,6 +136,7 @@ bool TableModelBinning::setData(const QModelIndex &index, const QVariant &value,
     }
     }
     emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
+    qDebug() << "Axis " << row << " is : " << ax;
     return true;
   }
   return false;

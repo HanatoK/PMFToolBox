@@ -92,6 +92,12 @@ QVector<ForceType> NAMDLog::getElectrostaticForce() const {
 
 QStringList NAMDLog::getEnergyTitle() const { return mEnergyTitle; }
 
+size_t NAMDLog::size() const
+{
+  if (mEnergyData.isEmpty()) return 0;
+  else return mEnergyData.begin()->size();
+}
+
 doBinning::doBinning(HistogramScalar<double> &histogram,
                      const QVector<int> &column)
     : mHistogram(histogram), mColumn(column) {}
@@ -138,6 +144,7 @@ void BinNAMDLogThread::invokeThread(const NAMDLog &log,
 }
 
 void BinNAMDLogThread::run() {
+  qDebug() << Q_FUNC_INFO;
   mutex.lock();
   QVector<HistogramScalar<double>> histEnergy(mTitle.size(),
                                               HistogramScalar<double>(mAxis));
@@ -160,6 +167,8 @@ void BinNAMDLogThread::run() {
     bool read_ok = true;
     const size_t fileSize = trajFile.size();
     while (!ifs_traj.atEnd()) {
+      fields.clear();
+      tmpFields.clear();
       ifs_traj.readLineInto(&line);
       readSize += line.size() + 1;
       const int readingProgress = std::nearbyint(readSize / fileSize * 100);
@@ -188,7 +197,11 @@ void BinNAMDLogThread::run() {
         }
       }
       for (int i = 0; i < mTitle.size(); ++i) {
-        binning[i](fields, mLog.getEnergyData(mTitle[i])[lineNumber]);
+        if (lineNumber < mLog.size()) {
+          binning[i](fields, mLog.getEnergyData(mTitle[i])[lineNumber]);
+        } else {
+          qDebug() << "warning:" << "trajectory may contain more lines than the log file";
+        }
       }
       countBinning(fields, 1.0);
       ++lineNumber;

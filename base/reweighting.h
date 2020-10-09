@@ -34,7 +34,7 @@ signals:
   void error(QString err);
   void doneReturnTarget(HistogramProbability targetHistogram);
   void done();
-  void progress(int fileRead, int percent);
+  void progress(int fileRead, qint64 percent);
 protected:
   void run() override;
 private:

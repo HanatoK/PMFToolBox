@@ -31,6 +31,7 @@ public:
   QVector<ForceType> getVdWForce() const;
   QVector<ForceType> getElectrostaticForce() const;
   QStringList getEnergyTitle() const;
+  size_t size() const;
   friend class NAMDLogReaderThread;
 
 private:
