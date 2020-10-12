@@ -9,6 +9,7 @@ CONFIG += c++2a qwt
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    base/graph.cpp \
     base/helper.cpp \
     base/histogram.cpp \
     base/historyfile.cpp \
@@ -23,9 +24,11 @@ SOURCES += \
     projectpmftab/projectpmftab.cpp \
     reweightingtab/listmodelfilelist.cpp \
     reweightingtab/reweightingtab.cpp \
-    reweightingtab/tablemodelreweightingaxis.cpp
+    reweightingtab/tablemodelreweightingaxis.cpp \
+    test/test.cpp
 
 HEADERS += \
+    base/graph.h \
     base/helper.h \
     base/histogram.h \
     base/historyfile.h \
@@ -40,7 +43,8 @@ HEADERS += \
     projectpmftab/projectpmftab.h \
     reweightingtab/listmodelfilelist.h \
     reweightingtab/reweightingtab.h \
-    reweightingtab/tablemodelreweightingaxis.h
+    reweightingtab/tablemodelreweightingaxis.h \
+    test/test.h
 
 FORMS += \
     historypmftab/historypmftab.ui \

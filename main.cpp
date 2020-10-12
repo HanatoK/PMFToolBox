@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "base/histogram.h"
 #include "base/namdlogparser.h"
+#include "base/graph.h"
 
 #include <QApplication>
 
