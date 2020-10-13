@@ -1,12 +1,16 @@
 #ifndef HELPER_H
 #define HELPER_H
 
-#include <limits>
-#include <utility>
-#include <cmath>
+#include <QRegExp>
 #include <QString>
 #include <QStringList>
-#include <QRegExp>
+#include <cmath>
+#include <deque>
+#include <iostream>
+#include <limits>
+#include <queue>
+#include <utility>
+#include <vector>
 
 template <class T>
 typename std::enable_if<!std::numeric_limits<T>::is_integer, bool>::type
@@ -19,8 +23,7 @@ almost_equal(T x, T y, int ulp = 2) {
          || std::abs(x - y) < std::numeric_limits<T>::min();
 }
 
-template <typename T>
-T stringToNumber(const QString& str, bool* ok = nullptr) {
+template <typename T> T stringToNumber(const QString &str, bool *ok = nullptr) {
   // check signed integer type
   if constexpr (std::is_same<T, long long int>::value) {
     return str.toLongLong(ok);
@@ -49,8 +52,7 @@ T stringToNumber(const QString& str, bool* ok = nullptr) {
   }
 }
 
-template <typename T>
-QVector<T> splitStringToNumbers(const QString& str) {
+template <typename T> QVector<T> splitStringToNumbers(const QString &str) {
   QStringList tmpFields = str.split(QRegExp("[(),\\s]+"), Qt::SkipEmptyParts);
   QVector<T> result;
   for (auto it = tmpFields.begin(); it != tmpFields.end(); ++it) {
@@ -59,8 +61,45 @@ QVector<T> splitStringToNumbers(const QString& str) {
   return result;
 }
 
+template <typename T>
+void print_deque(const std::deque<T> &queue, const char *head_line) {
+  using std::cout;
+  using std::endl;
+  cout << head_line << endl;
+  for (const auto &i : queue) {
+    cout << i << ' ';
+  }
+  cout << endl;
+}
+
+template <typename T>
+void print_pq(
+    std::priority_queue<std::pair<T, size_t>, QVector<std::pair<T, size_t>>,
+                        std::greater<std::pair<T, size_t>>>
+        pq,
+    const char *str) {
+  using std::cout;
+  using std::endl;
+  cout << str << endl;
+  while (!pq.empty()) {
+    cout << "(" << pq.top().first << ", " << pq.top().second << ")\n";
+    pq.pop();
+  }
+}
+
+template <typename T>
+void print_vector(const std::vector<T> &v, const char *head_line) {
+  using std::cout;
+  using std::endl;
+  cout << head_line << endl;
+  for (const auto &i : v) {
+    cout << i << ' ';
+  }
+  cout << endl;
+}
+
 QString boolToString(bool x);
 
-double kbT(const double temperature, const QString& unit);
+double kbT(const double temperature, const QString &unit);
 
 #endif // HELPER_H

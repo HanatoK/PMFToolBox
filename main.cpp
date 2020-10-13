@@ -2,11 +2,16 @@
 #include "base/histogram.h"
 #include "base/namdlogparser.h"
 #include "base/graph.h"
+#include "test/test.h"
 
 #include <QApplication>
 
 int main(int argc, char *argv[])
 {
+  qDebug() << "==============Dijkstra==============";
+  testDijkstra();
+  qDebug() << "==============SPFA==============";
+  testSPFA2();
   QApplication a(argc, argv);
   qRegisterMetaType<HistogramPMF>("HistogramPMF");
   qRegisterMetaType<HistogramProbability>("HistogramProbability");

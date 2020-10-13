@@ -64,38 +64,69 @@ void Graph::DFS(size_t start, std::function<void(const Node &)> func) const {
   DFSHelper(start, visited, func);
 }
 
-Graph::DijkstraResults Graph::Dijkstra(size_t addr_start, size_t addr_end,
-                                       Graph::DijkstraMode mode) {
+Graph::FindPathResult Graph::Dijkstra(size_t start, size_t end,
+                                       Graph::FindPathMode mode) {
   switch (mode) {
-  case Graph::DijkstraMode::SumOfEdges: {
+  case Graph::FindPathMode::SumOfEdges: {
     const double dist_inf = std::numeric_limits<double>::max();
     return Dijkstra<double>(
-        addr_start, addr_end, 0, dist_inf,
+        start, end, 0, dist_inf,
         [](const double &x, const double &y) { return x + y; });
     break;
   }
-  case Graph::DijkstraMode::MaximumEdges: {
+  case Graph::FindPathMode::MaximumEdges: {
     const double dist_inf = std::numeric_limits<double>::max();
     return Dijkstra<double>(
-        addr_start, addr_end, FindMaxSumWeight() + 1.0, dist_inf,
+        start, end, findMaxSumWeight() + 1.0, dist_inf,
         [](const double &x, const double &y) { return std::max(x, y); });
     break;
   }
-  case Graph::DijkstraMode::MFEPMode: {
+  case Graph::FindPathMode::MFEPMode: {
     const MFEPDistance dist_start;
     const MFEPDistance dist_inf({std::numeric_limits<double>::max()});
     return Dijkstra<MFEPDistance>(
-        addr_start, addr_end, dist_start, dist_inf,
+        start, end, dist_start, dist_inf,
         [](const MFEPDistance &x, const double &weight) { return x + weight; });
   }
   default: {
-    return DijkstraResults();
+    return FindPathResult();
     break;
   }
   }
 }
 
-double Graph::FindMaxSumWeight() const
+Graph::FindPathResult Graph::SPFA(size_t start, size_t end, Graph::FindPathMode mode)
+{
+  switch (mode) {
+  case Graph::FindPathMode::SumOfEdges: {
+    const double dist_inf = std::numeric_limits<double>::max();
+    return SPFA<double>(
+        start, end, 0, dist_inf,
+        [](const double &x, const double &y) { return x + y; });
+    break;
+  }
+  case Graph::FindPathMode::MaximumEdges: {
+    const double dist_inf = std::numeric_limits<double>::max();
+    return SPFA<double>(
+        start, end, findMaxSumWeight() + 1.0, dist_inf,
+        [](const double &x, const double &y) { return std::max(x, y); });
+    break;
+  }
+  case Graph::FindPathMode::MFEPMode: {
+    const MFEPDistance dist_start;
+    const MFEPDistance dist_inf({std::numeric_limits<double>::max()});
+    return SPFA<MFEPDistance>(
+        start, end, dist_start, dist_inf,
+        [](const MFEPDistance &x, const double &weight) { return x + weight; });
+  }
+  default: {
+    return FindPathResult();
+    break;
+  }
+  }
+}
+
+double Graph::findMaxSumWeight() const
 {
   double result = 0;
   for (size_t i = 0; i < mNumNodes; ++i) {
@@ -262,4 +293,33 @@ auto operator<=>(const MFEPDistance &lhs, const MFEPDistance &rhs) {
     return lhsElement <=> rhsElement;
   }
   return std::partial_ordering::equivalent;
+}
+
+void Graph::FindPathResult::dump() const
+{
+  using std::cout;
+  using std::endl;
+  using std::vector;
+  cout << "Path: ";
+  for (const auto& i : mPathNodes) {
+    cout << i << " ";
+  }
+  cout << endl;
+  cout << "Distance " << endl;
+  for (int i = 0; i < mDistances.size(); ++i) {
+    cout << "Node [" << i << "]: " << " distance = " << mDistances[i] << endl;
+  }
+  cout << "Number of loops in Dijkstra's algorithm: " << mNumLoops << endl;
+}
+
+QDebug operator<<(QDebug dbg, const MFEPDistance &rhs)
+{
+  std::priority_queue<double> tmpRhsQueue(rhs.mDistance);
+  QString debug_string;
+  while (!tmpRhsQueue.empty()) {
+    debug_string += QString::number(tmpRhsQueue.top()) + ' ';
+    tmpRhsQueue.pop();
+  }
+  dbg << debug_string;
+  return dbg;
 }

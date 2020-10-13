@@ -1,6 +1,7 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#include <QDebug>
 #include <QList>
 #include <QVector>
 #include <algorithm>
@@ -23,14 +24,14 @@ public:
     size_t mDestination;
     double mWeight;
   };
-  struct DijkstraResults {
+  struct FindPathResult {
     size_t mNumLoops;
     QVector<bool> mVisitedNodes;
     QVector<size_t> mPathNodes;
     QVector<double> mDistances;
     void dump() const;
   };
-  enum DijkstraMode {
+  enum FindPathMode {
     SumOfEdges,
     MaximumEdges,
     MFEPMode,
@@ -43,14 +44,19 @@ public:
   bool getEdge(size_t source, size_t destination, double &weight) const;
   void printGraph(std::ostream &os) const;
   void DFS(size_t start, std::function<void(const Node &)> func) const;
-  DijkstraResults Dijkstra(size_t addr_start, size_t addr_end,
-                           DijkstraMode mode);
+  FindPathResult Dijkstra(size_t start, size_t end, FindPathMode mode);
   template <typename DistanceType>
-  DijkstraResults
-  Dijkstra(size_t addr_start, size_t addr_end, const DistanceType &dist_start,
-           const DistanceType &dist_infinity,
-           std::function<DistanceType(DistanceType, double)> calc_new_dist);
-  double FindMaxSumWeight() const;
+  FindPathResult Dijkstra(
+      size_t start, size_t end, const DistanceType &dist_start,
+      const DistanceType &dist_infinity,
+      std::function<DistanceType(DistanceType, double)> calc_new_dist) const;
+  FindPathResult SPFA(size_t start, size_t end, FindPathMode mode);
+  template <typename DistanceType>
+  FindPathResult
+  SPFA(size_t start, size_t end, const DistanceType &dist_start,
+       const DistanceType &dist_infinity,
+       std::function<DistanceType(DistanceType, double)> calc_new_dist) const;
+  double findMaxSumWeight() const;
 
 protected:
   size_t mNumNodes;
@@ -62,10 +68,10 @@ protected:
 };
 
 template <typename DistanceType>
-Graph::DijkstraResults Graph::Dijkstra(
-    size_t addr_start, size_t addr_end, const DistanceType &dist_start,
+Graph::FindPathResult Graph::Dijkstra(
+    size_t start, size_t end, const DistanceType &dist_start,
     const DistanceType &dist_infinity,
-    std::function<DistanceType(DistanceType, double)> calc_new_dist) {
+    std::function<DistanceType(DistanceType, double)> calc_new_dist) const {
   using std::deque;
   using std::tuple;
 #ifdef DEBUG_DIJKSTRA
@@ -75,7 +81,6 @@ Graph::DijkstraResults Graph::Dijkstra(
   using std::make_pair;
   using std::priority_queue;
   typedef std::pair<DistanceType, size_t> DistNodePair;
-  sortByWeight();
   QVector<bool> visited(mNumNodes, false);
   QVector<size_t> previous(mNumNodes);
   priority_queue<DistNodePair, QVector<DistNodePair>,
@@ -83,10 +88,10 @@ Graph::DijkstraResults Graph::Dijkstra(
       pq;
   QVector<DistanceType> distances(mNumNodes);
   for (size_t i = 0; i < mNumNodes; ++i) {
-    distances[i] = (i == addr_start) ? dist_start : dist_infinity;
+    distances[i] = (i == start) ? dist_start : dist_infinity;
     previous[i] = mNumNodes;
   }
-  pq.push(make_pair(dist_start, addr_start));
+  pq.push(make_pair(dist_start, start));
   size_t loop = 0;
   while (!pq.empty()) {
 #ifdef DEBUG_DIJKSTRA
@@ -133,7 +138,7 @@ Graph::DijkstraResults Graph::Dijkstra(
 #ifdef DEBUG_DIJKSTRA
     cout << endl;
 #endif
-    if (to_visit == addr_end) {
+    if (to_visit == end) {
       break;
     }
     visited[to_visit] = true;
@@ -143,19 +148,101 @@ Graph::DijkstraResults Graph::Dijkstra(
 #endif
   }
   QVector<size_t> path;
-  size_t target = addr_end;
+  size_t target = end;
   while (previous[target] != mNumNodes) {
     path.push_back(target);
     target = previous[target];
   }
-  if (path.back() != addr_end)
-    path.push_back(addr_start);
+  if (path.back() != end)
+    path.push_back(start);
   std::reverse(path.begin(), path.end());
   QVector<double> res_distance(distances.size());
   for (int i = 0; i < distances.size(); ++i) {
     res_distance[i] = static_cast<double>(distances[i]);
   }
-  DijkstraResults result{loop, visited, path, res_distance};
+  FindPathResult result{loop, visited, path, res_distance};
+  return result;
+}
+
+template <typename DistanceType>
+Graph::FindPathResult Graph::SPFA(
+    size_t start, size_t end, const DistanceType &dist_start,
+    const DistanceType &dist_infinity,
+    std::function<DistanceType(DistanceType, double)> calc_new_dist) const {
+  QVector<DistanceType> distances(mNumNodes);
+  QVector<bool> visited(mNumNodes, false);
+  QVector<size_t> previous(mNumNodes);
+  QVector<QList<size_t>> paths(mNumNodes);
+  for (size_t i = 0; i < mNumNodes; ++i) {
+    distances[i] = (i == start) ? dist_start : dist_infinity;
+    previous[i] = mNumNodes;
+  }
+  QList<size_t> Q;
+  Q.push_back(start);
+  size_t loop = 0;
+  while (!Q.empty()) {
+#ifdef DEBUG_SPFA
+    qDebug() << "Loop" << loop;
+    qDebug() << "Current search queue:" << Q;
+    qDebug() << "Previous visited vertices:" << previous;
+    qDebug() << "Visited vertices:" << visited;
+#endif
+    const size_t to_visit = Q.front();
+    Q.pop_front();
+#ifdef DEBUG_SPFA
+    qDebug() << "Vertex being visited:" << to_visit;
+#endif
+    auto N = mHead[to_visit].cbegin();
+    auto neighbor_node = N + 1;
+    while (neighbor_node != mHead[to_visit].cend()) {
+      const size_t neighbor_index = neighbor_node->mIndex;
+#ifdef DEBUG_SPFA
+      qDebug() << "Visiting neighbor vertex:" << neighbor_index;
+#endif
+      const DistanceType new_distance =
+          calc_new_dist(distances[to_visit], neighbor_node->mWeight);
+      auto current_path = paths[neighbor_index];
+      current_path.append(paths[to_visit]);
+      current_path.append(to_visit);
+      if (new_distance < distances[neighbor_index]) {
+#ifdef DEBUG_SPFA
+        qDebug() << "Update new distance at" << neighbor_index
+                 << " ; new distance = " << new_distance;
+#endif
+        distances[neighbor_index] = new_distance;
+        previous[neighbor_index] = to_visit;
+        paths[neighbor_index] = current_path;
+        if (!Q.contains(neighbor_index)) Q.push_back(neighbor_index);
+      }
+      std::advance(neighbor_node, 1);
+    }
+    visited[to_visit] = true;
+    ++loop;
+  }
+#ifdef DEBUG_SPFA
+  qDebug() << "Distances from" << start << "to each vertex:";
+  for (size_t i = 0; i < mNumNodes; ++i) {
+    qDebug() << "i =" << i << ":" << distances[i];
+  }
+  qDebug() << "Paths from" << start << "to each vertex:";
+  for (size_t i = 0; i < mNumNodes; ++i) {
+    qDebug() << "i =" << i << ":" << paths[i];
+  }
+#endif
+  QVector<size_t> path;
+  size_t target = end;
+  while (previous[target] != mNumNodes) {
+    path.push_back(target);
+    target = previous[target];
+  }
+  if (path.back() != end)
+    path.push_back(start);
+  std::reverse(path.begin(), path.end());
+  QVector<double> res_distance(distances.size());
+  for (int i = 0; i < distances.size(); ++i) {
+    res_distance[i] = static_cast<double>(distances[i]);
+  }
+  FindPathResult result{loop, visited, path, res_distance};
   return result;
 }
 
@@ -165,6 +252,7 @@ public:
   MFEPDistance(const std::initializer_list<double> &l);
   MFEPDistance operator+(const double &rhs) const;
   friend std::ostream &operator<<(std::ostream &os, const MFEPDistance &rhs);
+  friend QDebug operator<<(QDebug dbg, const MFEPDistance &ax);
   friend auto operator<=>(const MFEPDistance &lhs, const MFEPDistance &rhs);
   explicit operator double() const;
 
@@ -173,6 +261,7 @@ private:
 };
 
 std::ostream &operator<<(std::ostream &os, const MFEPDistance &rhs);
+QDebug operator<<(QDebug dbg, const MFEPDistance &rhs);
 auto operator<=>(const MFEPDistance &lhs, const MFEPDistance &rhs);
 
 #endif // GRAPH_H
