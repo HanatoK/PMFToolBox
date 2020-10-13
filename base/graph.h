@@ -171,12 +171,13 @@ Graph::FindPathResult Graph::SPFA(
     std::function<DistanceType(DistanceType, double)> calc_new_dist) const {
   QVector<DistanceType> distances(mNumNodes);
   QVector<bool> visited(mNumNodes, false);
-  QVector<size_t> previous(mNumNodes);
+//  QVector<size_t> previous(mNumNodes);
   QVector<QList<size_t>> paths(mNumNodes);
   for (size_t i = 0; i < mNumNodes; ++i) {
     distances[i] = (i == start) ? dist_start : dist_infinity;
-    previous[i] = mNumNodes;
+//    previous[i] = mNumNodes;
   }
+  paths[start].append(start);
   QList<size_t> Q;
   Q.push_back(start);
   size_t loop = 0;
@@ -184,7 +185,7 @@ Graph::FindPathResult Graph::SPFA(
 #ifdef DEBUG_SPFA
     qDebug() << "Loop" << loop;
     qDebug() << "Current search queue:" << Q;
-    qDebug() << "Previous visited vertices:" << previous;
+//    qDebug() << "Previous visited vertices:" << previous;
     qDebug() << "Visited vertices:" << visited;
 #endif
     const size_t to_visit = Q.front();
@@ -201,17 +202,17 @@ Graph::FindPathResult Graph::SPFA(
 #endif
       const DistanceType new_distance =
           calc_new_dist(distances[to_visit], neighbor_node->mWeight);
-      auto current_path = paths[neighbor_index];
-      current_path.append(paths[to_visit]);
-      current_path.append(to_visit);
+      auto new_path = paths[neighbor_index];
+      new_path.append(paths[to_visit]);
+      new_path.append(neighbor_index);
       if (new_distance < distances[neighbor_index]) {
 #ifdef DEBUG_SPFA
         qDebug() << "Update new distance at" << neighbor_index
                  << " ; new distance = " << new_distance;
 #endif
         distances[neighbor_index] = new_distance;
-        previous[neighbor_index] = to_visit;
-        paths[neighbor_index] = current_path;
+//        previous[neighbor_index] = to_visit;
+        paths[neighbor_index] = new_path;
         if (!Q.contains(neighbor_index)) Q.push_back(neighbor_index);
       }
       std::advance(neighbor_node, 1);
@@ -230,14 +231,13 @@ Graph::FindPathResult Graph::SPFA(
   }
 #endif
   QVector<size_t> path;
-  size_t target = end;
-  while (previous[target] != mNumNodes) {
-    path.push_back(target);
-    target = previous[target];
+  auto it_start = std::find(paths[end].rbegin(), paths[end].rend(), start);
+  auto it_end = std::find(paths[end].rbegin(), paths[end].rend(), end);
+  if (it_start != paths[end].rend() && it_end != paths[end].rend()) {
+    for (auto i = it_start; i != it_end - 1; --i) {
+      path.push_back(*i);
+    }
   }
-  if (path.back() != end)
-    path.push_back(start);
-  std::reverse(path.begin(), path.end());
   QVector<double> res_distance(distances.size());
   for (int i = 0; i < distances.size(); ++i) {
     res_distance[i] = static_cast<double>(distances[i]);

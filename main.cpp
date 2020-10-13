@@ -11,6 +11,8 @@ int main(int argc, char *argv[])
   qDebug() << "==============Dijkstra==============";
   testDijkstra();
   qDebug() << "==============SPFA==============";
+  testSPFA();
+  qDebug() << "==============SPFA2==============";
   testSPFA2();
   QApplication a(argc, argv);
   qRegisterMetaType<HistogramPMF>("HistogramPMF");
