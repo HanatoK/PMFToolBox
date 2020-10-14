@@ -1,7 +1,8 @@
 #ifndef HISTOGRAMBASE_H
 #define HISTOGRAMBASE_H
 
-#include "helper.h"
+#include "base/helper.h"
+#include "base/graph.h"
 
 #include <QDebug>
 #include <QFile>
@@ -601,6 +602,52 @@ protected:
   static const int OUTPUT_WIDTH = 14;
 private:
   QList<QVector<double>> mHistoryData;
+};
+
+struct GridDataPatch {
+  std::vector<double> mCenter;
+  std::vector<double> mLength;
+  double mValue;
+};
+
+class PMFPathFinder {
+public:
+  PMFPathFinder();
+  PMFPathFinder(const HistogramScalar<double>& histogram, const QVector<GridDataPatch> &patchList,
+                const QVector<double>& pos_start, const QVector<double>& pos_end, Graph::FindPathMode mode, Graph::FindPathAlgorithm algorithm);
+  void setup(const HistogramScalar<double>& histogram, const QVector<GridDataPatch> &patchList,
+             const QVector<double>& pos_start, const QVector<double>& pos_end, Graph::FindPathMode mode, Graph::FindPathAlgorithm algorithm);
+  bool initialized() const;
+  void findPath();
+  void writePath(const QString& filename) const;
+  void writeVisitedRegion(const QString& filename) const;
+  void writePatchedPMF(const QString& filename) const;
+  Graph::FindPathResult result() const;
+  HistogramScalar<double> histogram() const;
+  HistogramScalar<double> histogramBackup() const;
+  QVector<GridDataPatch> patchList() const;
+  void setPatchList(const QVector<GridDataPatch> &patchList);
+  QVector<double> posStart() const;
+  void setPosStart(const QVector<double> &posStart);
+  QVector<double> posEnd() const;
+  void setPosEnd(const QVector<double> &posEnd);
+
+private:
+  void setupGraph();
+  void applyPatch();
+  bool hasData;
+  HistogramScalar<double> mHistogram;
+  HistogramScalar<double> mHistogramBackup;
+  QVector<GridDataPatch> mPatchList;
+  QVector<double> mPosStart;
+  QVector<double> mPosEnd;
+  Graph mGraph;
+  Graph::FindPathAlgorithm mAlgorithm;
+  Graph::FindPathMode mMode;
+  Graph::FindPathResult mResult;
+  static const int OUTPUT_PRECISION = 7;
+  static const int OUTPUT_POSITION_PRECISION = 5;
+  static const int OUTPUT_WIDTH = 14;
 };
 
 Q_DECLARE_METATYPE(HistogramPMF);

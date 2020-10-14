@@ -8,18 +8,19 @@
 
 int main(int argc, char *argv[])
 {
-  qDebug() << "==============Dijkstra==============";
-  testDijkstra();
-  qDebug() << "==============SPFA==============";
-  testSPFA();
-  qDebug() << "==============SPFA2==============";
-  testSPFA2();
+//  qDebug() << "==============Dijkstra==============";
+//  testDijkstra();
+//  qDebug() << "==============SPFA==============";
+//  testSPFA();
+//  qDebug() << "==============SPFA2==============";
+//  testSPFA2();
   QApplication a(argc, argv);
   qRegisterMetaType<HistogramPMF>("HistogramPMF");
   qRegisterMetaType<HistogramProbability>("HistogramProbability");
   qRegisterMetaType<HistogramPMFHistory>("HistogramPMFHistory");
   qRegisterMetaType<NAMDLog>("NAMDLog");
   qRegisterMetaType<QVector<HistogramScalar<double>>>("QVector<HistogramScalar<double>>");
+  qRegisterMetaType<PMFPathFinder>("PMFPathFinder");
   MainWindow w;
   w.show();
   return a.exec();

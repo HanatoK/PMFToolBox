@@ -5,6 +5,7 @@
 #include "projectpmftab/projectpmftab.h"
 #include "historypmftab/historypmftab.h"
 #include "namdlogtab/namdlogtab.h"
+#include "findpathtab/findpathtab.h"
 
 #include <QMainWindow>
 
@@ -31,5 +32,6 @@ private:
   ProjectPMFTab *mProjectPMFTab;
   HistoryPMFTab *mHistoryPMFTab;
   NAMDLogTab *mNAMDLogTab;
+  FindPathTab *mFindPathTab;
 };
 #endif // MAINWINDOW_H

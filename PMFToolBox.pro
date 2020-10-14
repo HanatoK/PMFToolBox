@@ -15,8 +15,10 @@ SOURCES += \
     base/helper.cpp \
     base/histogram.cpp \
     base/historyfile.cpp \
+    base/pathfinderthread.cpp \
     base/plot.cpp \
     base/reweighting.cpp \
+    findpathtab/findpathtab.cpp \
     historypmftab/historypmftab.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -34,9 +36,11 @@ HEADERS += \
     base/helper.h \
     base/histogram.h \
     base/historyfile.h \
+    base/pathfinderthread.h \
     base/plot.h \
     base/reweighting.h \
     base/turbocolormap.h \
+    findpathtab/findpathtab.h \
     historypmftab/historypmftab.h \
     mainwindow.h \
     base/namdlogparser.h \
@@ -49,6 +53,7 @@ HEADERS += \
     test/test.h
 
 FORMS += \
+    findpathtab/findpathtab.ui \
     historypmftab/historypmftab.ui \
     mainwindow.ui \
     namdlogtab/namdlogtab.ui \

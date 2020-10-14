@@ -31,10 +31,14 @@ public:
     QVector<double> mDistances;
     void dump() const;
   };
-  enum FindPathMode {
+  enum class FindPathMode {
     SumOfEdges,
     MaximumEdges,
     MFEPMode,
+  };
+  enum class FindPathAlgorithm {
+    Dijkstra,
+    SPFA,
   };
   Graph();
   Graph(const size_t numNodes, bool directed = false);
@@ -72,6 +76,7 @@ Graph::FindPathResult Graph::Dijkstra(
     size_t start, size_t end, const DistanceType &dist_start,
     const DistanceType &dist_infinity,
     std::function<DistanceType(DistanceType, double)> calc_new_dist) const {
+  qDebug() << "Calling " << Q_FUNC_INFO;
   using std::deque;
   using std::tuple;
 #ifdef DEBUG_DIJKSTRA
@@ -169,6 +174,7 @@ Graph::FindPathResult Graph::SPFA(
     size_t start, size_t end, const DistanceType &dist_start,
     const DistanceType &dist_infinity,
     std::function<DistanceType(DistanceType, double)> calc_new_dist) const {
+  qDebug() << "Calling " << Q_FUNC_INFO;
   QVector<DistanceType> distances(mNumNodes);
   QVector<bool> visited(mNumNodes, false);
 //  QVector<size_t> previous(mNumNodes);

@@ -4,9 +4,8 @@
 #include <cmath>
 #include <iterator>
 
-HistogramBase::HistogramBase(): mNdim(0), mHistogramSize(0), mAxes(0), mPointTable(0), mAccu(0) {
-
-}
+HistogramBase::HistogramBase()
+    : mNdim(0), mHistogramSize(0), mAxes(0), mPointTable(0), mAccu(0) {}
 
 HistogramBase::~HistogramBase() { qDebug() << "Calling " << Q_FUNC_INFO; }
 
@@ -360,15 +359,19 @@ double Axis::upperBound() const { return mUpperBound; }
 
 double Axis::setLowerBound(double newLowerBound) {
   // keep bin width and reset lower bound
-  mBins = mWidth > 0 ? std::nearbyintl((mUpperBound - newLowerBound) / mWidth) : 0;
-  mLowerBound = mBins == 0 ? newLowerBound : mUpperBound - double(mBins) * mWidth;
+  mBins =
+      mWidth > 0 ? std::nearbyintl((mUpperBound - newLowerBound) / mWidth) : 0;
+  mLowerBound =
+      mBins == 0 ? newLowerBound : mUpperBound - double(mBins) * mWidth;
   return mLowerBound;
 }
 
 double Axis::setUpperBound(double newUpperBound) {
   // keep bin width and reset upper bound
-  mBins = mWidth > 0 ? std::nearbyintl((newUpperBound - mLowerBound) / mWidth) : 0;
-  mUpperBound = mBins == 0 ? newUpperBound : mLowerBound + double(mBins) * mWidth;
+  mBins =
+      mWidth > 0 ? std::nearbyintl((newUpperBound - mLowerBound) / mWidth) : 0;
+  mUpperBound =
+      mBins == 0 ? newUpperBound : mLowerBound + double(mBins) * mWidth;
   return mUpperBound;
 }
 
@@ -427,23 +430,15 @@ void HistogramPMF::fromProbability(const HistogramScalar<double> &probability,
   }
 }
 
-HistogramProbability::HistogramProbability(): HistogramBase(), HistogramScalar<double>()
-{
+HistogramProbability::HistogramProbability()
+    : HistogramBase(), HistogramScalar<double>() {}
 
-}
+HistogramProbability::HistogramProbability(const QVector<Axis> &ax)
+    : HistogramBase(ax), HistogramScalar<double>(ax) {}
 
-HistogramProbability::HistogramProbability(const QVector<Axis> &ax): HistogramBase(ax), HistogramScalar<double>(ax)
-{
+HistogramProbability::~HistogramProbability() {}
 
-}
-
-HistogramProbability::~HistogramProbability()
-{
-
-}
-
-void HistogramProbability::convertToFreeEnergy(double kbt)
-{
+void HistogramProbability::convertToFreeEnergy(double kbt) {
   QVector<double> f_data(this->data());
   bool first_non_zero_value = true;
   double max_val = 0;
@@ -470,7 +465,8 @@ void HistogramProbability::convertToFreeEnergy(double kbt)
   this->mData = f_data;
 }
 
-HistogramProbability HistogramProbability::reduceDimension(const QVector<size_t> &new_dims) const {
+HistogramProbability
+HistogramProbability::reduceDimension(const QVector<size_t> &new_dims) const {
   qDebug() << "Calling " << Q_FUNC_INFO;
   QVector<Axis> new_ax;
   for (int i = 0; i < new_dims.size(); ++i) {
@@ -497,43 +493,33 @@ HistogramProbability HistogramProbability::reduceDimension(const QVector<size_t>
   return new_hist;
 }
 
-QDebug operator<<(QDebug dbg, const Axis &ax)
-{
-  dbg << "{" << "lowerbound:" << ax.lowerBound()
-      << ", upperbound:" << ax.upperBound()
-      << ", width:" << ax.width()
-      << ", bin:" << ax.bin()
-      << "}";
+QDebug operator<<(QDebug dbg, const Axis &ax) {
+  dbg << "{"
+      << "lowerbound:" << ax.lowerBound() << ", upperbound:" << ax.upperBound()
+      << ", width:" << ax.width() << ", bin:" << ax.bin() << "}";
   return dbg;
 }
 
-HistogramPMFHistory::HistogramPMFHistory(): HistogramBase()
-{
+HistogramPMFHistory::HistogramPMFHistory() : HistogramBase() {}
 
-}
+HistogramPMFHistory::HistogramPMFHistory(const QVector<Axis> &ax)
+    : HistogramBase(ax) {}
 
-HistogramPMFHistory::HistogramPMFHistory(const QVector<Axis> &ax): HistogramBase(ax)
-{
-
-}
-
-void HistogramPMFHistory::appendHistogram(const QVector<double> &data)
-{
+void HistogramPMFHistory::appendHistogram(const QVector<double> &data) {
   mHistoryData.append(data);
 }
 
-QVector<double> HistogramPMFHistory::computeRMSD() const
-{
-  const QVector<double>& lastFrame = mHistoryData.back();
+QVector<double> HistogramPMFHistory::computeRMSD() const {
+  const QVector<double> &lastFrame = mHistoryData.back();
   return computeRMSD(lastFrame);
 }
 
-QVector<double> HistogramPMFHistory::computeRMSD(const QVector<double>& referenceData) const
-{
+QVector<double>
+HistogramPMFHistory::computeRMSD(const QVector<double> &referenceData) const {
   qDebug() << "Calling " << Q_FUNC_INFO;
   QVector<double> result;
   for (int i = 0; i < mHistoryData.size(); ++i) {
-    const QVector<double>& currentData = mHistoryData[i];
+    const QVector<double> &currentData = mHistoryData[i];
     double rmsd = 0;
     for (int j = 0; j < referenceData.size(); ++j) {
       const double diff = referenceData[j] - currentData[j];
@@ -546,14 +532,14 @@ QVector<double> HistogramPMFHistory::computeRMSD(const QVector<double>& referenc
 }
 
 // Does it need threading?
-void HistogramPMFHistory::splitToFile(const QString &prefix) const
-{
+void HistogramPMFHistory::splitToFile(const QString &prefix) const {
   qDebug() << "Calling " << Q_FUNC_INFO;
   const int numPMFs = mHistoryData.size();
   const int numDigits = QString::number(numPMFs).size();
   qDebug() << Q_FUNC_INFO << ": number of PMFs = " << numPMFs;
   for (int i = 0; i < numPMFs; ++i) {
-    const QString suffix = QStringLiteral("%1").arg(i, numDigits, 10, QLatin1Char('0'));
+    const QString suffix =
+        QStringLiteral("%1").arg(i, numDigits, 10, QLatin1Char('0'));
     const QString filename = prefix + "_" + suffix + ".pmf";
     QFile outputFile(filename);
     if (outputFile.open(QIODevice::WriteOnly)) {
@@ -572,11 +558,214 @@ void HistogramPMFHistory::splitToFile(const QString &prefix) const
         }
         ofs.setRealNumberPrecision(OUTPUT_PRECISION);
         const size_t addr = address(pos);
-        ofs << qSetFieldWidth(OUTPUT_WIDTH) << mHistoryData[i][addr] << qSetFieldWidth(0);
+        ofs << qSetFieldWidth(OUTPUT_WIDTH) << mHistoryData[i][addr]
+            << qSetFieldWidth(0);
         ofs << '\n';
       }
       ofs.flush();
     }
     outputFile.close();
   }
+}
+
+PMFPathFinder::PMFPathFinder()
+{
+  hasData = false;
+}
+
+PMFPathFinder::PMFPathFinder(const HistogramScalar<double> &histogram,
+                             const QVector<GridDataPatch> &patchList,
+                             const QVector<double> &pos_start,
+                             const QVector<double> &pos_end,
+                             Graph::FindPathMode mode,
+                             Graph::FindPathAlgorithm algorithm) {
+  setup(histogram, patchList, pos_start, pos_end, mode, algorithm);
+}
+
+void PMFPathFinder::setup(const HistogramScalar<double> &histogram,
+                          const QVector<GridDataPatch> &patchList,
+                          const QVector<double> &pos_start,
+                          const QVector<double> &pos_end,
+                          Graph::FindPathMode mode,
+                          Graph::FindPathAlgorithm algorithm) {
+  mHistogram = histogram;
+  mPatchList = patchList;
+  mPosStart = pos_start;
+  mPosEnd = pos_end;
+  mHistogramBackup = histogram;
+  mMode = mode;
+  mAlgorithm = algorithm;
+  applyPatch();
+  hasData = true;
+}
+
+bool PMFPathFinder::initialized() const
+{
+  return hasData;
+}
+
+void PMFPathFinder::findPath()
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  // setup the graph
+  setupGraph();
+  // find the starting address and ending address
+  bool startOk = false;
+  bool endOk = false;
+  const size_t start = mHistogram.address(mPosStart, &startOk);
+  const size_t end = mHistogram.address(mPosEnd, &endOk);
+  // check boundary
+  if (startOk && endOk) {
+    switch (mAlgorithm) {
+    case Graph::FindPathAlgorithm::Dijkstra: {
+      mResult = mGraph.Dijkstra(start, end, mMode);
+      break;
+    }
+    case Graph::FindPathAlgorithm::SPFA: {
+      mResult = mGraph.SPFA(start, end, mMode);
+      break;
+    }
+    default: {
+      mResult = Graph::FindPathResult();
+      qDebug() << "Unimplemented algorithm!\n";
+    }
+    }
+  }
+}
+
+void PMFPathFinder::writePath(const QString &filename) const
+{
+  QFile ofs_file(filename);
+  if (ofs_file.open(QFile::WriteOnly)) {
+    QTextStream out_stream(&ofs_file);
+    out_stream.setRealNumberNotation(QTextStream::FixedNotation);
+    for (size_t i = 0; i < mHistogram.histogramSize(); ++i) {
+      if (mResult.mVisitedNodes[i] == true) {
+        const auto pos = mHistogram.reverseAddress(i);
+        for (size_t j = 0; j < mHistogram.dimension(); ++j) {
+          out_stream << qSetFieldWidth(OUTPUT_WIDTH);
+          out_stream.setRealNumberPrecision(OUTPUT_POSITION_PRECISION);
+          out_stream << pos[j];
+          out_stream << qSetFieldWidth(0) << ' ';
+        }
+        out_stream << qSetFieldWidth(0);
+        out_stream << '\n';
+      }
+    }
+    out_stream.flush();
+    out_stream.reset();
+  }
+}
+
+void PMFPathFinder::writeVisitedRegion(const QString &filename) const
+{
+  QFile ofs_file(filename);
+  if (ofs_file.open(QFile::WriteOnly)) {
+    QTextStream out_stream(&ofs_file);
+    out_stream.setRealNumberNotation(QTextStream::FixedNotation);
+    for (size_t i = 0; i < mHistogram.histogramSize(); ++i) {
+      if (mResult.mVisitedNodes[i] == true) {
+        const auto pos = mHistogram.reverseAddress(i);
+        for (size_t j = 0; j < mHistogram.dimension(); ++j) {
+          out_stream << qSetFieldWidth(OUTPUT_WIDTH);
+          out_stream.setRealNumberPrecision(OUTPUT_POSITION_PRECISION);
+          out_stream << pos[j];
+          out_stream << qSetFieldWidth(0) << ' ';
+        }
+        out_stream << qSetFieldWidth(0);
+        out_stream << '\n';
+      }
+    }
+    out_stream.flush();
+    out_stream.reset();
+  }
+}
+
+void PMFPathFinder::writePatchedPMF(const QString &filename) const
+{
+  mHistogram.writeToFile(filename);
+}
+
+Graph::FindPathResult PMFPathFinder::result() const
+{
+  return mResult;
+}
+
+HistogramScalar<double> PMFPathFinder::histogram() const
+{
+  return mHistogram;
+}
+
+HistogramScalar<double> PMFPathFinder::histogramBackup() const
+{
+  return mHistogramBackup;
+}
+
+void PMFPathFinder::setupGraph()
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  mGraph = Graph(mHistogram.histogramSize(), true);
+  for (size_t i = 0; i < mHistogram.histogramSize(); ++i) {
+    const auto allNeighbors = mHistogram.allNeighborByAddress(i);
+    for (int j = 0; j < allNeighbors.size(); ++j) {
+      if (allNeighbors[j].second == true) {
+//        const double& pmf_i = mHistogram[i];
+        const double& pmf_j = mHistogram[allNeighbors[j].first];
+//        const double grad_ij =  pmf_j - pmf_i;
+//        const double weight = grad_ij;
+        const double weight = pmf_j;
+        mGraph.setEdge(i, allNeighbors[j].first, weight);
+      }
+    }
+  }
+}
+
+void PMFPathFinder::applyPatch()
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  mHistogram = mHistogramBackup;
+  QVector<Axis> patch_ax(mHistogram.dimension());
+  for (int patch_i = 0; patch_i < mPatchList.size(); ++patch_i) {
+    for (size_t dim = 0; dim < mHistogram.dimension(); ++dim) {
+      const double width = mHistogram.axes()[dim].width();
+      const size_t num_bins = std::floor(mPatchList[patch_i].mLength[dim] / width);
+      const double lower_bound = mPatchList[patch_i].mCenter[dim] - 0.5 * mPatchList[patch_i].mLength[dim];
+      const double upper_bound = mPatchList[patch_i].mCenter[dim] + 0.5 * mPatchList[patch_i].mLength[dim];
+      patch_ax[dim] = Axis(lower_bound, upper_bound, num_bins, mHistogram.axes()[dim].periodic());
+    }
+    HistogramScalar patch_hist = HistogramScalar<double>(patch_ax);
+    const double patch_value = mPatchList[patch_i].mValue;
+    patch_hist.applyFunction([patch_value](double){return patch_value;});
+    mHistogram.merge(patch_hist);
+  }
+}
+
+QVector<double> PMFPathFinder::posEnd() const
+{
+  return mPosEnd;
+}
+
+void PMFPathFinder::setPosEnd(const QVector<double> &posEnd)
+{
+  mPosEnd = posEnd;
+}
+
+QVector<double> PMFPathFinder::posStart() const
+{
+  return mPosStart;
+}
+
+void PMFPathFinder::setPosStart(const QVector<double> &posStart)
+{
+  mPosStart = posStart;
+}
+
+QVector<GridDataPatch> PMFPathFinder::patchList() const
+{
+  return mPatchList;
+}
+
+void PMFPathFinder::setPatchList(const QVector<GridDataPatch> &patchList)
+{
+  mPatchList = patchList;
 }
