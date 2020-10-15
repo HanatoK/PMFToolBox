@@ -36,7 +36,7 @@ void NAMDLog::readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread,
           const auto keyFound = mEnergyData.find(*it);
           if (keyFound == mEnergyData.end()) {
             mEnergyTitle.append(*it);
-            mEnergyData[*it] = QVector<double>();
+            mEnergyData[*it] = std::vector<double>();
           }
         }
       }
@@ -45,36 +45,36 @@ void NAMDLog::readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread,
       QStringList fields =
           line.split(QRegExp("[A-Z:\\s]+"), Qt::SkipEmptyParts);
       for (int i = 0; i < mEnergyTitle.size(); ++i) {
-        mEnergyData[mEnergyTitle[i]].append(fields[i].toDouble());
+        mEnergyData[mEnergyTitle[i]].push_back(fields[i].toDouble());
       }
     }
     if (line.startsWith("PAIR INTERACTION:")) {
       QStringList fields =
           line.split(QRegExp("[A-Z:_\\s]+"), Qt::SkipEmptyParts);
       if (fields.size() == 7) {
-        mPairData["VDW_FORCE"].append(QVector3D(
+        mPairData["VDW_FORCE"].push_back(QVector3D(
             fields[1].toDouble(), fields[2].toDouble(), fields[3].toDouble()));
-        mPairData["ELECT_FORCE"].append(QVector3D(
+        mPairData["ELECT_FORCE"].push_back(QVector3D(
             fields[4].toDouble(), fields[5].toDouble(), fields[6].toDouble()));
       }
     }
   }
 }
 
-QVector<double> NAMDLog::getStep() const { return getEnergyData("TS"); }
+std::vector<double> NAMDLog::getStep() const { return getEnergyData("TS"); }
 
-QVector<double> NAMDLog::getVdW() const { return getEnergyData("VDW"); }
+std::vector<double> NAMDLog::getVdW() const { return getEnergyData("VDW"); }
 
-QVector<double> NAMDLog::getElectrostatic() const {
+std::vector<double> NAMDLog::getElectrostatic() const {
   return getEnergyData("ELECT");
 }
 
-QVector<double> NAMDLog::getEnergyData(const QString &title, bool *ok) const {
+std::vector<double> NAMDLog::getEnergyData(const QString &title, bool *ok) const {
   const auto keyFound = mEnergyData.find(title);
   if (keyFound == mEnergyData.end()) {
     if (ok != nullptr)
       *ok = false;
-    return QVector<double>();
+    return std::vector<double>();
   } else {
     if (ok != nullptr)
       *ok = true;
@@ -82,11 +82,11 @@ QVector<double> NAMDLog::getEnergyData(const QString &title, bool *ok) const {
   }
 }
 
-QVector<ForceType> NAMDLog::getVdWForce() const {
+std::vector<ForceType> NAMDLog::getVdWForce() const {
   return mPairData.value("VDW_FORCE");
 }
 
-QVector<ForceType> NAMDLog::getElectrostaticForce() const {
+std::vector<ForceType> NAMDLog::getElectrostaticForce() const {
   return mPairData.value("ELECT_FORCE");
 }
 
@@ -99,13 +99,13 @@ size_t NAMDLog::size() const
 }
 
 doBinning::doBinning(HistogramScalar<double> &histogram,
-                     const QVector<int> &column)
+                     const std::vector<int> &column)
     : mHistogram(histogram), mColumn(column) {}
 
-void doBinning::operator()(const QVector<double> &fields, double energy) {
+void doBinning::operator()(const std::vector<double> &fields, double energy) {
   // get the position of current point from trajectory
-  QVector<double> pos(mHistogram.dimension());
-  for (int i = 0; i < pos.size(); ++i) {
+  std::vector<double> pos(mHistogram.dimension());
+  for (size_t i = 0; i < pos.size(); ++i) {
     pos[i] = fields[mColumn[i]];
   }
   bool inBoundary = false;
@@ -129,8 +129,8 @@ BinNAMDLogThread::~BinNAMDLogThread() {
 void BinNAMDLogThread::invokeThread(const NAMDLog &log,
                                     const QStringList &title,
                                     const QString &trajectoryFileName,
-                                    const QVector<Axis> &ax,
-                                    const QVector<int> &column) {
+                                    const std::vector<Axis> &ax,
+                                    const std::vector<int> &column) {
   qDebug() << Q_FUNC_INFO;
   QMutexLocker locker(&mutex);
   mLog = log;
@@ -146,11 +146,11 @@ void BinNAMDLogThread::invokeThread(const NAMDLog &log,
 void BinNAMDLogThread::run() {
   qDebug() << Q_FUNC_INFO;
   mutex.lock();
-  QVector<HistogramScalar<double>> histEnergy(mTitle.size(),
+  std::vector<HistogramScalar<double>> histEnergy(mTitle.size(),
                                               HistogramScalar<double>(mAxis));
-  QVector<doBinning> binning;
+  std::vector<doBinning> binning;
   for (int i = 0; i < mTitle.size(); ++i) {
-    binning.append(doBinning(histEnergy[i], mColumn));
+    binning.push_back(doBinning(histEnergy[i], mColumn));
   }
   HistogramScalar<double> histCount(mAxis);
   doBinning countBinning(histCount, mColumn);
@@ -161,7 +161,7 @@ void BinNAMDLogThread::run() {
     QStringList tmpFields;
     size_t lineNumber = 0;
     QString line;
-    QVector<double> fields;
+    std::vector<double> fields;
     double readSize = 0;
     int previousProgress = 0;
     bool read_ok = true;
@@ -190,7 +190,7 @@ void BinNAMDLogThread::run() {
       if (tmpFields[0].startsWith("#"))
         continue;
       for (const auto &i : tmpFields) {
-        fields.append(i.toDouble(&read_ok));
+        fields.push_back(i.toDouble(&read_ok));
         if (read_ok == false) {
           emit error("Failed to convert " + i + " to number!");
           break;

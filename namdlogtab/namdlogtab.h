@@ -42,7 +42,7 @@ public slots:
   void binningProgress(QString status, int x);
   void addAxis();
   void removeAxis();
-  void binningDone(QVector<HistogramScalar<double> > data);
+  void binningDone(std::vector<HistogramScalar<double> > data);
 
 private:
   Ui::NAMDLogTab *ui;
@@ -51,7 +51,7 @@ private:
   NAMDLog mLog;
   BinNAMDLogThread mBinningThread;
   QStringList mSeletedTitle;
-  QVector<HistogramScalar<double>> mHistogram;
+  std::vector<HistogramScalar<double>> mHistogram;
 };
 
 #endif // NAMDLOGTAB_H

@@ -53,11 +53,11 @@ template <typename T> T stringToNumber(const QString &str, bool *ok = nullptr) {
   }
 }
 
-template <typename T> QVector<T> splitStringToNumbers(const QString &str) {
+template <typename T> std::vector<T> splitStringToNumbers(const QString &str) {
   QStringList tmpFields = str.split(QRegExp("[(),\\s]+"), Qt::SkipEmptyParts);
-  QVector<T> result;
+  std::vector<T> result;
   for (auto it = tmpFields.begin(); it != tmpFields.end(); ++it) {
-    result.append(stringToNumber<T>(*it));
+    result.push_back(stringToNumber<T>(*it));
   }
   return result;
 }
@@ -75,7 +75,7 @@ void print_deque(const std::deque<T> &queue, const char *head_line) {
 
 template <typename T>
 void debug_priority_queue(
-    std::priority_queue<std::pair<T, size_t>, QVector<std::pair<T, size_t>>,
+    std::priority_queue<std::pair<T, size_t>, std::vector<std::pair<T, size_t>>,
                         std::greater<std::pair<T, size_t>>>
         pq,
     const char *str) {
@@ -100,5 +100,19 @@ void print_vector(const std::vector<T> &v, const char *head_line) {
 QString boolToString(bool x);
 
 double kbT(const double temperature, const QString &unit);
+
+template <typename T, typename Alloc>
+QDebug operator<<(QDebug dbg, const std::deque<T, Alloc>& data) {
+  QString str{"("};
+  for (auto it = data.begin(); it != data.end(); ++it) {
+    str.append(QString::number(*it));
+    if (it != data.end() - 1) {
+      str.append(", ");
+    }
+  }
+  str.append(")");
+  dbg << str;
+  return dbg;
+}
 
 #endif // HELPER_H

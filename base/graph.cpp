@@ -5,7 +5,7 @@ Graph::Graph() : mNumNodes(0), mIsDirected(false), mHead(0) {}
 Graph::Graph(const size_t numNodes, bool directed)
     : mNumNodes(numNodes), mIsDirected(directed), mHead(mNumNodes) {
   for (size_t i = 0; i < mNumNodes; ++i) {
-    mHead[i].append(Node{i, 0.0});
+    mHead[i].push_back(Node{i, 0.0});
   }
 }
 
@@ -19,8 +19,8 @@ bool Graph::setEdge(size_t source, size_t destination, double weight) {
   return success;
 }
 
-bool Graph::setEdges(const QVector<Graph::Edge> &edges) {
-  for (int i = 0; i < edges.size(); ++i) {
+bool Graph::setEdges(const std::vector<Edge> &edges) {
+  for (size_t i = 0; i < edges.size(); ++i) {
     if (!setEdge(edges[i].mSource, edges[i].mDestination, edges[i].mWeight)) {
       return false;
     }
@@ -51,16 +51,19 @@ void Graph::printGraph(std::ostream &os) const {
     if (current.size() < 2)
       continue;
     os << ", linked to ";
-    for (int j = 1; j < current.size(); ++j) {
-      os << "(" << current[j].mIndex << " weight " << current[j].mWeight
+    auto it_current = current.cbegin();
+    std::advance(it_current, 1);
+    while (it_current != current.cend()) {
+      os << "(" << it_current->mIndex << " weight " << it_current->mWeight
          << ") ";
+      std::advance(it_current, 1);
     }
     os << "\n";
   }
 }
 
 void Graph::DFS(size_t start, std::function<void(const Node &)> func) const {
-  QVector<bool> visited(mNumNodes, false);
+  std::vector<bool> visited(mNumNodes, false);
   DFSHelper(start, visited, func);
 }
 
@@ -130,10 +133,10 @@ double Graph::findMaxSumWeight() const
 {
   double result = 0;
   for (size_t i = 0; i < mNumNodes; ++i) {
-    auto this_node = mHead[i].begin();
-    while (this_node != mHead[i].end()) {
+    auto this_node = mHead[i].cbegin();
+    while (this_node != mHead[i].cend()) {
       result += std::abs(this_node->mWeight);
-      this_node = this_node + 1;
+      std::advance(this_node, 1);
     }
   }
   return result;
@@ -158,12 +161,12 @@ bool Graph::setEdgeHelper(size_t source, size_t destination, double weight) {
   if (it == headList.end()) {
     // the destination vertex is not in the list
     // create a new edge
-    headList.append(Node{destination, weight});
+    headList.push_back(Node{destination, weight});
   }
   return true;
 }
 
-void Graph::DFSHelper(size_t i, QVector<bool> &visited,
+void Graph::DFSHelper(size_t i, std::vector<bool> &visited,
                       std::function<void(const Node &)> func) const {
   // mark this vertex as visited
   visited[i] = true;
@@ -185,9 +188,11 @@ void Graph::sortByWeight() {
     // no need to sort if this is an isolated vertex
     if (current_list.size() < 2)
       continue;
-    // TODO: std::sort
+    auto it_sort_start = current_list.begin();
+    auto it_sort_end = current_list.end();
+    std::advance(it_sort_start, 1);
     std::sort(
-        current_list.begin() + 1, current_list.end(),
+        it_sort_start, it_sort_end,
         [](const Node &a, const Node &b) { return a.mWeight < b.mWeight; });
   }
 }
@@ -307,7 +312,7 @@ void Graph::FindPathResult::dump() const
   }
   cout << endl;
   cout << "Distance " << endl;
-  for (int i = 0; i < mDistances.size(); ++i) {
+  for (size_t i = 0; i < mDistances.size(); ++i) {
     cout << "Node [" << i << "]: " << " distance = " << mDistances[i] << endl;
   }
   cout << "Number of loops in Dijkstra's algorithm: " << mNumLoops << endl;

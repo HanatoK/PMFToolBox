@@ -149,20 +149,20 @@ Qt::ItemFlags TableModelBinning::flags(const QModelIndex &index) const
   return Qt::ItemIsEditable | QAbstractTableModel::flags(index);
 }
 
-QVector<int> TableModelBinning::fromColumns() const
+std::vector<int> TableModelBinning::fromColumns() const
 {
-  QVector<int> result;
+  std::vector<int> result;
   for (const auto& i : mAxisList) {
-    result.append(i.mColumn);
+    result.push_back(i.mColumn);
   }
   return result;
 }
 
-QVector<Axis> TableModelBinning::targetAxis() const
+std::vector<Axis> TableModelBinning::targetAxis() const
 {
-  QVector<Axis> result;
+  std::vector<Axis> result;
   for (const auto& i : mAxisList) {
-    result.append(i.mAxis);
+    result.push_back(i.mAxis);
   }
   return result;
 }

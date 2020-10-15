@@ -20,9 +20,9 @@ public:
   bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
   Qt::ItemFlags flags(const QModelIndex &index) const override;
   void addItem(const Axis& ax, int col, bool inPMF, bool reweightingTo);
-  QVector<int> fromColumns() const;
-  QVector<int> toColumns() const;
-  QVector<Axis> targetAxis() const;
+  std::vector<int> fromColumns() const;
+  std::vector<int> toColumns() const;
+  std::vector<Axis> targetAxis() const;
   void clearAll();
 private:
   QList<AxisView> mAxisList;

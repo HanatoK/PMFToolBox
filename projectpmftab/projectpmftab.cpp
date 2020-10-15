@@ -34,7 +34,7 @@ void ProjectPMFTab::saveFile()
 void ProjectPMFTab::projectPMF()
 {
   qDebug() << "Calling " << Q_FUNC_INFO;
-  const QVector<size_t> toAxis = splitStringToNumbers<size_t>(ui->lineEditProjectTo->text());
+  const std::vector<size_t> toAxis = splitStringToNumbers<size_t>(ui->lineEditProjectTo->text());
   const QString saveFile = ui->lineEditOutput->text();
   const double kbt = kbT(ui->lineEditTemperature->text().toDouble(), ui->comboBoxUnit->currentText());
   // check origin PMF
@@ -54,7 +54,7 @@ void ProjectPMFTab::projectPMF()
     return;
   }
   // check axis input
-  for (int i = 0; i < toAxis.size(); ++i) {
+  for (size_t i = 0; i < toAxis.size(); ++i) {
     if (toAxis[i] >= mOriginPMF.dimension()) {
       const QString errorMsg = QString("Axis %1 is larger than the dimensionality of the PMF.").arg(toAxis[i]);
       qDebug() << Q_FUNC_INFO << ": " << errorMsg;

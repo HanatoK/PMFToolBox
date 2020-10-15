@@ -90,8 +90,8 @@ void NAMDLogTab::runBinning()
     mSeletedTitle = dialog.selectedTitle();
     qDebug() << Q_FUNC_INFO << ": seleted titles" << mSeletedTitle;
   }
-  const QVector<int> columns = mTableModel->fromColumns();
-  const QVector<Axis> axes = mTableModel->targetAxis();
+  const std::vector<int> columns = mTableModel->fromColumns();
+  const std::vector<Axis> axes = mTableModel->targetAxis();
   const QString trajectoryFileName = ui->lineEditColvarsTrajectory->text();
 //  const QString outputFilePrefix = ui->lineEditOutput->text();
   if (mSeletedTitle.empty() || columns.empty() || axes.empty() /*|| outputFilePrefix.isEmpty()*/ || trajectoryFileName.isEmpty()) {
@@ -123,7 +123,7 @@ void NAMDLogTab::removeAxis()
   mTableModel->layoutChanged();
 }
 
-void NAMDLogTab::binningDone(QVector<HistogramScalar<double> > data)
+void NAMDLogTab::binningDone(std::vector<HistogramScalar<double> > data)
 {
   qDebug() << "Calling " << Q_FUNC_INFO;
   mHistogram = data;

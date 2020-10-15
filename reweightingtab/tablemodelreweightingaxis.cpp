@@ -171,29 +171,29 @@ void TableModelReweightingAxis::addItem(const Axis &ax, int col, bool inPMF, boo
   emit layoutChanged();
 }
 
-QVector<int> TableModelReweightingAxis::fromColumns() const
+std::vector<int> TableModelReweightingAxis::fromColumns() const
 {
-  QVector<int> result;
+  std::vector<int> result;
   for (auto it = mAxisList.begin(); it != mAxisList.end(); ++it) {
-    if (it->mInPMF) result.append(it->mColumn);
+    if (it->mInPMF) result.push_back(it->mColumn);
   }
   return result;
 }
 
-QVector<Axis> TableModelReweightingAxis::targetAxis() const
+std::vector<Axis> TableModelReweightingAxis::targetAxis() const
 {
-  QVector<Axis> result;
+  std::vector<Axis> result;
   for (auto it = mAxisList.begin(); it != mAxisList.end(); ++it) {
-    if (it->mReweightingTo) result.append(it->mAxis);
+    if (it->mReweightingTo) result.push_back(it->mAxis);
   }
   return result;
 }
 
-QVector<int> TableModelReweightingAxis::toColumns() const
+std::vector<int> TableModelReweightingAxis::toColumns() const
 {
-  QVector<int> result;
+  std::vector<int> result;
   for (auto it = mAxisList.begin(); it != mAxisList.end(); ++it) {
-    if (it->mReweightingTo) result.append(it->mColumn);
+    if (it->mReweightingTo) result.push_back(it->mColumn);
   }
   return result;
 }

@@ -62,8 +62,8 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &
 {
   qDebug() << Q_FUNC_INFO;
   QString line;
-  QVector<double> pos(PMFHistory.dimension(), 0);
-  QVector<double> pmfData(PMFHistory.histogramSize(), 0);
+  std::vector<double> pos(PMFHistory.dimension(), 0);
+  std::vector<double> pmfData(PMFHistory.histogramSize(), 0);
   QStringList tmp_fields;
   bool firsttime = true;
   double readSize = 0;

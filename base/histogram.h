@@ -11,8 +11,8 @@
 #include <QString>
 #include <QTextStream>
 #include <QThread>
-#include <QVector>
 
+#include <vector>
 #include <functional>
 #include <cctype>
 
@@ -33,7 +33,7 @@ public:
   size_t index(double x, bool *inBoundary = nullptr) const;
   double wrap(double x) const;
   QString infoHeader() const;
-  QVector<double> getMiddlePoints() const;
+  std::vector<double> getMiddlePoints() const;
   double lowerBound() const;
   double upperBound() const;
   double setLowerBound(double newLowerBound);
@@ -68,37 +68,37 @@ class HistogramBase {
 public:
   HistogramBase();
   virtual ~HistogramBase();
-  explicit HistogramBase(const QVector<Axis> &ax);
+  explicit HistogramBase(const std::vector<Axis> &ax);
   virtual bool readFromStream(QTextStream &ifs);
   virtual bool writeToStream(QTextStream &ofs) const;
-  bool isInGrid(const QVector<double> &position) const;
-  virtual QVector<size_t> index(const QVector<double> &position,
+  bool isInGrid(const std::vector<double> &position) const;
+  virtual std::vector<size_t> index(const std::vector<double> &position,
                                 bool *inBoundary = nullptr) const;
-  virtual size_t address(const QVector<double> &position,
+  virtual size_t address(const std::vector<double> &position,
                          bool *inBoundary = nullptr) const;
-  QVector<double> reverseAddress(size_t address,
+  std::vector<double> reverseAddress(size_t address,
                                  bool *inBoundary = nullptr) const;
-  virtual QPair<size_t, bool> neighbor(const QVector<double> &position,
+  virtual QPair<size_t, bool> neighbor(const std::vector<double> &position,
                                        size_t axisIndex,
                                        bool previous = false) const;
   virtual QPair<size_t, bool> neighborByAddress(size_t address,
                                                 size_t axisIndex,
                                                 bool previous = false) const;
-  virtual QVector<QPair<size_t, bool>>
-  allNeighbor(const QVector<double> &position) const;
-  virtual QVector<QPair<size_t, bool>>
+  virtual std::vector<QPair<size_t, bool>>
+  allNeighbor(const std::vector<double> &position) const;
+  virtual std::vector<QPair<size_t, bool>>
   allNeighborByAddress(size_t address) const;
   size_t histogramSize() const;
   size_t dimension() const;
-  QVector<Axis> axes() const;
-  QVector<QVector<double>> pointTable() const;
+  std::vector<Axis> axes() const;
+  std::vector<std::vector<double> > pointTable() const;
 
 protected:
   size_t mNdim;
   size_t mHistogramSize;
-  QVector<Axis> mAxes;
-  QVector<QVector<double>> mPointTable;
-  QVector<size_t> mAccu;
+  std::vector<Axis> mAxes;
+  std::vector<std::vector<double>> mPointTable;
+  std::vector<size_t> mAccu;
 
 private:
   void fillTable();
@@ -110,29 +110,29 @@ public:
   static_assert(std::is_arithmetic<T>::value,
                 "HistogramScalar requires a scalar type!");
   HistogramScalar();
-  explicit HistogramScalar(const QVector<Axis> &ax);
+  explicit HistogramScalar(const std::vector<Axis> &ax);
   virtual ~HistogramScalar();
   virtual bool readFromStream(QTextStream &ifs) override;
   virtual bool readFromFile(const QString &filename);
   virtual bool writeToStream(QTextStream &ofs) const override;
   virtual bool writeToFile(const QString &filename) const;
-  virtual T operator()(const QVector<double> &position);
-  virtual const T operator()(const QVector<double> &position) const;
+  virtual T operator()(const std::vector<double> &position);
+  virtual const T operator()(const std::vector<double> &position) const;
   virtual T &operator[](size_t addr);
   virtual const T &operator[](size_t addr) const;
   virtual void applyFunction(std::function<T(T)> f);
   T sum() const;
   T minimum() const;
-  const QVector<T> &data() const;
-  QVector<T> &data();
-  virtual QVector<T> getDerivative(const QVector<double> &pos,
+  const std::vector<T> &data() const;
+  std::vector<T> &data();
+  virtual std::vector<T> getDerivative(const std::vector<double> &pos,
                                    bool *inBoundary = nullptr) const;
-  virtual void generate(std::function<T(const QVector<double> &)> &func);
-  virtual bool set(const QVector<double> &pos, const T &value);
+  virtual void generate(std::function<T (const std::vector<double> &)> &func);
+  virtual bool set(const std::vector<double> &pos, const T &value);
   virtual void merge(const HistogramScalar<T> &source);
 
 protected:
-  QVector<T> mData;
+  std::vector<T> mData;
   static const int OUTPUT_PRECISION = 7;
   static const int OUTPUT_POSITION_PRECISION = 5;
   static const int OUTPUT_WIDTH = 14;
@@ -143,7 +143,7 @@ template <typename T> HistogramScalar<T>::HistogramScalar(): mData(0) {
 }
 
 template <typename T>
-HistogramScalar<T>::HistogramScalar(const QVector<Axis> &ax)
+HistogramScalar<T>::HistogramScalar(const std::vector<Axis> &ax)
     : HistogramBase(ax) {
   qDebug() << "Calling " << Q_FUNC_INFO;
   mData.resize(mHistogramSize);
@@ -161,7 +161,7 @@ bool HistogramScalar<T>::readFromStream(QTextStream &ifs) {
     return file_opened;
   // read data into m_data
   QString line;
-  QVector<double> pos(mNdim, 0);
+  std::vector<double> pos(mNdim, 0);
   QStringList tmp_fields;
   mData.resize(mHistogramSize);
   size_t dataLines = 0;
@@ -221,7 +221,7 @@ bool HistogramScalar<T>::writeToStream(QTextStream &ofs) const {
   bool file_opened = HistogramBase::writeToStream(ofs);
   if (!file_opened)
     return file_opened;
-  QVector<double> pos(mNdim, 0);
+  std::vector<double> pos(mNdim, 0);
   ofs.setRealNumberNotation(QTextStream::FixedNotation);
   for (size_t i = 0; i < mHistogramSize; ++i) {
     for (size_t j = 0; j < mNdim; ++j) {
@@ -257,7 +257,7 @@ bool HistogramScalar<T>::writeToFile(const QString &filename) const {
 }
 
 template <typename T>
-T HistogramScalar<T>::operator()(const QVector<double> &position) {
+T HistogramScalar<T>::operator()(const std::vector<double> &position) {
   bool inBoundary = true;
   const size_t addr = address(position, &inBoundary);
   if (inBoundary == false) {
@@ -268,7 +268,7 @@ T HistogramScalar<T>::operator()(const QVector<double> &position) {
 }
 
 template <typename T>
-const T HistogramScalar<T>::operator()(const QVector<double> &position) const {
+const T HistogramScalar<T>::operator()(const std::vector<double> &position) const {
   bool inBoundary = true;
   const size_t addr = address(position, &inBoundary);
   if (inBoundary == false) {
@@ -290,7 +290,7 @@ const T &HistogramScalar<T>::operator[](size_t addr) const {
 template <typename T>
 void HistogramScalar<T>::applyFunction(std::function<T(T)> f) {
   qDebug() << "Calling " << Q_FUNC_INFO;
-  for (int i = 0; i < mData.size(); ++i) {
+  for (size_t i = 0; i < mData.size(); ++i) {
     mData[i] = f(mData[i]);
   }
 }
@@ -307,28 +307,28 @@ template <typename T> T HistogramScalar<T>::minimum() const {
 }
 
 template<typename T>
-const QVector<T> &HistogramScalar<T>::data() const
+const std::vector<T> &HistogramScalar<T>::data() const
 {
   return mData;
 }
 
 template<typename T>
-QVector<T> &HistogramScalar<T>::data()
+std::vector<T> &HistogramScalar<T>::data()
 {
   return mData;
 }
 
 template <typename T>
-QVector<T> HistogramScalar<T>::getDerivative(const QVector<double> &pos,
+std::vector<T> HistogramScalar<T>::getDerivative(const std::vector<double> &pos,
                                              bool *inBoundary) const {
   size_t addr;
   addr = address(pos, inBoundary);
   if (inBoundary != nullptr) {
     if (*inBoundary == false)
-      return QVector<T>(mNdim);
+      return std::vector<T>(mNdim);
   }
   const T data_this = mData[addr];
-  QVector<T> result(mNdim, T());
+  std::vector<T> result(mNdim, T());
   for (size_t i = 0; i < mNdim; ++i) {
     const double bin_width = mAxes[i].width();
     const size_t addr_first = addr - mAccu[i] * mAxes[i].index(pos[i]) + 0;
@@ -366,9 +366,9 @@ QVector<T> HistogramScalar<T>::getDerivative(const QVector<double> &pos,
 
 template <typename T>
 void HistogramScalar<T>::generate(
-    std::function<T(const QVector<double> &)> &func) {
+    std::function<T(const std::vector<double> &)> &func) {
   qDebug() << "Calling " << Q_FUNC_INFO;
-  QVector<double> pos(mNdim, 0.0);
+  std::vector<double> pos(mNdim, 0.0);
   for (size_t i = 0; i < mHistogramSize; ++i) {
     for (size_t j = 0; j < mNdim; ++j) {
       pos[j] = mPointTable[j][i];
@@ -379,7 +379,7 @@ void HistogramScalar<T>::generate(
 }
 
 template <typename T>
-bool HistogramScalar<T>::set(const QVector<double> &pos, const T &value) {
+bool HistogramScalar<T>::set(const std::vector<double> &pos, const T &value) {
   qDebug() << "Calling " << Q_FUNC_INFO;
   bool inBoundary = true;
   const size_t addr = address(pos, &inBoundary);
@@ -396,7 +396,7 @@ void HistogramScalar<T>::merge(const HistogramScalar<T> &source) {
   for (size_t i = 0; i < source.histogramSize(); ++i) {
     bool inSourceBoundary = true;
     bool inThisBoundary = true;
-    const QVector<double> pos = source.reverseAddress(i, &inSourceBoundary);
+    const std::vector<double> pos = source.reverseAddress(i, &inSourceBoundary);
     const size_t this_addr = this->address(pos, &inThisBoundary);
     if (inSourceBoundary && inThisBoundary) {
       this->mData[this_addr] += source[i];
@@ -410,20 +410,20 @@ public:
   static_assert(std::is_arithmetic<T>::value,
                 "HistogramVector requires a scalar type!");
   HistogramVector();
-  HistogramVector(const QVector<Axis> &, const size_t);
+  HistogramVector(const std::vector<Axis> &, const size_t);
   virtual ~HistogramVector();
   virtual bool readFromStream(QTextStream &ifs, const size_t multiplicity = 0);
   virtual bool writeToStream(QTextStream &ofs) const override;
-  virtual QVector<T> operator()(const QVector<T> &);
+  virtual std::vector<T> operator()(const std::vector<T> &);
   T &operator[](int);
   const T &operator[](int) const;
   virtual void applyFunction(std::function<T(T)> f);
   virtual void
-  generate(std::function<QVector<T>(const QVector<double> &)> &func);
+  generate(std::function<std::vector<T>(const std::vector<double> &)> &func);
 
 protected:
   size_t mMultiplicity;
-  QVector<T> mData;
+  std::vector<T> mData;
 
 private:
   static const int OUTPUT_PRECISION = 7;
@@ -436,7 +436,7 @@ template <typename T> HistogramVector<T>::HistogramVector() : HistogramBase(), m
 }
 
 template <typename T>
-HistogramVector<T>::HistogramVector(const QVector<Axis> &ax,
+HistogramVector<T>::HistogramVector(const std::vector<Axis> &ax,
                                     const size_t multiplicity)
     : HistogramBase(ax), mMultiplicity(multiplicity) {
   qDebug() << "Calling " << Q_FUNC_INFO;
@@ -459,7 +459,7 @@ bool HistogramVector<T>::readFromStream(QTextStream &ifs,
   // try to use the dimensionality as multiplicity if it is not specified
   mMultiplicity = multiplicity > 0 ? multiplicity : mNdim;
   QString line;
-  QVector<double> pos(mNdim, 0);
+  std::vector<double> pos(mNdim, 0);
   QStringList tmp_fields;
   mData.resize(mHistogramSize * mMultiplicity);
   size_t dataLines = 0;
@@ -503,7 +503,7 @@ bool HistogramVector<T>::writeToStream(QTextStream &ofs) const {
   bool file_opened = HistogramBase::writeToStream(ofs);
   if (!file_opened)
     return file_opened;
-  QVector<double> pos(mNdim, 0);
+  std::vector<double> pos(mNdim, 0);
   ofs.setRealNumberNotation(QTextStream::FixedNotation);
   for (size_t i = 0; i < mHistogramSize; ++i) {
     ofs.setRealNumberPrecision(OUTPUT_POSITION_PRECISION);
@@ -526,16 +526,16 @@ bool HistogramVector<T>::writeToStream(QTextStream &ofs) const {
 }
 
 template <typename T>
-QVector<T> HistogramVector<T>::operator()(const QVector<T> &pos) {
+std::vector<T> HistogramVector<T>::operator ()(const std::vector<T> &pos) {
   bool inBoundary = true;
   const size_t addr = address(pos, &inBoundary);
   if (inBoundary) {
-    QVector<T> result(mMultiplicity);
+    std::vector<T> result(mMultiplicity);
     std::copy_n(mData.begin() + addr * mMultiplicity, mMultiplicity,
                 result.begin());
     return result;
   } else {
-    return QVector<T>(mMultiplicity, T());
+    return std::vector<T>(mMultiplicity, T());
   }
 }
 
@@ -556,15 +556,14 @@ void HistogramVector<T>::applyFunction(std::function<T(T)> f) {
 }
 
 template <typename T>
-void HistogramVector<T>::generate(
-    std::function<QVector<T>(const QVector<double> &)> &func) {
-  QVector<double> pos(mNdim, 0);
+void HistogramVector<T>::generate(std::function<std::vector<T> (const std::vector<double> &)> &func) {
+  std::vector<double> pos(mNdim, 0);
   for (size_t i = 0; i < mHistogramSize; ++i) {
     for (size_t j = 0; j < mNdim; ++j) {
       pos[j] = mPointTable[j][i];
     }
     const size_t addr = address(pos);
-    const QVector<T> result = func(pos);
+    const std::vector<T> result = func(pos);
     for (size_t k = 0; k < mMultiplicity; ++k) {
       mData[addr + k] = result[k];
     }
@@ -574,7 +573,7 @@ void HistogramVector<T>::generate(
 class HistogramPMF : public HistogramScalar<double> {
 public:
   HistogramPMF();
-  explicit HistogramPMF(const QVector<Axis> &ax);
+  explicit HistogramPMF(const std::vector<Axis> &ax);
   void toProbability(HistogramScalar<double> &probability, double kbt) const;
   void fromProbability(const HistogramScalar<double> &probability, double kbt);
 };
@@ -582,26 +581,26 @@ public:
 class HistogramProbability : public HistogramScalar<double> {
 public:
   HistogramProbability();
-  explicit HistogramProbability(const QVector<Axis> &ax);
+  explicit HistogramProbability(const std::vector<Axis> &ax);
   virtual ~HistogramProbability();
   void convertToFreeEnergy(double kbt);
-  HistogramProbability reduceDimension(const QVector<size_t> &new_dims) const;
+  HistogramProbability reduceDimension(const std::vector<size_t> &new_dims) const;
 };
 
 class HistogramPMFHistory: public HistogramBase {
 public:
   HistogramPMFHistory();
-  HistogramPMFHistory(const QVector<Axis>& ax);
-  void appendHistogram(const QVector<double>& data);
-  QVector<double> computeRMSD() const;
-  QVector<double> computeRMSD(const QVector<double> &referenceData) const;
+  HistogramPMFHistory(const std::vector<Axis> &ax);
+  void appendHistogram(const std::vector<double>& data);
+  std::vector<double> computeRMSD() const;
+  std::vector<double> computeRMSD(const std::vector<double> &referenceData) const;
   void splitToFile(const QString& prefix) const;
 protected:
   static const int OUTPUT_PRECISION = 7;
   static const int OUTPUT_POSITION_PRECISION = 5;
   static const int OUTPUT_WIDTH = 14;
 private:
-  QList<QVector<double>> mHistoryData;
+  QList<std::vector<double>> mHistoryData;
 };
 
 struct GridDataPatch {
@@ -613,10 +612,10 @@ struct GridDataPatch {
 class PMFPathFinder {
 public:
   PMFPathFinder();
-  PMFPathFinder(const HistogramScalar<double>& histogram, const QVector<GridDataPatch> &patchList,
-                const QVector<double>& pos_start, const QVector<double>& pos_end, Graph::FindPathMode mode, Graph::FindPathAlgorithm algorithm);
-  void setup(const HistogramScalar<double>& histogram, const QVector<GridDataPatch> &patchList,
-             const QVector<double>& pos_start, const QVector<double>& pos_end, Graph::FindPathMode mode, Graph::FindPathAlgorithm algorithm);
+  PMFPathFinder(const HistogramScalar<double>& histogram, const std::vector<GridDataPatch> &patchList,
+                const std::vector<double>& pos_start, const std::vector<double>& pos_end, Graph::FindPathMode mode, Graph::FindPathAlgorithm algorithm);
+  void setup(const HistogramScalar<double>& histogram, const std::vector<GridDataPatch> &patchList,
+             const std::vector<double>& pos_start, const std::vector<double>& pos_end, Graph::FindPathMode mode, Graph::FindPathAlgorithm algorithm);
   bool initialized() const;
   void findPath();
   void writePath(const QString& filename) const;
@@ -625,12 +624,12 @@ public:
   Graph::FindPathResult result() const;
   HistogramScalar<double> histogram() const;
   HistogramScalar<double> histogramBackup() const;
-  QVector<GridDataPatch> patchList() const;
-  void setPatchList(const QVector<GridDataPatch> &patchList);
-  QVector<double> posStart() const;
-  void setPosStart(const QVector<double> &posStart);
-  QVector<double> posEnd() const;
-  void setPosEnd(const QVector<double> &posEnd);
+  std::vector<GridDataPatch> patchList() const;
+  void setPatchList(const std::vector<GridDataPatch> &patchList);
+  std::vector<double> posStart() const;
+  void setPosStart(const std::vector<double> &posStart);
+  std::vector<double> posEnd() const;
+  void setPosEnd(const std::vector<double> &posEnd);
 
 private:
   void setupGraph();
@@ -638,9 +637,9 @@ private:
   bool hasData;
   HistogramScalar<double> mHistogram;
   HistogramScalar<double> mHistogramBackup;
-  QVector<GridDataPatch> mPatchList;
-  QVector<double> mPosStart;
-  QVector<double> mPosEnd;
+  std::vector<GridDataPatch> mPatchList;
+  std::vector<double> mPosStart;
+  std::vector<double> mPosEnd;
   Graph mGraph;
   Graph::FindPathAlgorithm mAlgorithm;
   Graph::FindPathMode mMode;

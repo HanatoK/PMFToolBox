@@ -63,13 +63,13 @@ void FindPathTab::saveFile() {
 
 void FindPathTab::findPath() {
   qDebug() << "Calling " << Q_FUNC_INFO;
-  const QVector<double> posStart =
+  const std::vector<double> posStart =
       splitStringToNumbers<double>(ui->lineEditStart->text());
-  const QVector<double> posEnd =
+  const std::vector<double> posEnd =
       splitStringToNumbers<double>(ui->lineEditEnd->text());
   const Graph::FindPathAlgorithm algorithm = selectedAlgorithm();
   // TODO: allow to use a list of patches
-  QVector<GridDataPatch> patchList;
+  std::vector<GridDataPatch> patchList;
   const Graph::FindPathMode mode = Graph::FindPathMode::MFEPMode;
   // check
   if (mPMF.dimension() == 0) {
@@ -86,8 +86,8 @@ void FindPathTab::findPath() {
     errorBox.critical(this, "Error", errorMsg);
     return;
   }
-  if (posStart.size() != int(mPMF.dimension()) ||
-      posEnd.size() != int(mPMF.dimension())) {
+  if (posStart.size() != mPMF.dimension() ||
+      posEnd.size() != mPMF.dimension()) {
     const QString errorMsg{"Dimensionality of starting or ending"};
     return;
   }

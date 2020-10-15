@@ -19,7 +19,7 @@ HistoryPMFTab::HistoryPMFTab(QWidget *parent) :
   connect(ui->pushButtonComputeRMSD, &QPushButton::clicked, this, &HistoryPMFTab::computeRMSD);
 }
 
-void HistoryPMFTab::writeRMSDToFile(const QVector<double>& rmsd, const QString &filename)
+void HistoryPMFTab::writeRMSDToFile(const std::vector<double>& rmsd, const QString &filename)
 {
   qDebug() << "Calling " << Q_FUNC_INFO;
   qDebug() << Q_FUNC_INFO << ": trying to open file " << filename;
@@ -27,7 +27,7 @@ void HistoryPMFTab::writeRMSDToFile(const QVector<double>& rmsd, const QString &
   if (RMSDFile.open(QIODevice::WriteOnly)) {
     QTextStream ofs(&RMSDFile);
     ofs.setRealNumberNotation(QTextStream::FixedNotation);
-    for (int i = 0; i < rmsd.size(); ++i) {
+    for (size_t i = 0; i < rmsd.size(); ++i) {
       ofs << qSetFieldWidth(OUTPUT_WIDTH);
       ofs << i;
       ofs << qSetFieldWidth(0) << ' ';
@@ -124,7 +124,7 @@ void HistoryPMFTab::computeRMSDDone(const HistogramPMFHistory& hist) {
   mPMFHistory = hist;
   disconnect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryPMFTab::computeRMSDProgress);
   disconnect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::computeRMSDDone);
-  QVector<double> rmsd;
+  std::vector<double> rmsd;
   if (mReferencePMF.dimension() > 0) {
     qDebug() << Q_FUNC_INFO << ": compute rmsd with respect to the reference PMF.";
     rmsd = mPMFHistory.computeRMSD(mReferencePMF.data());

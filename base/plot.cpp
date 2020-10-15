@@ -39,7 +39,7 @@ bool PMFPlot::plotPMF2D(const HistogramScalar<double> &histogram)
   const size_t numYbins = histogram.axes()[1].bin();
   qDebug() << "X bins = " << numXbins << " ; Y bins = " << numYbins;
   // from Qt 5.14, range constructor
-  const QVector<double>& zData = histogram.data();
+  const QVector<double>& zData{histogram.data().begin(), histogram.data().end()};
   // setup the scales of x,y axes
   setAxisScale(QwtPlot::xBottom, histogram.axes()[0].lowerBound(),
                histogram.axes()[0].upperBound());
@@ -103,8 +103,8 @@ bool PMFPlot::plotPMF1D(const HistogramScalar<double> &histogram)
   curve->setPen(Qt::red, 2);
   curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
   QPolygonF points;
-  const QVector<QVector<double>> &point_table = histogram.pointTable();
-  QVector<double> pos(1, 0);
+  const std::vector<std::vector<double>> &point_table = histogram.pointTable();
+  std::vector<double> pos(1, 0);
   for (size_t i = 0; i < histogram.histogramSize(); ++i) {
     pos[0] = point_table[0][i];
     const auto val = histogram(pos);
@@ -116,7 +116,7 @@ bool PMFPlot::plotPMF1D(const HistogramScalar<double> &histogram)
   return true;
 }
 
-void PMFPlot::plotPath2D(const QVector<QVector<double>> &pathPositions, bool clearFigure)
+void PMFPlot::plotPath2D(const std::vector<std::vector<double> > &pathPositions, bool clearFigure)
 {
   if (clearFigure) {
     detachItems();
@@ -133,7 +133,7 @@ void PMFPlot::plotPath2D(const QVector<QVector<double>> &pathPositions, bool cle
   replot();
 }
 
-void PMFPlot::plotEnergyAlongPath(const QVector<double> &energies, bool clearFigure)
+void PMFPlot::plotEnergyAlongPath(const std::vector<double> &energies, bool clearFigure)
 {
   const double xMin = 0.0;
   const double xMax = 1.0;
@@ -153,7 +153,7 @@ void PMFPlot::plotEnergyAlongPath(const QVector<double> &energies, bool clearFig
   curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
   QPolygonF points;
   const double stepSize = (xMax - xMin) / (energies.size() - 1);
-  for (int i = 0; i < energies.size(); ++i) {
+  for (size_t i = 0; i < energies.size(); ++i) {
     points.append(QPointF(xMin + i * stepSize, energies[i]));
   }
   curve->setSamples(points);
@@ -188,7 +188,7 @@ RMSDPlot::RMSDPlot(const QwtText &title, QWidget *parent): QwtPlot(title, parent
 
 }
 
-void RMSDPlot::PlotRMSD(const QVector<double> &rmsd)
+void RMSDPlot::PlotRMSD(const std::vector<double> &rmsd)
 {
   qDebug() << "Calling " << Q_FUNC_INFO;
   detachItems();
@@ -210,7 +210,7 @@ void RMSDPlot::PlotRMSD(const QVector<double> &rmsd)
   curve->setPen(Qt::red, 2);
   curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
   QPolygonF points;
-  for (int i = 0; i < rmsd.size(); ++i) {
+  for (size_t i = 0; i < rmsd.size(); ++i) {
     points.append(QPointF(i, rmsd[i]));
   }
   curve->setSamples(points);

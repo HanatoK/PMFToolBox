@@ -9,7 +9,7 @@ HistogramBase::HistogramBase()
 
 HistogramBase::~HistogramBase() { qDebug() << "Calling " << Q_FUNC_INFO; }
 
-HistogramBase::HistogramBase(const QVector<Axis> &ax)
+HistogramBase::HistogramBase(const std::vector<Axis> &ax)
     : mNdim(ax.size()), mAxes(ax), mAccu(mNdim) {
   qDebug() << "Calling " << Q_FUNC_INFO;
   if (mNdim == 0)
@@ -77,7 +77,7 @@ bool HistogramBase::writeToStream(QTextStream &ofs) const {
   return true;
 }
 
-bool HistogramBase::isInGrid(const QVector<double> &position) const {
+bool HistogramBase::isInGrid(const std::vector<double> &position) const {
   auto it_val = position.cbegin();
   auto it_ax = mAxes.cbegin();
   while (it_ax != mAxes.cend()) {
@@ -87,9 +87,9 @@ bool HistogramBase::isInGrid(const QVector<double> &position) const {
   return true;
 }
 
-QVector<size_t> HistogramBase::index(const QVector<double> &position,
-                                     bool *inBoundary) const {
-  QVector<size_t> idx(mNdim, 0);
+std::vector<size_t> HistogramBase::index(const std::vector<double> &position,
+                                         bool *inBoundary) const {
+  std::vector<size_t> idx(mNdim, 0);
   for (size_t i = 0; i < mNdim; ++i) {
     if (inBoundary != nullptr) {
       idx[i] = mAxes[i].index(position[i], inBoundary);
@@ -104,7 +104,7 @@ QVector<size_t> HistogramBase::index(const QVector<double> &position,
   return idx;
 }
 
-size_t HistogramBase::address(const QVector<double> &position,
+size_t HistogramBase::address(const std::vector<double> &position,
                               bool *inBoundary) const {
   size_t addr = 0;
   for (size_t i = 0; i < mNdim; ++i) {
@@ -118,9 +118,9 @@ size_t HistogramBase::address(const QVector<double> &position,
   return addr;
 }
 
-QVector<double> HistogramBase::reverseAddress(size_t address,
+std::vector<double> HistogramBase::reverseAddress(size_t address,
                                               bool *inBoundary) const {
-  QVector<double> pos(mNdim, 0);
+  std::vector<double> pos(mNdim, 0);
   if (address >= mHistogramSize) {
     if (inBoundary != nullptr) {
       *inBoundary = false;
@@ -139,11 +139,11 @@ QVector<double> HistogramBase::reverseAddress(size_t address,
   return pos;
 }
 
-QPair<size_t, bool> HistogramBase::neighbor(const QVector<double> &position,
+QPair<size_t, bool> HistogramBase::neighbor(const std::vector<double> &position,
                                             size_t axisIndex,
                                             bool previous) const {
   const double bin_width_i = mAxes[axisIndex].width();
-  QVector<double> pos_next(position);
+  std::vector<double> pos_next(position);
   if (previous == true) {
     pos_next[axisIndex] -= bin_width_i;
   } else {
@@ -159,7 +159,7 @@ QPair<size_t, bool> HistogramBase::neighborByAddress(size_t address,
                                                      bool previous) const {
   if (address >= mHistogramSize)
     return QPair(0, false);
-  QVector<size_t> index(mNdim, 0);
+  std::vector<size_t> index(mNdim, 0);
   for (int i = mNdim - 1; i >= 0; --i) {
     index[i] = static_cast<size_t>(
         std::floor(static_cast<double>(address) / mAccu[i]));
@@ -201,9 +201,9 @@ QPair<size_t, bool> HistogramBase::neighborByAddress(size_t address,
   return QPair(neighbour_address, true);
 }
 
-QVector<QPair<size_t, bool>>
-HistogramBase::allNeighbor(const QVector<double> &position) const {
-  QVector<QPair<size_t, bool>> results(mNdim * 2);
+std::vector<QPair<size_t, bool>>
+HistogramBase::allNeighbor(const std::vector<double> &position) const {
+  std::vector<QPair<size_t, bool>> results(mNdim * 2);
   for (size_t i = 0; i < mNdim; ++i) {
     results[i * 2] = neighbor(position, i, true);
     results[i * 2 + 1] = neighbor(position, i, false);
@@ -211,9 +211,8 @@ HistogramBase::allNeighbor(const QVector<double> &position) const {
   return results;
 }
 
-QVector<QPair<size_t, bool>>
-HistogramBase::allNeighborByAddress(size_t address) const {
-  QVector<QPair<size_t, bool>> results(mNdim * 2);
+std::vector<QPair<size_t, bool> > HistogramBase::allNeighborByAddress(size_t address) const {
+  std::vector<QPair<size_t, bool>> results(mNdim * 2);
   for (size_t i = 0; i < mNdim; ++i) {
     results[i * 2] = neighborByAddress(address, i, true);
     results[i * 2 + 1] = neighborByAddress(address, i, false);
@@ -225,19 +224,19 @@ size_t HistogramBase::histogramSize() const { return mHistogramSize; }
 
 size_t HistogramBase::dimension() const { return mNdim; }
 
-QVector<Axis> HistogramBase::axes() const { return mAxes; }
+std::vector<Axis> HistogramBase::axes() const { return mAxes; }
 
-QVector<QVector<double>> HistogramBase::pointTable() const {
+std::vector<std::vector<double>> HistogramBase::pointTable() const {
   return mPointTable;
 }
 
 void HistogramBase::fillTable() {
   qDebug() << "Calling " << Q_FUNC_INFO;
-  QVector<QVector<double>> middlePoint(mNdim);
+  std::vector<std::vector<double>> middlePoint(mNdim);
   for (size_t i = 0; i < mNdim; ++i) {
     middlePoint[i] = mAxes[i].getMiddlePoints();
   }
-  mPointTable = QVector(mNdim, QVector<double>(mHistogramSize, 0.0));
+  mPointTable = std::vector(mNdim, std::vector<double>(mHistogramSize, 0.0));
   for (size_t i = 0; i < mNdim; ++i) {
     size_t repeatAll = 1, repeatOne = 1;
     for (size_t j = i + 1; j < mNdim; ++j) {
@@ -343,9 +342,9 @@ QString Axis::infoHeader() const {
   return str;
 }
 
-QVector<double> Axis::getMiddlePoints() const {
+std::vector<double> Axis::getMiddlePoints() const {
   double tmp = mLowerBound - 0.5 * mWidth;
-  QVector<double> result(mBins, 0.0);
+  std::vector<double> result(mBins, 0.0);
   for (auto &i : result) {
     tmp += mWidth;
     i = tmp;
@@ -407,7 +406,7 @@ AxisView::AxisView()
 
 HistogramPMF::HistogramPMF() : HistogramBase(), HistogramScalar<double>() {}
 
-HistogramPMF::HistogramPMF(const QVector<Axis> &ax)
+HistogramPMF::HistogramPMF(const std::vector<Axis> &ax)
     : HistogramBase(ax), HistogramScalar<double>(ax) {}
 
 void HistogramPMF::toProbability(HistogramScalar<double> &probability,
@@ -433,13 +432,13 @@ void HistogramPMF::fromProbability(const HistogramScalar<double> &probability,
 HistogramProbability::HistogramProbability()
     : HistogramBase(), HistogramScalar<double>() {}
 
-HistogramProbability::HistogramProbability(const QVector<Axis> &ax)
+HistogramProbability::HistogramProbability(const std::vector<Axis> &ax)
     : HistogramBase(ax), HistogramScalar<double>(ax) {}
 
 HistogramProbability::~HistogramProbability() {}
 
 void HistogramProbability::convertToFreeEnergy(double kbt) {
-  QVector<double> f_data(this->data());
+  std::vector<double> f_data(this->data());
   bool first_non_zero_value = true;
   double max_val = 0;
   for (auto &i : f_data) {
@@ -452,8 +451,8 @@ void HistogramProbability::convertToFreeEnergy(double kbt) {
       max_val = std::max(max_val, i);
     }
   }
-  const QVector<double> &p_data = this->data();
-  for (int i = 0; i < p_data.size(); ++i) {
+  const std::vector<double> &p_data = this->data();
+  for (size_t i = 0; i < p_data.size(); ++i) {
     if (p_data[i] == 0) {
       f_data[i] = max_val;
     }
@@ -466,15 +465,15 @@ void HistogramProbability::convertToFreeEnergy(double kbt) {
 }
 
 HistogramProbability
-HistogramProbability::reduceDimension(const QVector<size_t> &new_dims) const {
+HistogramProbability::reduceDimension(const std::vector<size_t> &new_dims) const {
   qDebug() << "Calling " << Q_FUNC_INFO;
-  QVector<Axis> new_ax;
-  for (int i = 0; i < new_dims.size(); ++i) {
+  std::vector<Axis> new_ax;
+  for (size_t i = 0; i < new_dims.size(); ++i) {
     new_ax.push_back(this->mAxes[new_dims[i]]);
   }
   HistogramProbability new_hist(new_ax);
-  QVector<double> pos(mNdim, 0.0);
-  QVector<double> new_pos(new_hist.dimension(), 0.0);
+  std::vector<double> pos(mNdim, 0.0);
+  std::vector<double> new_pos(new_hist.dimension(), 0.0);
   for (size_t i = 0; i < mHistogramSize; ++i) {
     for (size_t j = 0; j < mNdim; ++j) {
       pos[j] = mPointTable[j][i];
@@ -502,31 +501,30 @@ QDebug operator<<(QDebug dbg, const Axis &ax) {
 
 HistogramPMFHistory::HistogramPMFHistory() : HistogramBase() {}
 
-HistogramPMFHistory::HistogramPMFHistory(const QVector<Axis> &ax)
+HistogramPMFHistory::HistogramPMFHistory(const std::vector<Axis> &ax)
     : HistogramBase(ax) {}
 
-void HistogramPMFHistory::appendHistogram(const QVector<double> &data) {
-  mHistoryData.append(data);
+void HistogramPMFHistory::appendHistogram(const std::vector<double> &data) {
+  mHistoryData.push_back(data);
 }
 
-QVector<double> HistogramPMFHistory::computeRMSD() const {
-  const QVector<double> &lastFrame = mHistoryData.back();
+std::vector<double> HistogramPMFHistory::computeRMSD() const {
+  const std::vector<double> &lastFrame = mHistoryData.back();
   return computeRMSD(lastFrame);
 }
 
-QVector<double>
-HistogramPMFHistory::computeRMSD(const QVector<double> &referenceData) const {
+std::vector<double> HistogramPMFHistory::computeRMSD(const std::vector<double> &referenceData) const {
   qDebug() << "Calling " << Q_FUNC_INFO;
-  QVector<double> result;
+  std::vector<double> result;
   for (int i = 0; i < mHistoryData.size(); ++i) {
-    const QVector<double> &currentData = mHistoryData[i];
+    const std::vector<double> &currentData = mHistoryData[i];
     double rmsd = 0;
-    for (int j = 0; j < referenceData.size(); ++j) {
+    for (size_t j = 0; j < referenceData.size(); ++j) {
       const double diff = referenceData[j] - currentData[j];
       rmsd += diff * diff;
     }
     rmsd /= referenceData.size();
-    result.append(std::sqrt(rmsd));
+    result.push_back(std::sqrt(rmsd));
   }
   return result;
 }
@@ -544,7 +542,7 @@ void HistogramPMFHistory::splitToFile(const QString &prefix) const {
     QFile outputFile(filename);
     if (outputFile.open(QIODevice::WriteOnly)) {
       qDebug() << Q_FUNC_INFO << ": writing " << filename;
-      QVector<double> pos(mNdim, 0);
+      std::vector<double> pos(mNdim, 0);
       QTextStream ofs(&outputFile);
       HistogramBase::writeToStream(ofs);
       ofs.setRealNumberNotation(QTextStream::FixedNotation);
@@ -574,18 +572,18 @@ PMFPathFinder::PMFPathFinder()
 }
 
 PMFPathFinder::PMFPathFinder(const HistogramScalar<double> &histogram,
-                             const QVector<GridDataPatch> &patchList,
-                             const QVector<double> &pos_start,
-                             const QVector<double> &pos_end,
+                             const std::vector<GridDataPatch> &patchList,
+                             const std::vector<double> &pos_start,
+                             const std::vector<double> &pos_end,
                              Graph::FindPathMode mode,
                              Graph::FindPathAlgorithm algorithm) {
   setup(histogram, patchList, pos_start, pos_end, mode, algorithm);
 }
 
 void PMFPathFinder::setup(const HistogramScalar<double> &histogram,
-                          const QVector<GridDataPatch> &patchList,
-                          const QVector<double> &pos_start,
-                          const QVector<double> &pos_end,
+                          const std::vector<GridDataPatch> &patchList,
+                          const std::vector<double> &pos_start,
+                          const std::vector<double> &pos_end,
                           Graph::FindPathMode mode,
                           Graph::FindPathAlgorithm algorithm) {
   mHistogram = histogram;
@@ -640,7 +638,7 @@ void PMFPathFinder::writePath(const QString &filename) const
     QTextStream out_stream(&ofs_file);
     out_stream.setRealNumberNotation(QTextStream::FixedNotation);
     const auto& path = mResult.mPathNodes;
-    for (qint64 i = 0; i < path.size(); ++i) {
+    for (size_t i = 0; i < path.size(); ++i) {
       const auto pos = mHistogram.reverseAddress(path[i]);
       for (size_t j = 0; j < mHistogram.dimension(); ++j) {
         out_stream << qSetFieldWidth(OUTPUT_WIDTH);
@@ -705,7 +703,7 @@ void PMFPathFinder::setupGraph()
   mGraph = Graph(mHistogram.histogramSize(), true);
   for (size_t i = 0; i < mHistogram.histogramSize(); ++i) {
     const auto allNeighbors = mHistogram.allNeighborByAddress(i);
-    for (int j = 0; j < allNeighbors.size(); ++j) {
+    for (size_t j = 0; j < allNeighbors.size(); ++j) {
       if (allNeighbors[j].second == true) {
 //        const double& pmf_i = mHistogram[i];
         const double& pmf_j = mHistogram[allNeighbors[j].first];
@@ -722,8 +720,8 @@ void PMFPathFinder::applyPatch()
 {
   qDebug() << "Calling " << Q_FUNC_INFO;
   mHistogram = mHistogramBackup;
-  QVector<Axis> patch_ax(mHistogram.dimension());
-  for (int patch_i = 0; patch_i < mPatchList.size(); ++patch_i) {
+  std::vector<Axis> patch_ax(mHistogram.dimension());
+  for (size_t patch_i = 0; patch_i < mPatchList.size(); ++patch_i) {
     for (size_t dim = 0; dim < mHistogram.dimension(); ++dim) {
       const double width = mHistogram.axes()[dim].width();
       const size_t num_bins = std::floor(mPatchList[patch_i].mLength[dim] / width);
@@ -738,32 +736,32 @@ void PMFPathFinder::applyPatch()
   }
 }
 
-QVector<double> PMFPathFinder::posEnd() const
+std::vector<double> PMFPathFinder::posEnd() const
 {
   return mPosEnd;
 }
 
-void PMFPathFinder::setPosEnd(const QVector<double> &posEnd)
+void PMFPathFinder::setPosEnd(const std::vector<double> &posEnd)
 {
   mPosEnd = posEnd;
 }
 
-QVector<double> PMFPathFinder::posStart() const
+std::vector<double> PMFPathFinder::posStart() const
 {
   return mPosStart;
 }
 
-void PMFPathFinder::setPosStart(const QVector<double> &posStart)
+void PMFPathFinder::setPosStart(const std::vector<double> &posStart)
 {
   mPosStart = posStart;
 }
 
-QVector<GridDataPatch> PMFPathFinder::patchList() const
+std::vector<GridDataPatch> PMFPathFinder::patchList() const
 {
   return mPatchList;
 }
 
-void PMFPathFinder::setPatchList(const QVector<GridDataPatch> &patchList)
+void PMFPathFinder::setPatchList(const std::vector<GridDataPatch> &patchList)
 {
   mPatchList = patchList;
 }

@@ -1,12 +1,12 @@
 #include "base/reweighting.h"
 
-void doReweighting::operator()(const QVector<double> &fields) {
-  QVector<double> pos_origin(originHistogram.dimension());
-  QVector<double> pos_target(targetHistogram.dimension());
-  for (int i = 0; i < pos_origin.size(); ++i) {
+void doReweighting::operator()(const std::vector<double> &fields) {
+  std::vector<double> pos_origin(originHistogram.dimension());
+  std::vector<double> pos_target(targetHistogram.dimension());
+  for (size_t i = 0; i < pos_origin.size(); ++i) {
     pos_origin[i] = fields[originPositionIndex[i]];
   }
-  for (int j = 0; j < pos_target.size(); ++j) {
+  for (size_t j = 0; j < pos_target.size(); ++j) {
     pos_target[j] = fields[targetPositionIndex[j]];
   }
   bool in_origin_grid = true;
@@ -25,8 +25,8 @@ ReweightingThread::ReweightingThread(QObject *parent) : QThread(parent) {}
 
 void ReweightingThread::reweighting(const QStringList &trajectoryFileName, const QString &outputFileName,
                                     const HistogramScalar<double> &source,
-                                    const QVector<int> &from, const QVector<int> &to,
-                                    const QVector<Axis>& targetAxis, double kbT, bool usePMF) {
+                                    const std::vector<int> &from, const std::vector<int> &to,
+                                    const std::vector<Axis> &targetAxis, double kbT, bool usePMF) {
   qDebug() << Q_FUNC_INFO;
   QMutexLocker locker(&mutex);
   mTrajectoryFileName = trajectoryFileName;
@@ -71,7 +71,7 @@ void ReweightingThread::run()
       QTextStream ifs(&trajectoryFile);
       QString line;
       QStringList tmpFields;
-      QVector<double> fields;
+      std::vector<double> fields;
       double readSize = 0;
       int previousProgress = 0;
       bool read_ok = true;
@@ -97,7 +97,7 @@ void ReweightingThread::run()
         // skip comment lines start with #
         if (tmpFields[0].startsWith("#")) continue;
         for (const auto& i : tmpFields) {
-          fields.append(i.toDouble(&read_ok));
+          fields.push_back(i.toDouble(&read_ok));
           if (read_ok == false) {
             emit error("Failed to convert " + i + " to number!");
             break;

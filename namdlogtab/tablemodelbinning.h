@@ -19,8 +19,8 @@ public:
   bool removeRows(int position, int rows, const QModelIndex &index = QModelIndex()) override;
   bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
   Qt::ItemFlags flags(const QModelIndex &index) const override;
-  QVector<int> fromColumns() const;
-  QVector<Axis> targetAxis() const;
+  std::vector<int> fromColumns() const;
+  std::vector<Axis> targetAxis() const;
   void clearAll();
 
 private:

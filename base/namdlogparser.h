@@ -8,7 +8,7 @@
 #include <QTextStream>
 #include <QThread>
 #include <QVector3D>
-#include <QVector>
+#include <vector>
 #include <cstring>
 
 using ForceType = QVector3D;
@@ -24,20 +24,20 @@ public:
   void readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread = nullptr,
                       void (NAMDLogReaderThread::*progress)(int) = nullptr,
                       qint64 fileSize = -1);
-  QVector<double> getStep() const;
-  QVector<double> getVdW() const;
-  QVector<double> getElectrostatic() const;
-  QVector<double> getEnergyData(const QString &title, bool *ok = nullptr) const;
-  QVector<ForceType> getVdWForce() const;
-  QVector<ForceType> getElectrostaticForce() const;
+  std::vector<double> getStep() const;
+  std::vector<double> getVdW() const;
+  std::vector<double> getElectrostatic() const;
+  std::vector<double> getEnergyData(const QString &title, bool *ok = nullptr) const;
+  std::vector<ForceType> getVdWForce() const;
+  std::vector<ForceType> getElectrostaticForce() const;
   QStringList getEnergyTitle() const;
   size_t size() const;
   friend class NAMDLogReaderThread;
 
 private:
   QStringList mEnergyTitle;
-  QMap<QString, QVector<double>> mEnergyData;
-  QMap<QString, QVector<ForceType>> mPairData;
+  QMap<QString, std::vector<double>> mEnergyData;
+  QMap<QString, std::vector<ForceType>> mPairData;
   static const int refreshPeriod = 5;
 };
 
@@ -62,10 +62,10 @@ private:
 struct doBinning {
 public:
   doBinning(HistogramScalar<double> &histogram,
-            const QVector<int> &column);
-  void operator()(const QVector<double> &fields, double energy);
+            const std::vector<int> &column);
+  void operator()(const std::vector<double> &fields, double energy);
   HistogramScalar<double> &mHistogram;
-  const QVector<int> mColumn;
+  const std::vector<int> mColumn;
 };
 
 class BinNAMDLogThread : public QThread {
@@ -74,13 +74,13 @@ public:
   BinNAMDLogThread(QObject *parent = nullptr);
   ~BinNAMDLogThread();
   void invokeThread(const NAMDLog &log, const QStringList &title,
-                    const QString &trajectoryFileName, const QVector<Axis> &ax,
-                    const QVector<int> &column);
+                    const QString &trajectoryFileName, const std::vector<Axis> &ax,
+                    const std::vector<int> &column);
 
 signals:
   void error(QString err);
   void done();
-  void doneHistogram(QVector<HistogramScalar<double>> histogram);
+  void doneHistogram(std::vector<HistogramScalar<double>> histogram);
   void progress(QString stage, int percent);
 
 protected:
@@ -91,8 +91,8 @@ private:
   NAMDLog mLog;
   QStringList mTitle;
   QString mTrajectoryFileName;
-  QVector<Axis> mAxis;
-  QVector<int> mColumn;
+  std::vector<Axis> mAxis;
+  std::vector<int> mColumn;
   static const int refreshPeriod = 5;
 };
 

@@ -17,7 +17,7 @@ class HistoryPMFTab : public QWidget
 
 public:
   explicit HistoryPMFTab(QWidget *parent = nullptr);
-  void writeRMSDToFile(const QVector<double> &rmsd, const QString& filename);
+  void writeRMSDToFile(const std::vector<double> &rmsd, const QString& filename);
   ~HistoryPMFTab();
 
 public slots:

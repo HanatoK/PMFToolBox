@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
   qRegisterMetaType<HistogramProbability>("HistogramProbability");
   qRegisterMetaType<HistogramPMFHistory>("HistogramPMFHistory");
   qRegisterMetaType<NAMDLog>("NAMDLog");
-  qRegisterMetaType<QVector<HistogramScalar<double>>>("QVector<HistogramScalar<double>>");
+  qRegisterMetaType<std::vector<HistogramScalar<double>>>("std::vector<HistogramScalar<double>>");
   qRegisterMetaType<PMFPathFinder>("PMFPathFinder");
   MainWindow w;
   w.show();

@@ -84,21 +84,21 @@ void ReweightingTab::readAxisData()
 {
   qDebug() << "Calling " << Q_FUNC_INFO;
   mTableModel->clearAll();
-  const QVector<int> fromAxis = splitStringToNumbers<int>(ui->lineEditFromColumns->text());
-  const QVector<int> toAxis = splitStringToNumbers<int>(ui->lineEditToColumns->text());
-  if (fromAxis.isEmpty() || toAxis.isEmpty()) {
+  const std::vector<int> fromAxis = splitStringToNumbers<int>(ui->lineEditFromColumns->text());
+  const std::vector<int> toAxis = splitStringToNumbers<int>(ui->lineEditToColumns->text());
+  if (fromAxis.empty() || toAxis.empty()) {
     qDebug() << Q_FUNC_INFO << ": axes are empty.";
     return;
   }
-  if (fromAxis.size() != static_cast<int>(mPMF.dimension())) {
+  if (fromAxis.size() != mPMF.dimension()) {
     QMessageBox errorBox;
     errorBox.critical(this, "Error",
                       "The dimensionality of PMF input doesn't match the "
                       "columns reweighting from.");
     return;
   }
-  const QVector<Axis> &ax = mPMF.axes();
-  for (int i = 0; i < ax.size(); ++i) {
+  const std::vector<Axis> &ax = mPMF.axes();
+  for (size_t i = 0; i < ax.size(); ++i) {
     auto find_in_reweightTo =
         std::find(toAxis.begin(), toAxis.end(), fromAxis[i]);
     if (find_in_reweightTo != toAxis.end()) {
@@ -107,7 +107,7 @@ void ReweightingTab::readAxisData()
       mTableModel->addItem(ax[i], fromAxis[i], true, false);
     }
   }
-  for (int i = 0; i < toAxis.size(); ++i) {
+  for (size_t i = 0; i < toAxis.size(); ++i) {
     auto find_in_reweightFrom =
         std::find(fromAxis.begin(), fromAxis.end(), toAxis[i]);
     if (find_in_reweightFrom == fromAxis.end()) {
@@ -121,9 +121,9 @@ void ReweightingTab::reweighting()
 {
   qDebug() << "Calling " << Q_FUNC_INFO;
   const QStringList fileList = mListModel->trajectoryFileNameList();
-  const QVector<int> fromColumns = mTableModel->fromColumns();
-  const QVector<int> toColumns = mTableModel->toColumns();
-  const QVector<Axis> targetAxis = mTableModel->targetAxis();
+  const std::vector<int> fromColumns = mTableModel->fromColumns();
+  const std::vector<int> toColumns = mTableModel->toColumns();
+  const std::vector<Axis> targetAxis = mTableModel->targetAxis();
   const QString outputFileName = ui->lineEditOutput->text();
   const bool usePMF = ui->checkBoxConvertToPMF->isChecked();
   if (fileList.isEmpty()) {
@@ -134,7 +134,7 @@ void ReweightingTab::reweighting()
     errorBox.critical(this, "Error", errorMsg);
     return;
   }
-  if (fromColumns.isEmpty() || toColumns.isEmpty() || targetAxis.isEmpty()) {
+  if (fromColumns.empty() || toColumns.empty() || targetAxis.empty()) {
     const QString errorMsg("Incorrect axis settings.");
     qDebug() << errorMsg;
     qDebug() << "From columns: " << fromColumns;

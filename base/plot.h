@@ -14,7 +14,7 @@ class RMSDPlot: public QwtPlot
 public:
   RMSDPlot(QWidget *parent = nullptr);
   RMSDPlot(const QwtText &title, QWidget *parent = nullptr);
-  void PlotRMSD(const QVector<double>& rmsd);
+  void PlotRMSD(const std::vector<double>& rmsd);
   virtual ~RMSDPlot();
 protected:
   virtual void initialize();
@@ -32,8 +32,8 @@ public:
   // TODO: unify the behavior of clearing previous figure
   bool plotPMF2D(const HistogramScalar<double>& histogram);
   bool plotPMF1D(const HistogramScalar<double>& histogram);
-  void plotPath2D(const QVector<QVector<double> > &pathPositions, bool clearFigure = false);
-  void plotEnergyAlongPath(const QVector<double>& energies, bool clearFigure = false);
+  void plotPath2D(const std::vector<std::vector<double> > &pathPositions, bool clearFigure = false);
+  void plotEnergyAlongPath(const std::vector<double>& energies, bool clearFigure = false);
 protected:
   virtual void initialize();
   // fonts for plotting
