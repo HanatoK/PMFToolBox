@@ -228,6 +228,7 @@ auto operator<=>(const MFEPDistance &lhs, const MFEPDistance &rhs) {
   std::priority_queue<double> tmpLhsQueue(lhs.mDistance);
   std::priority_queue<double> tmpRhsQueue(rhs.mDistance);
   // TODO: simplify this!
+  // FIXME: uninitialized variables!
   double lhsElement;
   double rhsElement;
   if (l_size == r_size) {

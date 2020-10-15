@@ -1,6 +1,8 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#include "base/helper.h"
+
 #include <QDebug>
 #include <QList>
 #include <QVector>
@@ -12,6 +14,11 @@
 #include <iostream>
 #include <limits>
 #include <queue>
+
+#ifdef QT_DEBUG
+#define DEBUG_SPFA
+#define DEBUG_DIJKSTRA
+#endif
 
 class Graph {
 public:
@@ -79,10 +86,6 @@ Graph::FindPathResult Graph::Dijkstra(
   qDebug() << "Calling " << Q_FUNC_INFO;
   using std::deque;
   using std::tuple;
-#ifdef DEBUG_DIJKSTRA
-  using std::cout;
-  using std::endl;
-#endif
   using std::make_pair;
   using std::priority_queue;
   typedef std::pair<DistanceType, size_t> DistNodePair;
@@ -100,34 +103,36 @@ Graph::FindPathResult Graph::Dijkstra(
   size_t loop = 0;
   while (!pq.empty()) {
 #ifdef DEBUG_DIJKSTRA
-    cout << "Loop " << loop << " ============= " << endl;
-    print_pq(pq, "pq: ");
-    print_vector(distances, "distances: ");
-    print_deque(previous, "previous: ");
-    print_deque(visited, "visited: ");
+    qDebug() << "Loop " << loop << " ============= ";
+    debug_priority_queue(pq, "Current priority queue:");
+    qDebug() << "Distance from" << start << ":" << distances;
+    qDebug() << "Previous visited vertices array:" << previous;
+    qDebug() << "Visited vertices:" << visited;
 #endif
     const size_t to_visit = pq.top().second;
 #ifdef DEBUG_DIJKSTRA
-    cout << "to_visit = " << to_visit << endl;
+    qDebug() << "Current vertex:" << to_visit;
 #endif
     pq.pop();
     auto N = mHead[to_visit].cbegin();
     auto neighbor_node = N + 1;
 #ifdef DEBUG_DIJKSTRA
-    cout << "Visiting node " << N->mValue << ": \n";
+    qDebug() << "Visiting neighbor vertices of vertex" << N->mIndex << ":";
 #endif
     while (neighbor_node != mHead[to_visit].cend()) {
       const size_t neighbor_index = neighbor_node->mIndex;
       if (visited[neighbor_index] == false) {
 #ifdef DEBUG_DIJKSTRA
-        cout << neighbor_index << " (unvisited) ";
+        qDebug() << "Neighbor vertex" << neighbor_index << "is not visited";
 #endif
         const DistanceType new_distance =
             calc_new_dist(distances[to_visit], neighbor_node->mWeight);
+#ifdef DEBUG_DIJKSTRA
+        qDebug() << "Current distance of vertex " << neighbor_index << "is" << distances[neighbor_index];
+#endif
         if (new_distance < distances[neighbor_index]) {
 #ifdef DEBUG_DIJKSTRA
-          cout << "neighbor_index = " << static_cast<double>(neighbor_index)
-               << " ; new_distance = " << new_distance << endl;
+          qDebug() << "Distance is updated to" << new_distance;
 #endif
           distances[neighbor_index] = new_distance;
           previous[neighbor_index] = to_visit;
@@ -135,21 +140,18 @@ Graph::FindPathResult Graph::Dijkstra(
         }
       } else {
 #ifdef DEBUG_DIJKSTRA
-        cout << neighbor_index << " (visited) ";
+        qDebug() << "Neighbor vertex" << neighbor_index << "is already visited. Skip it";
 #endif
       }
       neighbor_node = neighbor_node + 1;
     }
-#ifdef DEBUG_DIJKSTRA
-    cout << endl;
-#endif
     if (to_visit == end) {
       break;
     }
     visited[to_visit] = true;
     ++loop;
 #ifdef DEBUG_DIJKSTRA
-    cout << endl;
+    qDebug() << "===============================================";
 #endif
   }
   QVector<size_t> path;
@@ -177,11 +179,9 @@ Graph::FindPathResult Graph::SPFA(
   qDebug() << "Calling " << Q_FUNC_INFO;
   QVector<DistanceType> distances(mNumNodes);
   QVector<bool> visited(mNumNodes, false);
-//  QVector<size_t> previous(mNumNodes);
   QVector<QList<size_t>> paths(mNumNodes);
   for (size_t i = 0; i < mNumNodes; ++i) {
     distances[i] = (i == start) ? dist_start : dist_infinity;
-//    previous[i] = mNumNodes;
   }
   paths[start].append(start);
   QList<size_t> Q;
@@ -189,9 +189,8 @@ Graph::FindPathResult Graph::SPFA(
   size_t loop = 0;
   while (!Q.empty()) {
 #ifdef DEBUG_SPFA
-    qDebug() << "Loop" << loop;
+    qDebug() << "==================== Loop" << loop << "====================";
     qDebug() << "Current search queue:" << Q;
-//    qDebug() << "Previous visited vertices:" << previous;
     qDebug() << "Visited vertices:" << visited;
 #endif
     const size_t to_visit = Q.front();
@@ -208,16 +207,20 @@ Graph::FindPathResult Graph::SPFA(
 #endif
       const DistanceType new_distance =
           calc_new_dist(distances[to_visit], neighbor_node->mWeight);
-      auto new_path = paths[neighbor_index];
-      new_path.append(paths[to_visit]);
+      auto new_path = paths[to_visit];
       new_path.append(neighbor_index);
+#ifdef DEBUG_SPFA
+      qDebug() << "Current distance:" << distances[neighbor_index];
+      qDebug() << "Current path:" << paths[neighbor_index];
+      qDebug() << "Path of the previous vertex:" << paths[to_visit];
+#endif
       if (new_distance < distances[neighbor_index]) {
 #ifdef DEBUG_SPFA
         qDebug() << "Update new distance at" << neighbor_index
                  << " ; new distance = " << new_distance;
+        qDebug() << "New path =" << new_path;
 #endif
         distances[neighbor_index] = new_distance;
-//        previous[neighbor_index] = to_visit;
         paths[neighbor_index] = new_path;
         if (!Q.contains(neighbor_index)) Q.push_back(neighbor_index);
       }
@@ -225,6 +228,9 @@ Graph::FindPathResult Graph::SPFA(
     }
     visited[to_visit] = true;
     ++loop;
+#ifdef DEBUG_SPFA
+    qDebug() << "===============================================";
+#endif
   }
 #ifdef DEBUG_SPFA
   qDebug() << "Distances from" << start << "to each vertex:";

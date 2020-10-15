@@ -129,7 +129,7 @@ QVector<double> HistogramBase::reverseAddress(size_t address,
     for (int i = mNdim - 1; i >= 0; --i) {
       const size_t index_i = static_cast<size_t>(
           std::floor(static_cast<double>(address) / mAccu[i]));
-      pos[i] = mAxes[i].mLowerBound + (0.5 + index_i) * mAxes[i].bin();
+      pos[i] = mAxes[i].mLowerBound + (0.5 + index_i) * mAxes[i].width();
       address -= index_i * mAccu[i];
     }
     if (inBoundary != nullptr) {
@@ -639,21 +639,19 @@ void PMFPathFinder::writePath(const QString &filename) const
   if (ofs_file.open(QFile::WriteOnly)) {
     QTextStream out_stream(&ofs_file);
     out_stream.setRealNumberNotation(QTextStream::FixedNotation);
-    for (size_t i = 0; i < mHistogram.histogramSize(); ++i) {
-      if (mResult.mVisitedNodes[i] == true) {
-        const auto pos = mHistogram.reverseAddress(i);
-        for (size_t j = 0; j < mHistogram.dimension(); ++j) {
-          out_stream << qSetFieldWidth(OUTPUT_WIDTH);
-          out_stream.setRealNumberPrecision(OUTPUT_POSITION_PRECISION);
-          out_stream << pos[j];
-          out_stream << qSetFieldWidth(0) << ' ';
-        }
-        out_stream << qSetFieldWidth(0);
-        out_stream << '\n';
+    const auto& path = mResult.mPathNodes;
+    for (qint64 i = 0; i < path.size(); ++i) {
+      const auto pos = mHistogram.reverseAddress(path[i]);
+      for (size_t j = 0; j < mHistogram.dimension(); ++j) {
+        out_stream << qSetFieldWidth(OUTPUT_WIDTH);
+        out_stream.setRealNumberPrecision(OUTPUT_POSITION_PRECISION);
+        out_stream << pos[j];
+        out_stream << qSetFieldWidth(0) << ' ';
       }
+      out_stream << qSetFieldWidth(0);
+      out_stream << '\n';
     }
     out_stream.flush();
-    out_stream.reset();
   }
 }
 

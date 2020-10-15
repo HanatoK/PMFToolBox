@@ -6,12 +6,12 @@
 #include <QThread>
 #include <QMutex>
 
-class PathFinderThread : public QThread
+class PMFPathFinderThread : public QThread
 {
   Q_OBJECT
 public:
-  PathFinderThread(QObject *parent = nullptr);
-  ~PathFinderThread();
+  PMFPathFinderThread(QObject *parent = nullptr);
+  ~PMFPathFinderThread();
   void findPath(const PMFPathFinder& x);
 signals:
   void PathFinderDone(const PMFPathFinder& result);

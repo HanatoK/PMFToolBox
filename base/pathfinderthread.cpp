@@ -1,11 +1,11 @@
 #include "pathfinderthread.h"
 
-PathFinderThread::PathFinderThread(QObject *parent): QThread(parent)
+PMFPathFinderThread::PMFPathFinderThread(QObject *parent): QThread(parent)
 {
 
 }
 
-PathFinderThread::~PathFinderThread() {
+PMFPathFinderThread::~PMFPathFinderThread() {
   // am I doing the right things?
   qDebug() << Q_FUNC_INFO;
   mutex.lock();
@@ -14,7 +14,7 @@ PathFinderThread::~PathFinderThread() {
   quit();
 }
 
-void PathFinderThread::findPath(const PMFPathFinder &x)
+void PMFPathFinderThread::findPath(const PMFPathFinder &x)
 {
   QMutexLocker locker(&mutex);
   mPMFPathFinder = x;
@@ -23,7 +23,7 @@ void PathFinderThread::findPath(const PMFPathFinder &x)
   }
 }
 
-void PathFinderThread::run() {
+void PMFPathFinderThread::run() {
   mutex.lock();
   mPMFPathFinder.findPath();
   mutex.unlock();

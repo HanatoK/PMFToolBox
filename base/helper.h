@@ -4,6 +4,7 @@
 #include <QRegExp>
 #include <QString>
 #include <QStringList>
+#include <QDebug>
 #include <cmath>
 #include <deque>
 #include <iostream>
@@ -73,16 +74,14 @@ void print_deque(const std::deque<T> &queue, const char *head_line) {
 }
 
 template <typename T>
-void print_pq(
+void debug_priority_queue(
     std::priority_queue<std::pair<T, size_t>, QVector<std::pair<T, size_t>>,
                         std::greater<std::pair<T, size_t>>>
         pq,
     const char *str) {
-  using std::cout;
-  using std::endl;
-  cout << str << endl;
+  qDebug() << str;
   while (!pq.empty()) {
-    cout << "(" << pq.top().first << ", " << pq.top().second << ")\n";
+    qDebug() << "(" << pq.top().first << ", " << pq.top().second << ")";
     pq.pop();
   }
 }
