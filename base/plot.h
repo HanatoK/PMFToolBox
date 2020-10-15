@@ -29,8 +29,11 @@ public:
   PMFPlot(QWidget *parent = nullptr);
   PMFPlot(const QwtText &title, QWidget *parent = nullptr);
   virtual ~PMFPlot();
+  // TODO: unify the behavior of clearing previous figure
   bool plotPMF2D(const HistogramScalar<double>& histogram);
   bool plotPMF1D(const HistogramScalar<double>& histogram);
+  void plotPath2D(const QVector<QVector<double> > &pathPositions, bool clearFigure = false);
+  void plotEnergyAlongPath(const QVector<double>& energies, bool clearFigure = false);
 protected:
   virtual void initialize();
   // fonts for plotting

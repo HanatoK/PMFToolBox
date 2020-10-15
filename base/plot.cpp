@@ -116,6 +116,51 @@ bool PMFPlot::plotPMF1D(const HistogramScalar<double> &histogram)
   return true;
 }
 
+void PMFPlot::plotPath2D(const QVector<QVector<double>> &pathPositions, bool clearFigure)
+{
+  if (clearFigure) {
+    detachItems();
+  }
+  QwtPlotCurve* curve = new QwtPlotCurve("curve");
+  curve->setPen(Qt::black, 2);
+  curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+  QPolygonF points;
+  for (const auto& point: pathPositions) {
+    points.append(QPointF(point[0], point[1]));
+  }
+  curve->setSamples(points);
+  curve->attach(this);
+  replot();
+}
+
+void PMFPlot::plotEnergyAlongPath(const QVector<double> &energies, bool clearFigure)
+{
+  const double xMin = 0.0;
+  const double xMax = 1.0;
+  const double yMin = *std::min_element(energies.begin(), energies.end());
+  const double yMax = *std::max_element(energies.begin(), energies.end());
+  if (clearFigure) {
+    detachItems();
+    enableAxis(QwtPlot::Axis::yLeft, true);
+    enableAxis(QwtPlot::Axis::xBottom, true);
+    enableAxis(QwtPlot::Axis::yRight, false);
+    enableAxis(QwtPlot::Axis::xTop, false);
+    setAxisScale(QwtPlot::xBottom, xMin, xMax);
+    setAxisScale(QwtPlot::yLeft, yMin, yMax);
+  }
+  QwtPlotCurve *curve = new QwtPlotCurve("energyCurve");
+  curve->setPen(Qt::red, 2);
+  curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+  QPolygonF points;
+  const double stepSize = (xMax - xMin) / (energies.size() - 1);
+  for (int i = 0; i < energies.size(); ++i) {
+    points.append(QPointF(xMin + i * stepSize, energies[i]));
+  }
+  curve->setSamples(points);
+  curve->attach(this);
+  replot();
+}
+
 void PMFPlot::initialize()
 {
   setCanvasBackground(Qt::white);

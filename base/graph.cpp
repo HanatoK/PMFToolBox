@@ -229,8 +229,8 @@ auto operator<=>(const MFEPDistance &lhs, const MFEPDistance &rhs) {
   std::priority_queue<double> tmpRhsQueue(rhs.mDistance);
   // TODO: simplify this!
   // FIXME: uninitialized variables!
-  double lhsElement;
-  double rhsElement;
+  double lhsElement = 0;
+  double rhsElement = 0;
   if (l_size == r_size) {
     if (l_size == 0)
       return std::partial_ordering::equivalent;
