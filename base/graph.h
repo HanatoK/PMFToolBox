@@ -185,15 +185,18 @@ Graph::FindPathResult Graph::SPFA(
   std::vector<DistanceType> distances(mNumNodes);
   std::vector<bool> visited(mNumNodes, false);
   std::vector<std::deque<size_t>> paths(mNumNodes);
+  std::vector<bool> in_Q(mNumNodes, false);
   for (size_t i = 0; i < mNumNodes; ++i) {
     distances[i] = (i == start) ? dist_start : dist_infinity;
   }
   paths[start].push_back(start);
   std::deque<size_t> Q;
   Q.push_back(start);
+  in_Q[start] = true;
   size_t loop = 0;
   QElapsedTimer timer;
   timer.start();
+  DistanceType new_distance = DistanceType();
   while (!Q.empty()) {
 #ifdef DEBUG_SPFA
     qDebug() << "==================== Loop" << loop << "====================";
@@ -202,20 +205,17 @@ Graph::FindPathResult Graph::SPFA(
 #endif
     const size_t to_visit = Q.front();
     Q.pop_front();
+    in_Q[to_visit] = false;
 #ifdef DEBUG_SPFA
     qDebug() << "Vertex being visited:" << to_visit;
 #endif
-    auto N = mHead[to_visit].cbegin();
-    auto neighbor_node = std::next(N, 1);
+    auto neighbor_node = std::next(mHead[to_visit].cbegin(), 1);
     while (neighbor_node != mHead[to_visit].cend()) {
       const size_t neighbor_index = neighbor_node->mIndex;
 #ifdef DEBUG_SPFA
       qDebug() << "Visiting neighbor vertex:" << neighbor_index;
 #endif
-      const DistanceType new_distance =
-          calc_new_dist(distances[to_visit], neighbor_node->mWeight);
-      auto new_path = paths[to_visit];
-      new_path.push_back(neighbor_index);
+      new_distance = calc_new_dist(distances[to_visit], neighbor_node->mWeight);
 #ifdef DEBUG_SPFA
       qDebug() << "Current distance:" << distances[neighbor_index];
       qDebug() << "Current path:" << paths[neighbor_index];
@@ -228,9 +228,12 @@ Graph::FindPathResult Graph::SPFA(
         qDebug() << "New path =" << new_path;
 #endif
         distances[neighbor_index] = new_distance;
-        paths[neighbor_index] = new_path;
-        auto in_queue = std::find(Q.begin(), Q.end(), neighbor_index);
-        if (in_queue == Q.end()) Q.push_back(neighbor_index);
+        paths[neighbor_index] = paths[to_visit];
+        paths[neighbor_index].push_back(neighbor_index);
+        if (in_Q[neighbor_index] == false) {
+          Q.push_back(neighbor_index);
+          in_Q[neighbor_index] = true;
+        }
       }
       std::advance(neighbor_node, 1);
     }
