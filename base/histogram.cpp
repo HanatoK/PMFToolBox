@@ -722,6 +722,7 @@ void PMFPathFinder::setupGraph()
       }
     }
   }
+  mGraph.summary();
 }
 
 void PMFPathFinder::applyPatch()

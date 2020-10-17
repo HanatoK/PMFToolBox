@@ -56,6 +56,8 @@ public:
   void sortByWeight();
   bool getEdge(size_t source, size_t destination, double &weight) const;
   void printGraph(std::ostream &os) const;
+  void summary() const;
+  size_t totalEdges() const;
   void DFS(size_t start, std::function<void(const Node &)> func) const;
   FindPathResult Dijkstra(size_t start, size_t end, FindPathMode mode);
   template <typename DistanceType>
@@ -86,8 +88,6 @@ Graph::FindPathResult Graph::Dijkstra(
     const DistanceType &dist_infinity,
     std::function<DistanceType(DistanceType, double)> calc_new_dist) const {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  using std::deque;
-  using std::tuple;
   using std::make_pair;
   using std::priority_queue;
   typedef std::pair<DistanceType, size_t> DistNodePair;
@@ -115,14 +115,10 @@ Graph::FindPathResult Graph::Dijkstra(
 #endif
     const size_t to_visit = pq.top().second;
 #ifdef DEBUG_DIJKSTRA
-    qDebug() << "Current vertex:" << to_visit;
+    qDebug() << "Visiting neighbor vertices of vertex" << to_visit << ":";
 #endif
     pq.pop();
-    auto N = mHead[to_visit].cbegin();
-    auto neighbor_node = std::next(N, 1);
-#ifdef DEBUG_DIJKSTRA
-    qDebug() << "Visiting neighbor vertices of vertex" << N->mIndex << ":";
-#endif
+    auto neighbor_node = std::next(mHead[to_visit].cbegin(), 1);
     while (neighbor_node != mHead[to_visit].cend()) {
       const size_t neighbor_index = neighbor_node->mIndex;
       if (visited[neighbor_index] == false) {

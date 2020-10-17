@@ -62,6 +62,25 @@ void Graph::printGraph(std::ostream &os) const {
   }
 }
 
+void Graph::summary() const
+{
+  qDebug() << "Summary of the graph:";
+  qDebug() << "Number of nodes:" << mHead.size();
+  qDebug() << "Number of edges:" << totalEdges();
+  qDebug() << "Is directed?" << mIsDirected;
+}
+
+size_t Graph::totalEdges() const
+{
+  size_t count = 0;
+  for (size_t i = 0; i < mHead.size(); ++i) {
+    for (size_t j = 1; j < mHead[i].size(); ++j) {
+      ++count;
+    }
+  }
+  return count;
+}
+
 void Graph::DFS(size_t start, std::function<void(const Node &)> func) const {
   std::vector<bool> visited(mNumNodes, false);
   DFSHelper(start, visited, func);
