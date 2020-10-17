@@ -302,19 +302,14 @@ auto operator<=>(const MFEPDistance &lhs, const MFEPDistance &rhs) {
 
 void Graph::FindPathResult::dump() const
 {
-  using std::cout;
-  using std::endl;
-  using std::vector;
-  cout << "Path: ";
-  for (const auto& i : mPathNodes) {
-    cout << i << " ";
-  }
-  cout << endl;
-  cout << "Distance " << endl;
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  qDebug() << "Dump the result of the path finder:";
+  qDebug() << "Number of loops:" << mNumLoops;
+  qDebug() << "Path:" << mPathNodes;
+  qDebug() << "Distance (only show the maximum energy barrier for MFEP):";
   for (size_t i = 0; i < mDistances.size(); ++i) {
-    cout << "Node [" << i << "]: " << " distance = " << mDistances[i] << endl;
+    qDebug() << QString("Node[%1]:").arg(i) << mDistances[i];
   }
-  cout << "Number of loops in Dijkstra's algorithm: " << mNumLoops << endl;
 }
 
 QDebug operator<<(QDebug dbg, const MFEPDistance &rhs)

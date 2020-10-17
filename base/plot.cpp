@@ -24,7 +24,7 @@ PMFPlot::~PMFPlot()
 
 bool PMFPlot::plotPMF2D(const HistogramScalar<double> &histogram)
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   if (histogram.dimension() != 2) return false;
   detachItems();
   // setup axis
@@ -85,7 +85,7 @@ bool PMFPlot::plotPMF2D(const HistogramScalar<double> &histogram)
 
 bool PMFPlot::plotPMF1D(const HistogramScalar<double> &histogram)
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   if (histogram.dimension() != 1) return false;
   detachItems();
   enableAxis(QwtPlot::Axis::yLeft, true);
@@ -195,13 +195,13 @@ RMSDPlot::RMSDPlot(QWidget *parent): QwtPlot(parent)
 
 RMSDPlot::RMSDPlot(const QwtText &title, QWidget *parent): QwtPlot(title, parent)
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
 
 }
 
 void RMSDPlot::PlotRMSD(const std::vector<double> &rmsd)
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   detachItems();
   enableAxis(QwtPlot::Axis::yLeft, true);
   enableAxis(QwtPlot::Axis::xBottom, true);

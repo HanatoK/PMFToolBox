@@ -21,7 +21,7 @@ HistoryPMFTab::HistoryPMFTab(QWidget *parent) :
 
 void HistoryPMFTab::writeRMSDToFile(const std::vector<double>& rmsd, const QString &filename)
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   qDebug() << Q_FUNC_INFO << ": trying to open file " << filename;
   QFile RMSDFile(filename);
   if (RMSDFile.open(QIODevice::WriteOnly)) {
@@ -52,7 +52,7 @@ HistoryPMFTab::~HistoryPMFTab()
 
 void HistoryPMFTab::loadReferencePMF()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QString inputFileName = QFileDialog::getOpenFileName(
       this, tr("Open reference PMF file"), "",
       tr("Potential of Mean force (*.pmf);;All Files (*)"));
@@ -69,7 +69,7 @@ void HistoryPMFTab::loadReferencePMF()
 
 void HistoryPMFTab::saveFile()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QString outputFileName = QFileDialog::getSaveFileName(
       this, tr("Save output to"), "");
   ui->lineEditOutputPrefix->setText(outputFileName);
@@ -77,7 +77,7 @@ void HistoryPMFTab::saveFile()
 
 void HistoryPMFTab::addHistoryFile()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QString inputFileName = QFileDialog::getOpenFileName(
       this, tr("Open history PMF file"), "",
       tr("History PMF file (*.pmf);;All Files (*)"));
@@ -88,14 +88,14 @@ void HistoryPMFTab::addHistoryFile()
 
 void HistoryPMFTab::removeHistoryFile()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QModelIndex& index = ui->listViewHistoryFile->currentIndex();
   mListModel->removeItem(index);
 }
 
 void HistoryPMFTab::computeRMSD()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   connect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::computeRMSDDone);
   connect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryPMFTab::computeRMSDProgress);
   const QStringList& inputFile = mListModel->trajectoryFileNameList();
@@ -120,7 +120,7 @@ void HistoryPMFTab::computeRMSDProgress(int fileRead, int percent)
 }
 
 void HistoryPMFTab::computeRMSDDone(const HistogramPMFHistory& hist) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   mPMFHistory = hist;
   disconnect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryPMFTab::computeRMSDProgress);
   disconnect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::computeRMSDDone);
@@ -146,7 +146,7 @@ void HistoryPMFTab::computeRMSDDone(const HistogramPMFHistory& hist) {
 
 void HistoryPMFTab::split()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   connect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::splitDone);
   connect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryPMFTab::splitProgress);
   const QStringList& inputFile = mListModel->trajectoryFileNameList();
@@ -180,7 +180,7 @@ void HistoryPMFTab::splitProgress(int fileRead, int percent)
 
 void HistoryPMFTab::splitDone(const HistogramPMFHistory &hist)
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   mPMFHistory = hist;
   disconnect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryPMFTab::splitProgress);
   disconnect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::splitDone);

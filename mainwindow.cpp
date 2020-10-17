@@ -39,7 +39,7 @@ void MainWindow::updateSizes(int index)
 {
   // FIXME: I don't know how to resize the window according to the tab widgest correctly
   // https://stackoverflow.com/questions/29128936/qtabwidget-size-depending-on-current-tab
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   for (int i = 0; i < ui->tabWidget->count(); ++i) {
     if (i != index) {
       ui->tabWidget->widget(i)->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);

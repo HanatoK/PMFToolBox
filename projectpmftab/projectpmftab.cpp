@@ -7,7 +7,7 @@
 
 void ProjectPMFTab::loadPMF()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QString inputFileName = QFileDialog::getOpenFileName(
       this, tr("Open input PMF file"), "",
       tr("Potential of Mean force (*.pmf);;All Files (*)"));
@@ -24,7 +24,7 @@ void ProjectPMFTab::loadPMF()
 
 void ProjectPMFTab::saveFile()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QString outputFileName = QFileDialog::getSaveFileName(
       this, tr("Save reweighted PMF file to"), "",
       tr("Potential of Mean force (*.pmf);;All Files (*)"));
@@ -33,7 +33,7 @@ void ProjectPMFTab::saveFile()
 
 void ProjectPMFTab::projectPMF()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const std::vector<size_t> toAxis = splitStringToNumbers<size_t>(ui->lineEditProjectTo->text());
   const QString saveFile = ui->lineEditOutput->text();
   const double kbt = kbT(ui->lineEditTemperature->text().toDouble(), ui->comboBoxUnit->currentText());
@@ -75,7 +75,7 @@ void ProjectPMFTab::projectPMF()
 
 void ProjectPMFTab::plotOriginPMF()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   switch (mOriginPMF.dimension()) {
   case 0: {
     const QString errorMsg("PMF file is not loaded or invalid!");
@@ -107,7 +107,7 @@ void ProjectPMFTab::plotOriginPMF()
 void ProjectPMFTab::plotProjectedPMF()
 {
   // TODO: debug
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   switch (mProjectedPMF.dimension()) {
   case 0: {
     const QString errorMsg("Projected PMF is not calculated.");

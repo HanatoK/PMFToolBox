@@ -30,7 +30,7 @@ ReweightingTab::~ReweightingTab() { delete ui; }
 
 double ReweightingTab::getKbT() const
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const double temperature = ui->lineEditTemperature->text().toDouble();
   const QString unit = ui->comboBoxUnit->currentText();
   return kbT(temperature, unit);
@@ -38,7 +38,7 @@ double ReweightingTab::getKbT() const
 
 void ReweightingTab::loadPMF()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QString inputFileName = QFileDialog::getOpenFileName(
       this, tr("Open input PMF file"), "",
       tr("Potential of Mean force (*.pmf);;All Files (*)"));
@@ -55,7 +55,7 @@ void ReweightingTab::loadPMF()
 
 void ReweightingTab::saveFile()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QString outputFileName = QFileDialog::getSaveFileName(
       this, tr("Save reweighted PMF file to"), "",
       tr("Potential of Mean force (*.pmf);;All Files (*)"));
@@ -64,7 +64,7 @@ void ReweightingTab::saveFile()
 
 void ReweightingTab::addTrajectory()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QString inputFileName = QFileDialog::getOpenFileName(
       this, tr("Open trajectory file"), "",
       tr("Colvars trajectory (*.traj);;All Files (*)"));
@@ -75,14 +75,14 @@ void ReweightingTab::addTrajectory()
 
 void ReweightingTab::removeTrajectory()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QModelIndex& index = ui->listViewTrajectory->currentIndex();
   mListModel->removeItem(index);
 }
 
 void ReweightingTab::readAxisData()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   mTableModel->clearAll();
   const std::vector<int> fromAxis = splitStringToNumbers<int>(ui->lineEditFromColumns->text());
   const std::vector<int> toAxis = splitStringToNumbers<int>(ui->lineEditToColumns->text());
@@ -119,7 +119,7 @@ void ReweightingTab::readAxisData()
 
 void ReweightingTab::reweighting()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QStringList fileList = mListModel->trajectoryFileNameList();
   const std::vector<int> fromColumns = mTableModel->fromColumns();
   const std::vector<int> toColumns = mTableModel->toColumns();

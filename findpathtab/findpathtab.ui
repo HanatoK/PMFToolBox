@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>570</width>
-    <height>405</height>
+    <width>568</width>
+    <height>605</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -150,6 +150,18 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>lineEditInputPMF</tabstop>
+  <tabstop>pushButtonOpen</tabstop>
+  <tabstop>lineEditOutput</tabstop>
+  <tabstop>pushButtonSaveTo</tabstop>
+  <tabstop>lineEditStart</tabstop>
+  <tabstop>lineEditEnd</tabstop>
+  <tabstop>comboBoxAlgorithm</tabstop>
+  <tabstop>pushButtonFind</tabstop>
+  <tabstop>pushButtonPathOnPMF</tabstop>
+  <tabstop>pushButtonEnergyAlongPath</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

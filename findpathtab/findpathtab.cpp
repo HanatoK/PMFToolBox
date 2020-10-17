@@ -24,7 +24,7 @@ FindPathTab::FindPathTab(QWidget *parent)
 FindPathTab::~FindPathTab() { delete ui; }
 
 void FindPathTab::setupAvailableAlgorithms() {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   mAvailableAlgorithms["Dijkstra's algorithm"] =
       Graph::FindPathAlgorithm::Dijkstra;
   mAvailableAlgorithms["Shortest path faster algorithm (SPFA)"] =
@@ -36,13 +36,13 @@ void FindPathTab::setupAvailableAlgorithms() {
 }
 
 Graph::FindPathAlgorithm FindPathTab::selectedAlgorithm() const {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QString selectedText = ui->comboBoxAlgorithm->currentText();
   return mAvailableAlgorithms[selectedText];
 }
 
 void FindPathTab::loadPMF() {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QString inputFileName = QFileDialog::getOpenFileName(
       this, tr("Open input PMF file"), "",
       tr("Potential of Mean force (*.pmf);;All Files (*)"));
@@ -58,14 +58,14 @@ void FindPathTab::loadPMF() {
 }
 
 void FindPathTab::saveFile() {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QString outputFileName = QFileDialog::getSaveFileName(
       this, tr("Save output files to"), "", tr("All Files (*)"));
   ui->lineEditOutput->setText(outputFileName);
 }
 
 void FindPathTab::findPath() {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const std::vector<double> posStart =
       splitStringToNumbers<double>(ui->lineEditStart->text());
   const std::vector<double> posEnd =
@@ -133,7 +133,7 @@ void FindPathTab::plotPathOnPMF() {
 
 void FindPathTab::plotEnergy()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const std::vector<double> energy = mPMFPathFinder.pathEnergy();
   if (energy.empty()) {
     qDebug() << Q_FUNC_INFO << ": energies are empty.";

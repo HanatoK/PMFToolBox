@@ -105,7 +105,7 @@ bool TableModelBinning::removeRows(int position, int rows,
 
 bool TableModelBinning::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   if (index.isValid() && role == Qt::EditRole) {
     const int row = index.row();
     Axis &ax = mAxisList[row].mAxis;
@@ -169,7 +169,7 @@ std::vector<Axis> TableModelBinning::targetAxis() const
 
 void TableModelBinning::clearAll()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   beginResetModel();
   mAxisList.clear();
   endResetModel();

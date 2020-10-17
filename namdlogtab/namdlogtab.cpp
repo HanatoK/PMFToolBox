@@ -32,7 +32,7 @@ NAMDLogTab::~NAMDLogTab()
 
 void NAMDLogTab::loadNAMDLog()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QString inputFileName = QFileDialog::getOpenFileName(
       this, tr("Open NAMD log file"), "",
       tr("All Files (*)"));
@@ -45,7 +45,7 @@ void NAMDLogTab::loadNAMDLog()
 
 void NAMDLogTab::loadNAMDLogDone(NAMDLog log)
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   mLog = log;
   ui->pushButtonOpenNAMDLog->setEnabled(true);
   ui->pushButtonOpenNAMDLog->setText(tr("Open"));
@@ -63,7 +63,7 @@ void NAMDLogTab::logReadingProgress(int x)
 
 void NAMDLogTab::openTrajectory()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QString inputFileName = QFileDialog::getOpenFileName(
       this, tr("Open trajectory file"), "",
       tr("Colvars trajectory (*.traj);;All Files (*)"));
@@ -73,7 +73,7 @@ void NAMDLogTab::openTrajectory()
 
 void NAMDLogTab::saveFile()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QString outputFileName = QFileDialog::getSaveFileName(
       this, tr("Save output to"), "",
       tr("All Files (*)"));
@@ -109,7 +109,7 @@ void NAMDLogTab::binningProgress(QString status, int x)
 
 void NAMDLogTab::addAxis()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QModelIndex& index = ui->tableViewAxis->currentIndex();
   mTableModel->insertRows(index.row(), 1);
   mTableModel->layoutChanged();
@@ -117,7 +117,7 @@ void NAMDLogTab::addAxis()
 
 void NAMDLogTab::removeAxis()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const QModelIndex& index = ui->tableViewAxis->currentIndex();
   mTableModel->removeRows(index.row(), 1);
   mTableModel->layoutChanged();
@@ -125,7 +125,7 @@ void NAMDLogTab::removeAxis()
 
 void NAMDLogTab::binningDone(std::vector<HistogramScalar<double> > data)
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   mHistogram = data;
   const QString outputFilePrefix = ui->lineEditOutput->text();
   if (outputFilePrefix.isEmpty()) return;

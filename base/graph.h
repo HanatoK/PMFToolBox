@@ -24,6 +24,15 @@
 
 class Graph {
 public:
+  enum class FindPathMode {
+    SumOfEdges,
+    MaximumEdges,
+    MFEPMode,
+  };
+  enum class FindPathAlgorithm {
+    Dijkstra,
+    SPFA,
+  };
   struct Node {
     size_t mIndex;
     double mWeight;
@@ -39,15 +48,6 @@ public:
     std::vector<size_t> mPathNodes;
     std::vector<double> mDistances;
     void dump() const;
-  };
-  enum class FindPathMode {
-    SumOfEdges,
-    MaximumEdges,
-    MFEPMode,
-  };
-  enum class FindPathAlgorithm {
-    Dijkstra,
-    SPFA,
   };
   Graph();
   Graph(const size_t numNodes, bool directed = false);
@@ -85,7 +85,7 @@ Graph::FindPathResult Graph::Dijkstra(
     size_t start, size_t end, const DistanceType &dist_start,
     const DistanceType &dist_infinity,
     std::function<DistanceType(DistanceType, double)> calc_new_dist) const {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   using std::deque;
   using std::tuple;
   using std::make_pair;
@@ -181,7 +181,7 @@ Graph::FindPathResult Graph::SPFA(
     size_t start, size_t end, const DistanceType &dist_start,
     const DistanceType &dist_infinity,
     std::function<DistanceType(DistanceType, double)> calc_new_dist) const {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   std::vector<DistanceType> distances(mNumNodes);
   std::vector<bool> visited(mNumNodes, false);
   std::vector<std::deque<size_t>> paths(mNumNodes);
@@ -257,12 +257,8 @@ Graph::FindPathResult Graph::SPFA(
 #endif
   qDebug() << "SPFA takes" << timer.elapsed() << "milliseconds; total number of loops:" << loop;
   std::vector<size_t> path;
-  auto it_start = std::find(paths[end].rbegin(), paths[end].rend(), start);
-  auto it_end = std::find(paths[end].rbegin(), paths[end].rend(), end);
-  if (it_start != paths[end].rend() && it_end != paths[end].rend()) {
-    for (auto i = it_start; i != it_end - 1; --i) {
-      path.push_back(*i);
-    }
+  for (const auto& i : paths[end]) {
+    path.push_back(i);
   }
   std::vector<double> res_distance(distances.size());
   for (size_t i = 0; i < distances.size(); ++i) {

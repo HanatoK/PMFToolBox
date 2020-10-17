@@ -7,11 +7,11 @@
 HistogramBase::HistogramBase()
     : mNdim(0), mHistogramSize(0), mAxes(0), mPointTable(0), mAccu(0) {}
 
-HistogramBase::~HistogramBase() { qDebug() << "Calling " << Q_FUNC_INFO; }
+HistogramBase::~HistogramBase() { qDebug() << "Calling" << Q_FUNC_INFO; }
 
 HistogramBase::HistogramBase(const std::vector<Axis> &ax)
     : mNdim(ax.size()), mAxes(ax), mAccu(mNdim) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   if (mNdim == 0)
     return;
   mHistogramSize = 1;
@@ -25,6 +25,7 @@ HistogramBase::HistogramBase(const std::vector<Axis> &ax)
 }
 
 bool HistogramBase::readFromStream(QTextStream &ifs) {
+  qDebug() << "Calling" << Q_FUNC_INFO;
   if (ifs.status() != QTextStream::Ok)
     return false;
   QString line;
@@ -68,6 +69,7 @@ bool HistogramBase::readFromStream(QTextStream &ifs) {
 }
 
 bool HistogramBase::writeToStream(QTextStream &ofs) const {
+  qDebug() << "Calling" << Q_FUNC_INFO;
   if (ofs.status() != QTextStream::Ok)
     return false;
   ofs << "# " << mNdim << '\n';
@@ -231,7 +233,7 @@ std::vector<std::vector<double>> HistogramBase::pointTable() const {
 }
 
 void HistogramBase::fillTable() {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   std::vector<std::vector<double>> middlePoint(mNdim);
   for (size_t i = 0; i < mNdim; ++i) {
     middlePoint[i] = mAxes[i].getMiddlePoints();
@@ -260,13 +262,13 @@ void HistogramBase::fillTable() {
 Axis::Axis()
     : mLowerBound(0.0), mUpperBound(0.0), mBins(0), mWidth(0.0),
       mPeriodic(false), mPeriodicLowerBound(0.0), mPeriodicUpperBound(0.0) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
 }
 
 Axis::Axis(double lowerBound, double upperBound, size_t bins, bool periodic)
     : mLowerBound(lowerBound), mUpperBound(upperBound), mBins(bins),
       mPeriodic(periodic) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   mWidth = (mUpperBound - mLowerBound) / static_cast<double>(mBins);
   mPeriodicLowerBound = mLowerBound;
   mPeriodicUpperBound = mUpperBound;
@@ -466,7 +468,7 @@ void HistogramProbability::convertToFreeEnergy(double kbt) {
 
 HistogramProbability
 HistogramProbability::reduceDimension(const std::vector<size_t> &new_dims) const {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   std::vector<Axis> new_ax;
   for (size_t i = 0; i < new_dims.size(); ++i) {
     new_ax.push_back(this->mAxes[new_dims[i]]);
@@ -514,7 +516,7 @@ std::vector<double> HistogramPMFHistory::computeRMSD() const {
 }
 
 std::vector<double> HistogramPMFHistory::computeRMSD(const std::vector<double> &referenceData) const {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   std::vector<double> result;
   for (int i = 0; i < mHistoryData.size(); ++i) {
     const std::vector<double> &currentData = mHistoryData[i];
@@ -531,7 +533,7 @@ std::vector<double> HistogramPMFHistory::computeRMSD(const std::vector<double> &
 
 // Does it need threading?
 void HistogramPMFHistory::splitToFile(const QString &prefix) const {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const int numPMFs = mHistoryData.size();
   const int numDigits = QString::number(numPMFs).size();
   qDebug() << Q_FUNC_INFO << ": number of PMFs = " << numPMFs;
@@ -604,7 +606,7 @@ bool PMFPathFinder::initialized() const
 
 void PMFPathFinder::findPath()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   // setup the graph
   setupGraph();
   // find the starting address and ending address
@@ -633,6 +635,7 @@ void PMFPathFinder::findPath()
 
 void PMFPathFinder::writePath(const QString &filename) const
 {
+  qDebug() << "Calling" << Q_FUNC_INFO;
   QFile ofs_file(filename);
   if (ofs_file.open(QFile::WriteOnly)) {
     QTextStream out_stream(&ofs_file);
@@ -658,6 +661,7 @@ void PMFPathFinder::writePath(const QString &filename) const
 
 void PMFPathFinder::writeVisitedRegion(const QString &filename) const
 {
+  qDebug() << "Calling" << Q_FUNC_INFO;
   QFile ofs_file(filename);
   if (ofs_file.open(QFile::WriteOnly)) {
     QTextStream out_stream(&ofs_file);
@@ -682,6 +686,7 @@ void PMFPathFinder::writeVisitedRegion(const QString &filename) const
 
 void PMFPathFinder::writePatchedPMF(const QString &filename) const
 {
+  qDebug() << "Calling" << Q_FUNC_INFO;
   mHistogram.writeToFile(filename);
 }
 
@@ -702,7 +707,7 @@ HistogramScalar<double> PMFPathFinder::histogramBackup() const
 
 void PMFPathFinder::setupGraph()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   mGraph = Graph(mHistogram.histogramSize(), true);
   for (size_t i = 0; i < mHistogram.histogramSize(); ++i) {
     const auto allNeighbors = mHistogram.allNeighborByAddress(i);
@@ -721,7 +726,7 @@ void PMFPathFinder::setupGraph()
 
 void PMFPathFinder::applyPatch()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   mHistogram = mHistogramBackup;
   std::vector<Axis> patch_ax(mHistogram.dimension());
   for (size_t patch_i = 0; patch_i < mPatchList.size(); ++patch_i) {
@@ -751,6 +756,7 @@ void PMFPathFinder::setPosEnd(const std::vector<double> &posEnd)
 
 std::vector<std::vector<double> > PMFPathFinder::pathPosition() const
 {
+  qDebug() << "Calling" << Q_FUNC_INFO;
   std::vector<std::vector<double>> path_position;
   const auto& path = mResult.mPathNodes;
   for (size_t i = 0; i < path.size(); ++i) {
@@ -762,6 +768,7 @@ std::vector<std::vector<double> > PMFPathFinder::pathPosition() const
 
 std::vector<double> PMFPathFinder::pathEnergy() const
 {
+  qDebug() << "Calling" << Q_FUNC_INFO;
   std::vector<double> energy;
   const auto& path = mResult.mPathNodes;
   for (size_t i = 0; i < path.size(); ++i) {

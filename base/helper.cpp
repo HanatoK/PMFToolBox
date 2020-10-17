@@ -9,7 +9,7 @@ QString boolToString(bool x) {
 
 double kbT(const double temperature, const QString &unit)
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   double factor = 1.0;
   if (unit.compare("kcal/mol", Qt::CaseInsensitive) == 0) {
 #ifdef SI2019

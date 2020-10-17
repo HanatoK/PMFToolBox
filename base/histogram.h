@@ -139,23 +139,23 @@ protected:
 };
 
 template <typename T> HistogramScalar<T>::HistogramScalar(): mData(0) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
 }
 
 template <typename T>
 HistogramScalar<T>::HistogramScalar(const std::vector<Axis> &ax)
     : HistogramBase(ax) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   mData.resize(mHistogramSize);
 }
 
 template <typename T> HistogramScalar<T>::~HistogramScalar() {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
 }
 
 template <typename T>
 bool HistogramScalar<T>::readFromStream(QTextStream &ifs) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   bool file_opened = HistogramBase::readFromStream(ifs);
   if (!file_opened)
     return file_opened;
@@ -203,7 +203,7 @@ bool HistogramScalar<T>::readFromStream(QTextStream &ifs) {
 
 template <typename T>
 bool HistogramScalar<T>::readFromFile(const QString &filename) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   qDebug() << Q_FUNC_INFO << ": opening " << filename;
   QFile inputFile(filename);
   if (inputFile.open(QFile::ReadOnly)) {
@@ -217,7 +217,7 @@ bool HistogramScalar<T>::readFromFile(const QString &filename) {
 
 template <typename T>
 bool HistogramScalar<T>::writeToStream(QTextStream &ofs) const {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   bool file_opened = HistogramBase::writeToStream(ofs);
   if (!file_opened)
     return file_opened;
@@ -244,7 +244,7 @@ bool HistogramScalar<T>::writeToStream(QTextStream &ofs) const {
 
 template <typename T>
 bool HistogramScalar<T>::writeToFile(const QString &filename) const {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   qDebug() << Q_FUNC_INFO << ": writing to " << filename;
   QFile outputFile(filename);
   if (outputFile.open(QFile::WriteOnly)) {
@@ -289,19 +289,19 @@ const T &HistogramScalar<T>::operator[](size_t addr) const {
 
 template <typename T>
 void HistogramScalar<T>::applyFunction(std::function<T(T)> f) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   for (size_t i = 0; i < mData.size(); ++i) {
     mData[i] = f(mData[i]);
   }
 }
 
 template <typename T> T HistogramScalar<T>::sum() const {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   return std::accumulate(mData.begin(), mData.end(), T(0));
 }
 
 template <typename T> T HistogramScalar<T>::minimum() const {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   const T result = *std::min_element(mData.begin(), mData.end());
   return result;
 }
@@ -367,7 +367,7 @@ std::vector<T> HistogramScalar<T>::getDerivative(const std::vector<double> &pos,
 template <typename T>
 void HistogramScalar<T>::generate(
     std::function<T(const std::vector<double> &)> &func) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   std::vector<double> pos(mNdim, 0.0);
   for (size_t i = 0; i < mHistogramSize; ++i) {
     for (size_t j = 0; j < mNdim; ++j) {
@@ -380,7 +380,7 @@ void HistogramScalar<T>::generate(
 
 template <typename T>
 bool HistogramScalar<T>::set(const std::vector<double> &pos, const T &value) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   bool inBoundary = true;
   const size_t addr = address(pos, &inBoundary);
   if (inBoundary) {
@@ -392,7 +392,7 @@ bool HistogramScalar<T>::set(const std::vector<double> &pos, const T &value) {
 
 template <typename T>
 void HistogramScalar<T>::merge(const HistogramScalar<T> &source) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   for (size_t i = 0; i < source.histogramSize(); ++i) {
     bool inSourceBoundary = true;
     bool inThisBoundary = true;
@@ -432,27 +432,27 @@ private:
 };
 
 template <typename T> HistogramVector<T>::HistogramVector() : HistogramBase(), mMultiplicity(0), mData(0) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
 }
 
 template <typename T>
 HistogramVector<T>::HistogramVector(const std::vector<Axis> &ax,
                                     const size_t multiplicity)
     : HistogramBase(ax), mMultiplicity(multiplicity) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   mData.resize(mHistogramSize * mMultiplicity, T());
   qDebug() << Q_FUNC_INFO << ": multiplicity = " << mMultiplicity;
   qDebug() << Q_FUNC_INFO << ": data size alllocated = " << mData.size();
 }
 
 template <typename T> HistogramVector<T>::~HistogramVector() {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
 }
 
 template <typename T>
 bool HistogramVector<T>::readFromStream(QTextStream &ifs,
                                         const size_t multiplicity) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   bool file_opened = HistogramBase::readFromStream(ifs);
   if (!file_opened)
     return file_opened;
@@ -499,7 +499,7 @@ bool HistogramVector<T>::readFromStream(QTextStream &ifs,
 
 template <typename T>
 bool HistogramVector<T>::writeToStream(QTextStream &ofs) const {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   bool file_opened = HistogramBase::writeToStream(ofs);
   if (!file_opened)
     return file_opened;

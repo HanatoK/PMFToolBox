@@ -112,7 +112,7 @@ bool TableModelReweightingAxis::removeRows(int position, int rows,
 
 bool TableModelReweightingAxis::setData(const QModelIndex &index,
                                         const QVariant &value, int role) {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   if (index.isValid() && role == Qt::EditRole) {
     const int row = index.row();
     Axis &ax = mAxisList[row].mAxis;
@@ -161,7 +161,7 @@ Qt::ItemFlags TableModelReweightingAxis::flags(const QModelIndex &index) const {
 
 void TableModelReweightingAxis::addItem(const Axis &ax, int col, bool inPMF, bool reweightingTo)
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   AxisView tmp;
   tmp.mAxis = ax;
   tmp.mInPMF = inPMF;
@@ -200,7 +200,7 @@ std::vector<int> TableModelReweightingAxis::toColumns() const
 
 void TableModelReweightingAxis::clearAll()
 {
-  qDebug() << "Calling " << Q_FUNC_INFO;
+  qDebug() << "Calling" << Q_FUNC_INFO;
   beginResetModel();
   mAxisList.clear();
   endResetModel();
