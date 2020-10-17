@@ -646,6 +646,9 @@ void PMFPathFinder::writePath(const QString &filename) const
         out_stream << pos[j];
         out_stream << qSetFieldWidth(0) << ' ';
       }
+      out_stream << qSetFieldWidth(OUTPUT_WIDTH);
+      out_stream.setRealNumberPrecision(OUTPUT_PRECISION);
+      out_stream << mHistogram[path[i]];
       out_stream << qSetFieldWidth(0);
       out_stream << '\n';
     }
@@ -744,6 +747,28 @@ std::vector<double> PMFPathFinder::posEnd() const
 void PMFPathFinder::setPosEnd(const std::vector<double> &posEnd)
 {
   mPosEnd = posEnd;
+}
+
+std::vector<std::vector<double> > PMFPathFinder::pathPosition() const
+{
+  std::vector<std::vector<double>> path_position;
+  const auto& path = mResult.mPathNodes;
+  for (size_t i = 0; i < path.size(); ++i) {
+    const auto pos = mHistogram.reverseAddress(path[i]);
+    path_position.push_back(pos);
+  }
+  return path_position;
+}
+
+std::vector<double> PMFPathFinder::pathEnergy() const
+{
+  std::vector<double> energy;
+  const auto& path = mResult.mPathNodes;
+  for (size_t i = 0; i < path.size(); ++i) {
+    const double e = mHistogram[path[i]];
+    energy.push_back(e);
+  }
+  return energy;
 }
 
 std::vector<double> PMFPathFinder::posStart() const

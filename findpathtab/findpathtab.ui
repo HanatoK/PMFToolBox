@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>572</width>
+    <width>570</width>
     <height>405</height>
    </rect>
   </property>
@@ -76,11 +76,11 @@
     </widget>
    </item>
    <item row="4" column="0" colspan="3">
-    <widget class="QWidget" name="widgetPlot" native="true">
+    <widget class="PMFPlot" name="widgetPlot" native="true">
      <property name="minimumSize">
       <size>
-       <width>0</width>
-       <height>200</height>
+       <width>400</width>
+       <height>400</height>
       </size>
      </property>
     </widget>
@@ -142,6 +142,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PMFPlot</class>
+   <extends>QWidget</extends>
+   <header>base/plot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -32,6 +32,8 @@ bool PMFPlot::plotPMF2D(const HistogramScalar<double> &histogram)
   enableAxis(QwtPlot::Axis::xBottom, true);
   axisWidget(QwtPlot::Axis::yLeft)->setFont(mPlotFont);
   axisWidget(QwtPlot::Axis::xBottom)->setFont(mPlotFont);
+  setAxisTitle(QwtPlot::Axis::yLeft, "Y");
+  setAxisTitle(QwtPlot::Axis::xBottom, "X");
   // prepare data
   QwtMatrixRasterData *matrix;
   matrix = new QwtMatrixRasterData();
@@ -90,6 +92,10 @@ bool PMFPlot::plotPMF1D(const HistogramScalar<double> &histogram)
   enableAxis(QwtPlot::Axis::xBottom, true);
   enableAxis(QwtPlot::Axis::yRight, false);
   enableAxis(QwtPlot::Axis::xTop, false);
+  QwtText free_energy_title("ΔG (kcal/mol)");
+  free_energy_title.setFont(mTitleFont);
+  setAxisTitle(QwtPlot::Axis::yLeft, free_energy_title);
+  setAxisTitle(QwtPlot::Axis::xBottom, "X");
   setAxisScale(QwtPlot::xBottom, histogram.axes()[0].lowerBound(),
                      histogram.axes()[0].upperBound());
   const double yMin =
@@ -148,6 +154,11 @@ void PMFPlot::plotEnergyAlongPath(const std::vector<double> &energies, bool clea
     setAxisScale(QwtPlot::xBottom, xMin, xMax);
     setAxisScale(QwtPlot::yLeft, yMin, yMax);
   }
+  axisWidget(QwtPlot::Axis::yLeft)->setFont(mPlotFont);
+  axisWidget(QwtPlot::Axis::xBottom)->setFont(mPlotFont);
+  QwtText free_energy_title("ΔG (kcal/mol)");
+  setAxisTitle(QwtPlot::Axis::yLeft, free_energy_title);
+  setAxisTitle(QwtPlot::Axis::xBottom, "S");
   QwtPlotCurve *curve = new QwtPlotCurve("energyCurve");
   curve->setPen(Qt::red, 2);
   curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
@@ -229,7 +240,7 @@ void RMSDPlot::initialize()
   enableAxis(QwtPlot::Axis::yLeft, false);
   enableAxis(QwtPlot::Axis::xBottom, false);
   setAutoReplot(true);
-  const QStringList font_list{"Arimo", "Liberation Sans", "Helvetica", "Arial",
+  const QStringList font_list{"Liberation Sans", "Helvetica", "Arial",
                               "Sans Serif"};
   mPlotFont.setFamilies(font_list);
   mPlotFont.setPointSize(16);

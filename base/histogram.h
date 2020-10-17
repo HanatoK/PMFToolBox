@@ -630,6 +630,8 @@ public:
   void setPosStart(const std::vector<double> &posStart);
   std::vector<double> posEnd() const;
   void setPosEnd(const std::vector<double> &posEnd);
+  std::vector<std::vector<double>> pathPosition() const;
+  std::vector<double> pathEnergy() const;
 
 private:
   void setupGraph();

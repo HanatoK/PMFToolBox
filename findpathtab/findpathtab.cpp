@@ -16,6 +16,9 @@ FindPathTab::FindPathTab(QWidget *parent)
           &FindPathTab::findPath);
   connect(&mPMFPathFinderThread, &PMFPathFinderThread::PathFinderDone, this,
           &FindPathTab::findPathDone);
+  connect(ui->pushButtonPathOnPMF, &QPushButton::clicked, this,
+          &FindPathTab::plotPathOnPMF);
+  connect(ui->pushButtonEnergyAlongPath, &QPushButton::clicked, this, &FindPathTab::plotEnergy);
 }
 
 FindPathTab::~FindPathTab() { delete ui; }
@@ -104,4 +107,37 @@ void FindPathTab::findPathDone(const PMFPathFinder &result) {
   mPMFPathFinder.writeVisitedRegion(ui->lineEditOutput->text() + ".region");
   ui->pushButtonFind->setText(tr("Find"));
   ui->pushButtonFind->setEnabled(true);
+}
+
+void FindPathTab::plotPathOnPMF() {
+  const size_t dimension = mPMFPathFinder.histogram().dimension();
+  if (dimension == 0) {
+    const QString errorMsg(tr("PMF and path are not loaded or initialized."));
+    qDebug() << errorMsg;
+    QMessageBox errorBox;
+    errorBox.critical(this, "Error", errorMsg);
+    return;
+  }
+  if (dimension != 2) {
+    const QString errorMsg(tr("You are trying to load a ") +
+                           QString::number(dimension) +
+                           tr("D PMF, but only 2D PMF is supported."));
+    qDebug() << errorMsg;
+    QMessageBox errorBox;
+    errorBox.critical(this, "Error", errorMsg);
+    return;
+  }
+  ui->widgetPlot->plotPMF2D(mPMFPathFinder.histogram());
+  ui->widgetPlot->plotPath2D(mPMFPathFinder.pathPosition());
+}
+
+void FindPathTab::plotEnergy()
+{
+  qDebug() << "Calling " << Q_FUNC_INFO;
+  const std::vector<double> energy = mPMFPathFinder.pathEnergy();
+  if (energy.empty()) {
+    qDebug() << Q_FUNC_INFO << ": energies are empty.";
+    return;
+  }
+  ui->widgetPlot->plotEnergyAlongPath(energy, true);
 }

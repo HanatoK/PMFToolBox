@@ -225,11 +225,13 @@ Graph::FindPathResult Graph::SPFA(
 #ifdef DEBUG_SPFA
         qDebug() << "Update new distance at" << neighbor_index
                  << " ; new distance = " << new_distance;
-        qDebug() << "New path =" << new_path;
 #endif
         distances[neighbor_index] = new_distance;
         paths[neighbor_index] = paths[to_visit];
         paths[neighbor_index].push_back(neighbor_index);
+#ifdef DEBUG_SPFA
+       qDebug() << "New path =" << paths[neighbor_index];
+#endif
         if (in_Q[neighbor_index] == false) {
           Q.push_back(neighbor_index);
           in_Q[neighbor_index] = true;

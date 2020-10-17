@@ -24,6 +24,8 @@ public slots:
   void saveFile();
   void findPath();
   void findPathDone(const PMFPathFinder &result);
+  void plotPathOnPMF();
+  void plotEnergy();
 
 private:
   Ui::FindPathTab *ui;
