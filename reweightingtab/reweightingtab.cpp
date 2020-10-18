@@ -1,3 +1,22 @@
+/*
+  PMFToolBox: A toolbox to analyze and post-process the output of
+  potential of mean force calculations.
+  Copyright (C) 2020  Haochuan Chen
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "reweightingtab.h"
 #include "ui_reweightingtab.h"
 #include "base/helper.h"
@@ -20,7 +39,6 @@ ReweightingTab::ReweightingTab(QWidget *parent)
   connect(ui->pushButtonRemoveTrajectory, &QPushButton::clicked, this, &ReweightingTab::removeTrajectory);
   connect(ui->pushButtonReadAxes, &QPushButton::clicked, this, &ReweightingTab::readAxisData);
   connect(ui->pushButtonRun, &QPushButton::clicked, this, &ReweightingTab::reweighting);
-  connect(ui->pushButtonHelp, &QPushButton::clicked, this, &ReweightingTab::help);
   connect(&mWorkerThread, &ReweightingThread::error, this, &ReweightingTab::reweightingError);
   connect(&mWorkerThread, &ReweightingThread::progress, this, &ReweightingTab::reweightingProgress);
   connect(&mWorkerThread, &ReweightingThread::done, this, &ReweightingTab::reweightingDone);

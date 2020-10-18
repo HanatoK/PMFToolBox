@@ -17,14 +17,17 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef TEST_H
-#define TEST_H
+#include "aboutdialog.h"
+#include "ui_aboutdialog.h"
 
-#include "base/graph.h"
+AboutDialog::AboutDialog(QWidget *parent) :
+  QDialog(parent),
+  ui(new Ui::AboutDialog)
+{
+  ui->setupUi(this);
+}
 
-void testGraph();
-void testDijkstra();
-void testSPFA();
-void testSPFA2();
-
-#endif // TEST_H
+AboutDialog::~AboutDialog()
+{
+  delete ui;
+}

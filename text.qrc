@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/licenses">
+        <file>LICENSE</file>
+        <file>external/LICENSE.CLI11</file>
+    </qresource>
+</RCC>

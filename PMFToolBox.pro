@@ -9,6 +9,7 @@ CONFIG += c++2a qwt
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    aboutdialog/aboutdialog.cpp \
     base/graph.cpp \
     base/helper.cpp \
     base/histogram.cpp \
@@ -30,6 +31,7 @@ SOURCES += \
     test/test.cpp
 
 HEADERS += \
+    aboutdialog/aboutdialog.h \
     base/graph.h \
     base/helper.h \
     base/histogram.h \
@@ -51,6 +53,7 @@ HEADERS += \
     test/test.h
 
 FORMS += \
+    aboutdialog/aboutdialog.ui \
     findpathtab/findpathtab.ui \
     historypmftab/historypmftab.ui \
     mainwindow.ui \
@@ -62,3 +65,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+  text.qrc

@@ -17,14 +17,35 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef TEST_H
-#define TEST_H
+#ifndef ABOUTDIALOG_H
+#define ABOUTDIALOG_H
 
-#include "base/graph.h"
+#include <QDialog>
 
-void testGraph();
-void testDijkstra();
-void testSPFA();
-void testSPFA2();
+namespace Ui {
+class AboutDialog;
+}
 
-#endif // TEST_H
+struct authorInfo {
+  QString mName;
+  QString mEmail;
+};
+
+struct licenseInfo {
+  QString mProgram;
+  QString mLicense;
+};
+
+class AboutDialog : public QDialog
+{
+  Q_OBJECT
+
+public:
+  explicit AboutDialog(QWidget *parent = nullptr);
+  ~AboutDialog();
+
+private:
+  Ui::AboutDialog *ui;
+};
+
+#endif // ABOUTDIALOG_H

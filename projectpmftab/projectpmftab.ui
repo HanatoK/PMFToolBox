@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>684</width>
-    <height>364</height>
+    <width>682</width>
+    <height>362</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,13 +66,6 @@
          <string>kJ/mol</string>
         </property>
        </item>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButtonHelp">
-       <property name="text">
-        <string>Help</string>
-       </property>
       </widget>
      </item>
     </layout>
@@ -171,7 +164,6 @@
   <tabstop>lineEditProjectTo</tabstop>
   <tabstop>lineEditTemperature</tabstop>
   <tabstop>comboBoxUnit</tabstop>
-  <tabstop>pushButtonHelp</tabstop>
   <tabstop>pushButtonProjectAndSave</tabstop>
   <tabstop>pushButtonPlotOriginPMF</tabstop>
   <tabstop>pushButtonPlotProjectedPMF</tabstop>
