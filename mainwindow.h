@@ -44,7 +44,7 @@ public:
 
 public slots:
   void updateSizes(int index);
-  void aboutQt();
+  void openAboutDialog();
 
 private:
   Ui::MainWindow *ui;

@@ -26,12 +26,12 @@ namespace Ui {
 class AboutDialog;
 }
 
-struct authorInfo {
+struct AuthorInfo {
   QString mName;
   QString mEmail;
 };
 
-struct licenseInfo {
+struct LicenseInfo {
   QString mProgram;
   QString mLicense;
 };
@@ -42,10 +42,14 @@ class AboutDialog : public QDialog
 
 public:
   explicit AboutDialog(QWidget *parent = nullptr);
+
   ~AboutDialog();
 
 private:
   Ui::AboutDialog *ui;
+  QString getStringFromResource(const QString& res_file) const;
+  QList<AuthorInfo> authorsInfo() const;
+  QList<LicenseInfo> licensesInfo() const;
 };
 
 #endif // ABOUTDIALOG_H

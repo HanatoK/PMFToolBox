@@ -19,6 +19,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "aboutdialog/aboutdialog.h"
 
 #include <QResizeEvent>
 #include <QMessageBox>
@@ -39,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent)
   ui->tabWidget->addTab(mNAMDLogTab, "NAMD log");
   ui->tabWidget->addTab(mFindPathTab, "Find MFEP");
   connect(ui->pushButtonAboutQt, &QPushButton::clicked, this, &QApplication::aboutQt);
+  connect(ui->pushButtonAbout, &QPushButton::clicked, this, &MainWindow::openAboutDialog);
   // I'm still wondering if this is a good idea to auto resize the main window
   // https://forum.qt.io/topic/119614/auto-resize-the-mainwindow-to-fit-the-content-in-the-tab-widget/4
 //  connect(ui->tabWidget, &QTabWidget::currentChanged, this, &MainWindow::updateSizes);
@@ -83,5 +85,11 @@ void MainWindow::updateSizes(int index)
   this->resize(this->minimumSizeHint());
 //  this->adjustSize();
   qDebug() << "mainwindow size after resizing: " << this->size();
+}
+
+void MainWindow::openAboutDialog()
+{
+  AboutDialog dlg;
+  dlg.exec();
 }
 
