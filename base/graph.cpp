@@ -243,11 +243,31 @@ MFEPDistance::MFEPDistance(const std::initializer_list<double> &l) {
   }
 }
 
+#ifdef USE_BOOST_HEAP
+MFEPDistance::MFEPDistance(const MFEPDistance &rhs)
+{
+  this->mDistance.clear();
+  for (auto it = rhs.mDistance.begin(); it != rhs.mDistance.end(); ++it) {
+    this->mDistance.push(*it);
+  }
+}
+#endif
+
 MFEPDistance MFEPDistance::operator+(const double &rhs) const {
   MFEPDistance res(*this);
   res.mDistance.push(rhs);
   return res;
 }
+
+#ifdef USE_BOOST_HEAP
+void MFEPDistance::operator=(const MFEPDistance &rhs)
+{
+  this->mDistance.clear();
+  for (auto it = rhs.mDistance.begin(); it != rhs.mDistance.end(); ++it) {
+    this->mDistance.push(*it);
+  }
+}
+#endif
 
 MFEPDistance::operator double() const {
   if (mDistance.empty())
@@ -257,7 +277,7 @@ MFEPDistance::operator double() const {
 }
 
 std::ostream &operator<<(std::ostream &os, const MFEPDistance &rhs) {
-  std::priority_queue<double> tmpRhsQueue(rhs.mDistance);
+  auto tmpRhsQueue(rhs.mDistance);
   while (!tmpRhsQueue.empty()) {
     os << tmpRhsQueue.top() << ' ';
     tmpRhsQueue.pop();
@@ -268,8 +288,77 @@ std::ostream &operator<<(std::ostream &os, const MFEPDistance &rhs) {
 auto operator<=>(const MFEPDistance &lhs, const MFEPDistance &rhs) {
   const size_t l_size = lhs.mDistance.size();
   const size_t r_size = rhs.mDistance.size();
-  std::priority_queue<double> tmpLhsQueue(lhs.mDistance);
-  std::priority_queue<double> tmpRhsQueue(rhs.mDistance);
+#if defined(USE_BOOST_ORDERED_ITERATOR)
+  auto it_lhs = lhs.mDistance.ordered_begin();
+  auto it_rhs = rhs.mDistance.ordered_begin();
+  auto it_lhs_end = lhs.mDistance.ordered_end();
+  auto it_rhs_end = rhs.mDistance.ordered_end();
+  double lhs_last_element = 0;
+  double rhs_last_element = 0;
+  if (l_size == r_size) {
+    if (l_size == 0)
+      return std::partial_ordering::equivalent;
+    while (it_lhs != it_lhs_end) {
+      if ((*it_lhs) == (*it_rhs)) {
+        ++it_lhs;
+        ++it_rhs;
+        continue;
+      } else if ((*it_lhs) < (*it_rhs)) {
+        return std::partial_ordering::less;
+      } else {
+        return std::partial_ordering::greater;
+      }
+    }
+    return std::partial_ordering::equivalent;
+  } else if (l_size < r_size) {
+    if (l_size == 0)
+      return std::partial_ordering::less;
+    while (it_lhs != it_lhs_end) {
+      lhs_last_element = *it_lhs;
+      if ((*it_lhs) == (*it_rhs)) {
+        ++it_lhs;
+        ++it_rhs;
+        continue;
+      } else if ((*it_lhs) < (*it_rhs)) {
+        return std::partial_ordering::less;
+      } else {
+        return std::partial_ordering::greater;
+      }
+    }
+    while (it_rhs != it_rhs_end) {
+      rhs_last_element = *it_rhs;
+      ++it_rhs;
+    }
+    if (lhs_last_element == rhs_last_element)
+      return std::partial_ordering::less;
+    return lhs_last_element <=> rhs_last_element;
+  } else if (l_size > r_size) {
+    if (r_size == 0)
+      return std::partial_ordering::greater;
+    while (it_rhs != it_rhs_end) {
+      rhs_last_element = *it_rhs;
+      if ((*it_lhs) == (*it_rhs)) {
+        ++it_lhs;
+        ++it_rhs;
+        continue;
+      } else if ((*it_lhs) < (*it_rhs)) {
+        return std::partial_ordering::less;
+      } else {
+        return std::partial_ordering::greater;
+      }
+    }
+    while (it_lhs != it_lhs_end) {
+      lhs_last_element = *it_lhs;
+      ++it_lhs;
+    }
+    if (lhs_last_element == rhs_last_element)
+      return std::partial_ordering::greater;
+    return lhs_last_element <=> rhs_last_element;
+  }
+  return std::partial_ordering::equivalent;
+#else
+  auto tmpLhsQueue(lhs.mDistance);
+  auto tmpRhsQueue(rhs.mDistance);
   // TODO: simplify this!
   double lhsElement = 0;
   double rhsElement = 0;
@@ -336,6 +425,7 @@ auto operator<=>(const MFEPDistance &lhs, const MFEPDistance &rhs) {
     return lhsElement <=> rhsElement;
   }
   return std::partial_ordering::equivalent;
+#endif
 }
 
 void Graph::FindPathResult::dump() const
@@ -352,7 +442,7 @@ void Graph::FindPathResult::dump() const
 
 QDebug operator<<(QDebug dbg, const MFEPDistance &rhs)
 {
-  std::priority_queue<double> tmpRhsQueue(rhs.mDistance);
+  auto tmpRhsQueue(rhs.mDistance);
   QString debug_string;
   while (!tmpRhsQueue.empty()) {
     debug_string += QString::number(tmpRhsQueue.top()) + ' ';

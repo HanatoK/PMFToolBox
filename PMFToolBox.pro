@@ -8,6 +8,13 @@ CONFIG += c++2a qwt
 # In order to do so, uncomment the following line.
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+# You need to comment out USE_BOOST_* if you do not have boost installed.
+#DEFINES += USE_BOOST_D_ARY_HEAP
+#DEFINES += USE_BOOST_PRIORITY_QUEUQ
+# Simply copying the priority queue and pop elements for comparison seems having better performance
+# From boost documentation: "iterating the a heap in heap order has an amortized complexity of O(N*log(N))."
+#DEFINES += USE_BOOST_ORDERED_ITERATOR
+
 SOURCES += \
     aboutdialog/aboutdialog.cpp \
     base/graph.cpp \

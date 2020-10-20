@@ -36,6 +36,30 @@
 #include <list>
 #include <deque>
 
+#if defined(USE_BOOST_FIBONACCI_HEAP)
+#include <boost/heap/fibonacci_heap.hpp>
+#define USE_BOOST_HEAP
+#elif defined(USE_BOOST_BINOMIAL_HEAP)
+#define USE_BOOST_HEAP
+#include <boost/heap/binomial_heap.hpp>
+#elif defined(USE_BOOST_D_ARY_HEAP)
+#define USE_BOOST_HEAP
+#ifndef ARITY
+#define ARITY 4
+#endif
+#include <boost/heap/d_ary_heap.hpp>
+#elif defined(USE_BOOST_PRIORITY_QUEUQ)
+#include <boost/heap/priority_queue.hpp>
+#define USE_BOOST_HEAP
+#ifdef USE_BOOST_ORDERED_ITERATOR
+#undef USE_BOOST_ORDERED_ITERATOR
+#endif
+#else
+#ifdef USE_BOOST_ORDERED_ITERATOR
+#undef USE_BOOST_ORDERED_ITERATOR
+#endif
+#endif
+
 #ifdef QT_DEBUG
 #define DEBUG_SPFA
 #define DEBUG_DIJKSTRA
@@ -292,9 +316,23 @@ public:
   friend QDebug operator<<(QDebug dbg, const MFEPDistance &ax);
   friend auto operator<=>(const MFEPDistance &lhs, const MFEPDistance &rhs);
   explicit operator double() const;
+#ifdef USE_BOOST_HEAP
+  MFEPDistance(const MFEPDistance& rhs);
+  void operator=(const MFEPDistance& rhs);
+#endif
 
 private:
+#if defined(USE_BOOST_FIBONACCI_HEAP)
+  boost::heap::fibonacci_heap<double> mDistance;
+#elif defined(USE_BOOST_BINOMIAL_HEAP)
+  boost::heap::binomial_heap<double> mDistance;
+#elif defined(USE_BOOST_D_ARY_HEAP)
+  boost::heap::d_ary_heap<double, boost::heap::arity<ARITY>> mDistance;
+#elif defined (USE_BOOST_PRIORITY_QUEUQ)
+  boost::heap::priority_queue<double> mDistance;
+#else
   std::priority_queue<double> mDistance;
+#endif
 };
 
 std::ostream &operator<<(std::ostream &os, const MFEPDistance &rhs);
