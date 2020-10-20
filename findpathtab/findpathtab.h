@@ -21,6 +21,8 @@
 #define FINDPATHTAB_H
 
 #include "base/pathfinderthread.h"
+#include "findpathtab/addpatchdialog.h"
+#include "findpathtab/patchtablemodel.h"
 
 #include <QWidget>
 
@@ -37,6 +39,7 @@ public:
   ~FindPathTab();
   void setupAvailableAlgorithms();
   Graph::FindPathAlgorithm selectedAlgorithm() const;
+  void addPatch(const QString& center, const QVector<double>& length, const double value);
 
 public slots:
   void loadPMF();
@@ -45,9 +48,13 @@ public slots:
   void findPathDone(const PMFPathFinder &result);
   void plotPathOnPMF();
   void plotEnergy();
+  void showAddPatchDialog();
+  void updatePatchedHistogram();
+  void removePatch();
 
 private:
   Ui::FindPathTab *ui;
+  PatchTableModel *mPatchTable;
   HistogramPMF mPMF;
   PMFPathFinderThread mPMFPathFinderThread;
   PMFPathFinder mPMFPathFinder;

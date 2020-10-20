@@ -24,7 +24,9 @@ SOURCES += \
     base/pathfinderthread.cpp \
     base/plot.cpp \
     base/reweighting.cpp \
+    findpathtab/addpatchdialog.cpp \
     findpathtab/findpathtab.cpp \
+    findpathtab/patchtablemodel.cpp \
     historypmftab/historypmftab.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -47,7 +49,9 @@ HEADERS += \
     base/plot.h \
     base/reweighting.h \
     base/turbocolormap.h \
+    findpathtab/addpatchdialog.h \
     findpathtab/findpathtab.h \
+    findpathtab/patchtablemodel.h \
     historypmftab/historypmftab.h \
     mainwindow.h \
     base/namdlogparser.h \

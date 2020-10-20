@@ -73,6 +73,12 @@ private:
   double mPeriodicUpperBound;
 };
 
+struct GridDataPatch {
+  std::vector<double> mCenter;
+  std::vector<double> mLength;
+  double mValue;
+};
+
 struct AxisView {
   AxisView();
   int mColumn;
@@ -622,15 +628,10 @@ private:
   QList<std::vector<double>> mHistoryData;
 };
 
-struct GridDataPatch {
-  std::vector<double> mCenter;
-  std::vector<double> mLength;
-  double mValue;
-};
-
 class PMFPathFinder {
 public:
   PMFPathFinder();
+  PMFPathFinder(const HistogramScalar<double>& histogram, const std::vector<GridDataPatch> &patchList);
   PMFPathFinder(const HistogramScalar<double>& histogram, const std::vector<GridDataPatch> &patchList,
                 const std::vector<double>& pos_start, const std::vector<double>& pos_end, Graph::FindPathMode mode, Graph::FindPathAlgorithm algorithm);
   void setup(const HistogramScalar<double>& histogram, const std::vector<GridDataPatch> &patchList,

@@ -592,6 +592,15 @@ PMFPathFinder::PMFPathFinder()
   hasData = false;
 }
 
+PMFPathFinder::PMFPathFinder(const HistogramScalar<double> &histogram, const std::vector<GridDataPatch> &patchList)
+{
+  mHistogram = histogram;
+  mPatchList = patchList;
+  mHistogramBackup = histogram;
+  applyPatch();
+  hasData = true;
+}
+
 PMFPathFinder::PMFPathFinder(const HistogramScalar<double> &histogram,
                              const std::vector<GridDataPatch> &patchList,
                              const std::vector<double> &pos_start,

@@ -24,9 +24,10 @@
 #include <QMessageBox>
 
 FindPathTab::FindPathTab(QWidget *parent)
-    : QWidget(parent), ui(new Ui::FindPathTab) {
+    : QWidget(parent), ui(new Ui::FindPathTab), mPatchTable(new PatchTableModel(this)) {
   ui->setupUi(this);
   setupAvailableAlgorithms();
+  ui->tableViewPatch->setModel(mPatchTable);
   connect(ui->pushButtonOpen, &QPushButton::clicked, this,
           &FindPathTab::loadPMF);
   connect(ui->pushButtonSaveTo, &QPushButton::clicked, this,
@@ -58,6 +59,28 @@ Graph::FindPathAlgorithm FindPathTab::selectedAlgorithm() const {
   qDebug() << "Calling" << Q_FUNC_INFO;
   const QString selectedText = ui->comboBoxAlgorithm->currentText();
   return mAvailableAlgorithms[selectedText];
+}
+
+void FindPathTab::addPatch(const QString &center, const QVector<double> &length, const double value)
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  qDebug() << Q_FUNC_INFO << "add patch:"
+           << "center =" << center;
+  for (int i = 0; i < length.size(); ++i)
+    qDebug() << Q_FUNC_INFO << "length" << i << "=" << length[i];
+  qDebug() << Q_FUNC_INFO << "value =" << value;
+
+  mPatchTable->setDimension(length.size());
+  mPatchTable->insertRows(0, 1, QModelIndex());
+  QModelIndex index = mPatchTable->index(0, 0, QModelIndex());
+  mPatchTable->setData(index, center, Qt::EditRole);
+  for (size_t i = 0; i < mPatchTable->dimension(); ++i) {
+    index = mPatchTable->index(0, i + 1, QModelIndex());
+    mPatchTable->setData(index, length[i], Qt::EditRole);
+  }
+  index = mPatchTable->index(0, mPatchTable->dimension() + 1, QModelIndex());
+  mPatchTable->setData(index, value, Qt::EditRole);
+  updatePatchedHistogram();
 }
 
 void FindPathTab::loadPMF() {
@@ -159,4 +182,13 @@ void FindPathTab::plotEnergy()
     return;
   }
   ui->widgetPlot->plotEnergyAlongPath(energy, true);
+}
+
+void FindPathTab::updatePatchedHistogram()
+{
+  const auto tmpVector = mPatchTable->patchList().toVector();
+  const std::vector<GridDataPatch> patchList(
+      tmpVector.begin(),
+      tmpVector.end());
+  mPMFPathFinder = PMFPathFinder(mPMF, patchList);
 }
