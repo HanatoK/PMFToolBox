@@ -151,7 +151,7 @@ Graph::FindPathResult Graph::Dijkstra(
   while (!pq.empty()) {
 #ifdef DEBUG_DIJKSTRA
     qDebug() << "Loop " << loop << " ============= ";
-    debug_priority_queue(pq, "Current priority queue:");
+    debug_priority_queue(pq, "Current priority search queue:");
     qDebug() << "Distance from" << start << ":" << distances;
     qDebug() << "Previous visited vertices array:" << previous;
     qDebug() << "Visited vertices:" << visited;
@@ -224,27 +224,30 @@ Graph::FindPathResult Graph::SPFA(
   std::vector<DistanceType> distances(mNumNodes);
   std::vector<bool> visited(mNumNodes, false);
   std::vector<std::deque<size_t>> paths(mNumNodes);
-  std::vector<bool> in_Q(mNumNodes, false);
+  std::vector<bool> in_pq(mNumNodes, false);
   for (size_t i = 0; i < mNumNodes; ++i) {
     distances[i] = (i == start) ? dist_start : dist_infinity;
   }
   paths[start].push_back(start);
-  std::deque<size_t> Q;
-  Q.push_back(start);
-  in_Q[start] = true;
+  typedef std::pair<DistanceType, size_t> DistNodePair;
+  std::priority_queue<DistNodePair, std::vector<DistNodePair>,
+                      std::greater<DistNodePair>>
+      pq;
+  pq.push(std::make_pair(dist_start, start));
+  in_pq[start] = true;
   size_t loop = 0;
   QElapsedTimer timer;
   timer.start();
   DistanceType new_distance = DistanceType();
-  while (!Q.empty()) {
+  while (!pq.empty()) {
 #ifdef DEBUG_SPFA
     qDebug() << "==================== Loop" << loop << "====================";
-    qDebug() << "Current search queue:" << Q;
+    debug_priority_queue(pq, "Current priority search queue:");
     qDebug() << "Visited vertices:" << visited;
 #endif
-    const size_t to_visit = Q.front();
-    Q.pop_front();
-    in_Q[to_visit] = false;
+    const size_t to_visit = pq.top().second;
+    pq.pop();
+    in_pq[to_visit] = false;
 #ifdef DEBUG_SPFA
     qDebug() << "Vertex being visited:" << to_visit;
 #endif
@@ -271,9 +274,9 @@ Graph::FindPathResult Graph::SPFA(
 #ifdef DEBUG_SPFA
        qDebug() << "New path =" << paths[neighbor_index];
 #endif
-        if (in_Q[neighbor_index] == false) {
-          Q.push_back(neighbor_index);
-          in_Q[neighbor_index] = true;
+        if (in_pq[neighbor_index] == false) {
+          pq.push(std::make_pair(distances[neighbor_index], neighbor_index));
+          in_pq[neighbor_index] = true;
         }
       }
       std::advance(neighbor_node, 1);
