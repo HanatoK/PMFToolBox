@@ -184,6 +184,11 @@ void FindPathTab::plotEnergy()
   ui->widgetPlot->plotEnergyAlongPath(energy, true);
 }
 
+void FindPathTab::showAddPatchDialog()
+{
+  // TODO
+}
+
 void FindPathTab::updatePatchedHistogram()
 {
   const auto tmpVector = mPatchTable->patchList().toVector();
@@ -191,4 +196,9 @@ void FindPathTab::updatePatchedHistogram()
       tmpVector.begin(),
       tmpVector.end());
   mPMFPathFinder = PMFPathFinder(mPMF, patchList);
+}
+
+void FindPathTab::removePatch()
+{
+  // TODO
 }
