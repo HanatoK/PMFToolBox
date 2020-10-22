@@ -224,30 +224,27 @@ Graph::FindPathResult Graph::SPFA(
   std::vector<DistanceType> distances(mNumNodes);
   std::vector<bool> visited(mNumNodes, false);
   std::vector<std::deque<size_t>> paths(mNumNodes);
-  std::vector<bool> in_pq(mNumNodes, false);
+  std::vector<bool> in_search_queue(mNumNodes, false);
   for (size_t i = 0; i < mNumNodes; ++i) {
     distances[i] = (i == start) ? dist_start : dist_infinity;
   }
   paths[start].push_back(start);
-  typedef std::pair<DistanceType, size_t> DistNodePair;
-  std::priority_queue<DistNodePair, std::vector<DistNodePair>,
-                      std::greater<DistNodePair>>
-      pq;
-  pq.push(std::make_pair(dist_start, start));
-  in_pq[start] = true;
+  std::deque<size_t> search_queue;
+  search_queue.push_back(start);
+  in_search_queue[start] = true;
   size_t loop = 0;
   QElapsedTimer timer;
   timer.start();
   DistanceType new_distance = DistanceType();
-  while (!pq.empty()) {
+  while (!search_queue.empty()) {
 #ifdef DEBUG_SPFA
     qDebug() << "==================== Loop" << loop << "====================";
-    debug_priority_queue(pq, "Current priority search queue:");
+    qDebug() << "Current search queue:" << search_queue;
     qDebug() << "Visited vertices:" << visited;
 #endif
-    const size_t to_visit = pq.top().second;
-    pq.pop();
-    in_pq[to_visit] = false;
+    const size_t to_visit = search_queue.front();
+    search_queue.pop_front();
+    in_search_queue[to_visit] = false;
 #ifdef DEBUG_SPFA
     qDebug() << "Vertex being visited:" << to_visit;
 #endif
@@ -262,6 +259,8 @@ Graph::FindPathResult Graph::SPFA(
       qDebug() << "Current distance:" << distances[neighbor_index];
       qDebug() << "Current path:" << paths[neighbor_index];
       qDebug() << "Path of the previous vertex:" << paths[to_visit];
+      qDebug() << "Distance of previous vertex from start:" << distances[to_visit];
+      qDebug() << "Calculated new distance:" << new_distance;
 #endif
       if (new_distance < distances[neighbor_index]) {
 #ifdef DEBUG_SPFA
@@ -274,9 +273,9 @@ Graph::FindPathResult Graph::SPFA(
 #ifdef DEBUG_SPFA
        qDebug() << "New path =" << paths[neighbor_index];
 #endif
-        if (in_pq[neighbor_index] == false) {
-          pq.push(std::make_pair(distances[neighbor_index], neighbor_index));
-          in_pq[neighbor_index] = true;
+        if (in_search_queue[neighbor_index] == false) {
+          search_queue.push_back(neighbor_index);
+          in_search_queue[neighbor_index] = true;
         }
       }
       std::advance(neighbor_node, 1);

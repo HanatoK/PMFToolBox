@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <QElapsedTimer>
 
 HistogramBase::HistogramBase()
     : mNdim(0), mHistogramSize(0), mAxes(0), mPointTable(0), mAccu(0) {}
@@ -736,6 +737,8 @@ HistogramScalar<double> PMFPathFinder::histogramBackup() const
 void PMFPathFinder::setupGraph()
 {
   qDebug() << "Calling" << Q_FUNC_INFO;
+  QElapsedTimer timer;
+  timer.start();
   mGraph = Graph(mHistogram.histogramSize(), true);
   for (size_t i = 0; i < mHistogram.histogramSize(); ++i) {
     const auto allNeighbors = mHistogram.allNeighborByAddress(i);
@@ -750,6 +753,7 @@ void PMFPathFinder::setupGraph()
       }
     }
   }
+  qDebug() << "Convert the PMF to a graph takes" << timer.elapsed() << "milliseconds.";
   mGraph.summary();
 }
 
