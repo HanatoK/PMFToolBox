@@ -2,7 +2,7 @@
 
 #include <QtWidgets>
 
-AddPatchDialog::AddPatchDialog(QWidget *parent, int dimension)
+AddPatchDialog::AddPatchDialog(int dimension, QWidget *parent)
   : QDialog(parent), mDimension(dimension), mLengthText(dimension, nullptr)
 {
   mCenterText = new QLineEdit;

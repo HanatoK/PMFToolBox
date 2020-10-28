@@ -49,7 +49,6 @@ public slots:
   void plotPathOnPMF();
   void plotEnergy();
   void showAddPatchDialog();
-  void updatePatchedHistogram();
   void removePatch();
 
 private:

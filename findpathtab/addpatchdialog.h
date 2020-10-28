@@ -9,7 +9,7 @@ class AddPatchDialog : public QDialog
 {
   Q_OBJECT
 public:
-  AddPatchDialog(QWidget *parent = nullptr, int dimension = 0);
+  AddPatchDialog(int dimension = 0, QWidget *parent = nullptr);
   QString center() const;
   double length(int i) const;
   double value() const;

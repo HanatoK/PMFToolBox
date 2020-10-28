@@ -39,6 +39,8 @@ FindPathTab::FindPathTab(QWidget *parent)
   connect(ui->pushButtonPathOnPMF, &QPushButton::clicked, this,
           &FindPathTab::plotPathOnPMF);
   connect(ui->pushButtonEnergyAlongPath, &QPushButton::clicked, this, &FindPathTab::plotEnergy);
+  connect(ui->pushButtonAddPatch, &QPushButton::clicked, this, &FindPathTab::showAddPatchDialog);
+  connect(ui->pushButtonRemovePatch, &QPushButton::clicked, this, &FindPathTab::removePatch);
 }
 
 FindPathTab::~FindPathTab() { delete ui; }
@@ -80,7 +82,6 @@ void FindPathTab::addPatch(const QString &center, const QVector<double> &length,
   }
   index = mPatchTable->index(0, mPatchTable->dimension() + 1, QModelIndex());
   mPatchTable->setData(index, value, Qt::EditRole);
-  updatePatchedHistogram();
 }
 
 void FindPathTab::loadPMF() {
@@ -114,7 +115,8 @@ void FindPathTab::findPath() {
       splitStringToNumbers<double>(ui->lineEditEnd->text());
   const Graph::FindPathAlgorithm algorithm = selectedAlgorithm();
   // TODO: allow to use a list of patches
-  std::vector<GridDataPatch> patchList;
+  const auto tmp_patchList = mPatchTable->patchList();
+  std::vector<GridDataPatch> patchList(tmp_patchList.begin(), tmp_patchList.end());
   const Graph::FindPathMode mode = Graph::FindPathMode::MFEPMode;
   // check
   if (mPMF.dimension() == 0) {
@@ -186,19 +188,33 @@ void FindPathTab::plotEnergy()
 
 void FindPathTab::showAddPatchDialog()
 {
-  // TODO
-}
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  if (mPMF.histogramSize() == 0 || mPMF.dimension() == 0) {
+    QMessageBox errorBox;
+    const QString errorMsg =
+        QString("You need to open a valid PMF file first.");
+    errorBox.critical(this, "Error", errorMsg);
+    qDebug() << errorMsg;
+    return;
+  }
 
-void FindPathTab::updatePatchedHistogram()
-{
-  const auto tmpVector = mPatchTable->patchList().toVector();
-  const std::vector<GridDataPatch> patchList(
-      tmpVector.begin(),
-      tmpVector.end());
-  mPMFPathFinder = PMFPathFinder(mPMF, patchList);
+  AddPatchDialog aDialog(mPMF.dimension(), this);
+  if (aDialog.exec()) {
+    QVector<double> length(mPMF.dimension());
+    for (int i = 0; i < length.size(); ++i) {
+      length[i] = aDialog.length(i);
+    }
+    addPatch(aDialog.center(), length, aDialog.value());
+  }
 }
 
 void FindPathTab::removePatch()
 {
-  // TODO
+  qDebug() << Q_FUNC_INFO;
+  const QModelIndexList indexes =
+      ui->tableViewPatch->selectionModel()->selectedIndexes();
+  for (QModelIndex index : indexes) {
+    int row = index.row();
+    mPatchTable->removeRows(row, 1, QModelIndex());
+  }
 }

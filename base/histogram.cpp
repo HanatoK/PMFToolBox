@@ -761,19 +761,29 @@ void PMFPathFinder::applyPatch()
 {
   qDebug() << "Calling" << Q_FUNC_INFO;
   mHistogram = mHistogramBackup;
-  std::vector<Axis> patch_ax(mHistogram.dimension());
-  for (size_t patch_i = 0; patch_i < mPatchList.size(); ++patch_i) {
-    for (size_t dim = 0; dim < mHistogram.dimension(); ++dim) {
-      const double width = mHistogram.axes()[dim].width();
-      const size_t num_bins = std::floor(mPatchList[patch_i].mLength[dim] / width);
-      const double lower_bound = mPatchList[patch_i].mCenter[dim] - 0.5 * mPatchList[patch_i].mLength[dim];
-      const double upper_bound = mPatchList[patch_i].mCenter[dim] + 0.5 * mPatchList[patch_i].mLength[dim];
-      patch_ax[dim] = Axis(lower_bound, upper_bound, num_bins, mHistogram.axes()[dim].periodic());
+  for (size_t i = 0; i < mHistogram.histogramSize(); ++i) {
+    const auto pos = mHistogram.reverseAddress(i);
+    for (size_t j = 0; j < mPatchList.size(); ++j) {
+      bool in_bound = true;
+      for (size_t k = 0; k < mHistogram.dimension(); ++k) {
+        const double width = mHistogram.axes()[k].width();
+        const size_t num_bins = std::floor(mPatchList[j].mLength[k] / width);
+        const double lower_bound = mPatchList[j].mCenter[k] - 0.5 * mPatchList[j].mLength[k];
+        const double upper_bound = mPatchList[j].mCenter[k] + 0.5 * mPatchList[j].mLength[k];
+        const Axis current_ax(lower_bound, upper_bound, num_bins, false);
+        qDebug() << "Construct an axis of" << current_ax;
+        if (!current_ax.inBoundary(pos[k])) {
+          in_bound = false;
+        } else {
+//          qDebug() << pos << "is in the boundary of the patch.";
+        }
+      }
+      if (in_bound) {
+//        qDebug() << "Previous value:" << mHistogram[i];
+        mHistogram[i] += mPatchList[j].mValue;
+//        qDebug() << "Updated value:" << mHistogram[i];
+      }
     }
-    HistogramScalar patch_hist = HistogramScalar<double>(patch_ax);
-    const double patch_value = mPatchList[patch_i].mValue;
-    patch_hist.applyFunction([patch_value](double){return patch_value;});
-    mHistogram.merge(patch_hist);
   }
 }
 
