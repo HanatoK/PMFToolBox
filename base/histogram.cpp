@@ -771,7 +771,7 @@ void PMFPathFinder::applyPatch()
         const double lower_bound = mPatchList[j].mCenter[k] - 0.5 * mPatchList[j].mLength[k];
         const double upper_bound = mPatchList[j].mCenter[k] + 0.5 * mPatchList[j].mLength[k];
         const Axis current_ax(lower_bound, upper_bound, num_bins, false);
-        qDebug() << "Construct an axis of" << current_ax;
+//        qDebug() << "Construct an axis of" << current_ax;
         if (!current_ax.inBoundary(pos[k])) {
           in_bound = false;
         } else {

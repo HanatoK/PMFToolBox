@@ -154,6 +154,7 @@ void PMFPlot::plotPath2D(const std::vector<std::vector<double> > &pathPositions,
     points.append(QPointF(point[0], point[1]));
   }
   curve->setSamples(points);
+  curve->setStyle(QwtPlotCurve::Dots);
   curve->attach(this);
   replot();
 }

@@ -149,6 +149,9 @@ void FindPathTab::findPathDone(const PMFPathFinder &result) {
   mPMFPathFinder = result;
   mPMFPathFinder.writePath(ui->lineEditOutput->text() + ".path");
   mPMFPathFinder.writeVisitedRegion(ui->lineEditOutput->text() + ".region");
+  if (!mPMFPathFinder.patchList().empty()) {
+    mPMFPathFinder.writePatchedPMF(ui->lineEditOutput->text() + ".patched");
+  }
   ui->pushButtonFind->setText(tr("Find"));
   ui->pushButtonFind->setEnabled(true);
 }
