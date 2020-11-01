@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 {
 
   initTypes();
-  runTests();
+//  runTests();
 
   if (argc > 1) {
     return runConsole(argc, argv);

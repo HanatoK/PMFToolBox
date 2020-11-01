@@ -40,8 +40,8 @@ NAMDLogTab::NAMDLogTab(QWidget *parent) :
   connect(ui->pushButtonRemoveAxis, &QPushButton::clicked, this, &NAMDLogTab::removeAxis);
   connect(&mLogReaderThread, &NAMDLogReaderThread::done, this, &NAMDLogTab::loadNAMDLogDone);
   connect(&mLogReaderThread, &NAMDLogReaderThread::progress, this, &NAMDLogTab::logReadingProgress);
-  connect(&mBinningThread, &BinNAMDLogThread::doneHistogram, this, &NAMDLogTab::binningDone);
-  connect(&mBinningThread, &BinNAMDLogThread::progress, this, &NAMDLogTab::binningProgress);
+  connect(&mEnergyBinningThread, &BinNAMDLogEnergyThread::doneHistogram, this, &NAMDLogTab::binningDone);
+  connect(&mEnergyBinningThread, &BinNAMDLogEnergyThread::progress, this, &NAMDLogTab::binningProgress);
 }
 
 NAMDLogTab::~NAMDLogTab()
@@ -118,7 +118,7 @@ void NAMDLogTab::runBinning()
     return;
   }
   ui->pushButtonRun->setEnabled(false);
-  mBinningThread.invokeThread(mLog, mSeletedTitle, trajectoryFileName, axes, columns);
+  mEnergyBinningThread.invokeThread(mLog, mSeletedTitle, trajectoryFileName, axes, columns);
 }
 
 void NAMDLogTab::binningProgress(QString status, int x)

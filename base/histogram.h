@@ -445,6 +445,7 @@ public:
   virtual void applyFunction(std::function<T(T)> f);
   virtual void
   generate(std::function<std::vector<T>(const std::vector<double> &)> &func);
+  size_t multiplicity() const;
 
 protected:
   size_t mMultiplicity;
@@ -493,7 +494,7 @@ bool HistogramVector<T>::readFromStream(QTextStream &ifs,
     tmp_fields.clear();
     tmp_fields = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
     // skip blank lines
-    if (tmp_fields.size() == (mNdim + mMultiplicity)) {
+    if (tmp_fields.size() == static_cast<int>(mNdim + mMultiplicity)) {
       // skip unnecessary comment lines starting with #
       if (!tmp_fields[0].startsWith("#")) {
         bool ok = true;
@@ -593,6 +594,12 @@ void HistogramVector<T>::generate(std::function<std::vector<T> (const std::vecto
       mData[addr + k] = result[k];
     }
   }
+}
+
+template <typename T>
+size_t HistogramVector<T>::multiplicity() const
+{
+  return mMultiplicity;
 }
 
 class HistogramPMF : public HistogramScalar<double> {

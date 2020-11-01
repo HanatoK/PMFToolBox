@@ -30,7 +30,7 @@
 #include <vector>
 #include <cstring>
 
-using ForceType = QVector3D;
+using ForceType = std::vector<double>;
 
 class NAMDLogReaderThread;
 
@@ -49,6 +49,7 @@ public:
   std::vector<double> getEnergyData(const QString &title, bool *ok = nullptr) const;
   std::vector<ForceType> getVdWForce() const;
   std::vector<ForceType> getElectrostaticForce() const;
+  std::vector<ForceType> getForceData(const QString &title, bool *ok = nullptr) const;
   QStringList getEnergyTitle() const;
   size_t size() const;
   friend class NAMDLogReaderThread;
@@ -78,20 +79,20 @@ private:
   QString mLogFileName;
 };
 
-struct doBinning {
+struct doBinningScalar {
 public:
-  doBinning(HistogramScalar<double> &histogram,
+  doBinningScalar(HistogramScalar<double> &histogram,
             const std::vector<int> &column);
   void operator()(const std::vector<double> &fields, double energy);
   HistogramScalar<double> &mHistogram;
   const std::vector<int> mColumn;
 };
 
-class BinNAMDLogThread : public QThread {
+class BinNAMDLogEnergyThread : public QThread {
   Q_OBJECT
 public:
-  BinNAMDLogThread(QObject *parent = nullptr);
-  ~BinNAMDLogThread();
+  BinNAMDLogEnergyThread(QObject *parent = nullptr);
+  ~BinNAMDLogEnergyThread();
   void invokeThread(const NAMDLog &log, const QStringList &title,
                     const QString &trajectoryFileName, const std::vector<Axis> &ax,
                     const std::vector<int> &column);
@@ -100,6 +101,42 @@ signals:
   void error(QString err);
   void done();
   void doneHistogram(std::vector<HistogramScalar<double>> histogram);
+  void progress(QString stage, int percent);
+
+protected:
+  void run() override;
+
+private:
+  QMutex mutex;
+  NAMDLog mLog;
+  QStringList mTitle;
+  QString mTrajectoryFileName;
+  std::vector<Axis> mAxis;
+  std::vector<int> mColumn;
+  static const int refreshPeriod = 5;
+};
+
+struct doBinningVector {
+public:
+  doBinningVector(HistogramVector<double> &histogram,
+            const std::vector<int> &column);
+  void operator()(const std::vector<double> &fields, const std::vector<double> data);
+  HistogramVector<double> &mHistogram;
+  const std::vector<int> mColumn;
+};
+
+class BinNAMDLogForceThread: public QThread {
+  Q_OBJECT
+public:
+  BinNAMDLogForceThread(QObject *parent = nullptr);
+  ~BinNAMDLogForceThread();
+  void invokeThread(const NAMDLog &log, const QStringList &title,
+                    const QString &trajectoryFileName, const std::vector<Axis> &ax,
+                    const std::vector<int> &column);
+signals:
+  void error(QString err);
+  void done();
+  void doneHistogram(std::vector<HistogramVector<double>> histogram);
   void progress(QString stage, int percent);
 
 protected:

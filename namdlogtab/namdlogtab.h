@@ -68,7 +68,7 @@ private:
   TableModelBinning *mTableModel;
   NAMDLogReaderThread mLogReaderThread;
   NAMDLog mLog;
-  BinNAMDLogThread mBinningThread;
+  BinNAMDLogEnergyThread mEnergyBinningThread;
   QStringList mSeletedTitle;
   std::vector<HistogramScalar<double>> mHistogram;
 };
