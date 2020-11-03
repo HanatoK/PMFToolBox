@@ -51,6 +51,7 @@ public:
   std::vector<ForceType> getElectrostaticForce() const;
   std::vector<ForceType> getForceData(const QString &title, bool *ok = nullptr) const;
   QStringList getEnergyTitle() const;
+  QStringList getForceTitle() const;
   size_t size() const;
   friend class NAMDLogReaderThread;
 

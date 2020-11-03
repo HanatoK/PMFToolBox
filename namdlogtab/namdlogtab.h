@@ -35,12 +35,15 @@ class NAMDLogTab;
 class selectEnergyTermDialog : public QDialog {
   Q_OBJECT
 public:
-  selectEnergyTermDialog(const QStringList& title, QWidget *parent = nullptr);
-  QStringList selectedTitle() const;
+  selectEnergyTermDialog(const QStringList& energyTitle, const QStringList& forceTitle, QWidget *parent = nullptr);
+  QStringList selectedEnergyTitle() const;
+  QStringList selectedForceTitle() const;
 
 private:
-  QStringList mAvailableTitle;
-  QList<QCheckBox*> mCheckList;
+  QStringList mAvailableEnergyTitle;
+  QStringList mAvailableForceTitle;
+  QList<QCheckBox*> mEnergyCheckList;
+  QList<QCheckBox*> mForceCheckList;
 };
 
 class NAMDLogTab : public QWidget
@@ -70,7 +73,8 @@ private:
   NAMDLog mLog;
   BinNAMDLogEnergyThread mEnergyBinningThread;
   QStringList mSeletedTitle;
-  std::vector<HistogramScalar<double>> mHistogram;
+  std::vector<HistogramScalar<double>> mEnergyHistogram;
+  std::vector<HistogramVector<double>> mForceHistogram;
 };
 
 #endif // NAMDLOGTAB_H

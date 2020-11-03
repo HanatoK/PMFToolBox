@@ -102,11 +102,15 @@ void NAMDLogTab::saveFile()
 void NAMDLogTab::runBinning()
 {
   qDebug() << Q_FUNC_INFO;
-  const QStringList availableTitle = mLog.getEnergyTitle();
-  if (availableTitle.size() <= 0) return;
-  selectEnergyTermDialog dialog(availableTitle, this);
+  const QStringList availableEnergyTitle = mLog.getEnergyTitle();
+  const QStringList availableForceTitle = mLog.getForceTitle();
+  if (availableEnergyTitle.size() <= 0 && availableForceTitle.size() <= 0) {
+    qDebug() << Q_FUNC_INFO << ": no available energy or force terms in the log file.";
+    return;
+  }
+  selectEnergyTermDialog dialog(availableEnergyTitle, availableForceTitle, this);
   if (dialog.exec()) {
-    mSeletedTitle = dialog.selectedTitle();
+    mSeletedTitle = dialog.selectedEnergyTitle();
     qDebug() << Q_FUNC_INFO << ": seleted titles" << mSeletedTitle;
   }
   const std::vector<int> columns = mTableModel->fromColumns();
@@ -145,12 +149,12 @@ void NAMDLogTab::removeAxis()
 void NAMDLogTab::binningDone(std::vector<HistogramScalar<double> > data)
 {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  mHistogram = data;
+  mEnergyHistogram = data;
   const QString outputFilePrefix = ui->lineEditOutput->text();
   if (outputFilePrefix.isEmpty()) return;
   for (int i = 0; i < mSeletedTitle.size(); ++i) {
     const QString outputFileName = outputFilePrefix + "_" + mSeletedTitle[i].toLower() + ".dat";
-    mHistogram[i].writeToFile(outputFileName);
+    mEnergyHistogram[i].writeToFile(outputFileName);
   }
   ui->pushButtonRun->setText("Run binning");
   ui->pushButtonRun->setEnabled(true);
@@ -158,7 +162,8 @@ void NAMDLogTab::binningDone(std::vector<HistogramScalar<double> > data)
 
 
 
-selectEnergyTermDialog::selectEnergyTermDialog(const QStringList &title, QWidget *parent): QDialog(parent), mAvailableTitle(title)
+selectEnergyTermDialog::selectEnergyTermDialog(const QStringList &energyTitle, const QStringList &forceTitle, QWidget *parent):
+  QDialog(parent), mAvailableEnergyTitle(energyTitle), mAvailableForceTitle(forceTitle)
 {
   qDebug() << Q_FUNC_INFO;
   auto gLayout = new QGridLayout;
@@ -167,25 +172,43 @@ selectEnergyTermDialog::selectEnergyTermDialog(const QStringList &title, QWidget
   auto hLayout = new QHBoxLayout;
   hLayout->addWidget(okButton);
   hLayout->addWidget(cancelButton);
-  for (int i = 0; i < mAvailableTitle.size(); ++i) {
-    QCheckBox *checkBox = new QCheckBox(mAvailableTitle[i]);
-    mCheckList.append(checkBox);
-    gLayout->addWidget(checkBox, i % 4, i - i % 4);
+  int j = 0;
+  for (int i = 0; i < mAvailableEnergyTitle.size(); ++i, ++j) {
+    QCheckBox *checkBox = new QCheckBox(mAvailableEnergyTitle[i]);
+    mEnergyCheckList.append(checkBox);
+    gLayout->addWidget(checkBox, j % 4, j - j % 4);
+  }
+  for (int i = 0; i < mAvailableForceTitle.size(); ++i, ++j) {
+    QCheckBox *checkBox = new QCheckBox(mAvailableForceTitle[i]);
+    mForceCheckList.append(checkBox);
+    gLayout->addWidget(checkBox, j % 4, j - j % 4);
   }
   gLayout->addLayout(hLayout, gLayout->rowCount(), 0, 1, gLayout->columnCount());
   setLayout(gLayout);
   connect(okButton, &QAbstractButton::clicked, this, &QDialog::accept);
   connect(cancelButton, &QAbstractButton::clicked, this, &QDialog::reject);
-  setWindowTitle(tr("Select energy terms"));
+  setWindowTitle(tr("Select energy and force terms"));
 }
 
-QStringList selectEnergyTermDialog::selectedTitle() const
+QStringList selectEnergyTermDialog::selectedEnergyTitle() const
 {
   qDebug() << Q_FUNC_INFO;
   QStringList selected;
-  for (int i = 0; i < mAvailableTitle.size(); ++i) {
-    if (mCheckList[i]->isChecked()) {
-      selected.append(mAvailableTitle[i]);
+  for (int i = 0; i < mAvailableEnergyTitle.size(); ++i) {
+    if (mEnergyCheckList[i]->isChecked()) {
+      selected.append(mAvailableEnergyTitle[i]);
+    }
+  }
+  return selected;
+}
+
+QStringList selectEnergyTermDialog::selectedForceTitle() const
+{
+  qDebug() << Q_FUNC_INFO;
+  QStringList selected;
+  for (int i = 0; i < mAvailableForceTitle.size(); ++i) {
+    if (mEnergyCheckList[i]->isChecked()) {
+      selected.append(mAvailableForceTitle[i]);
     }
   }
   return selected;

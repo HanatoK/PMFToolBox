@@ -125,6 +125,16 @@ std::vector<ForceType> NAMDLog::getForceData(const QString &title, bool *ok) con
 
 QStringList NAMDLog::getEnergyTitle() const { return mEnergyTitle; }
 
+QStringList NAMDLog::getForceTitle() const
+{
+  QStringList title;
+  for (auto it = mPairData.begin(); it != mPairData.end(); ++it) {
+    title.append(it.key());
+  }
+  title.removeDuplicates();
+  return title;
+}
+
 size_t NAMDLog::size() const
 {
   if (mEnergyData.isEmpty()) return 0;
