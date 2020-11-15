@@ -254,10 +254,7 @@ void BinNAMDLogThread::run() {
         if (previousProgress != readingProgress) {
           previousProgress = readingProgress;
           qDebug() << Q_FUNC_INFO << "reading " << readingProgress << "%";
-          if (readingProgress == 100)
-            emit progress("Reading trajectory file", readingProgress);
-          else
-            emit progress("Reading trajectory file", readingProgress);
+          emit progress("Reading trajectory file", readingProgress);
         }
       }
       tmpFields = line.split(QRegExp("[(),\\s]+"), Qt::SkipEmptyParts);
