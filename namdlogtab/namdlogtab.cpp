@@ -40,8 +40,8 @@ NAMDLogTab::NAMDLogTab(QWidget *parent) :
   connect(ui->pushButtonRemoveAxis, &QPushButton::clicked, this, &NAMDLogTab::removeAxis);
   connect(&mLogReaderThread, &NAMDLogReaderThread::done, this, &NAMDLogTab::loadNAMDLogDone);
   connect(&mLogReaderThread, &NAMDLogReaderThread::progress, this, &NAMDLogTab::logReadingProgress);
-  connect(&mEnergyBinningThread, &BinNAMDLogEnergyThread::doneHistogram, this, &NAMDLogTab::binningDone);
-  connect(&mEnergyBinningThread, &BinNAMDLogEnergyThread::progress, this, &NAMDLogTab::binningProgress);
+  connect(&mBinningThread, &BinNAMDLogThread::doneHistogram, this, &NAMDLogTab::binningDone);
+  connect(&mBinningThread, &BinNAMDLogThread::progress, this, &NAMDLogTab::binningProgress);
 }
 
 NAMDLogTab::~NAMDLogTab()
@@ -71,6 +71,7 @@ void NAMDLogTab::loadNAMDLogDone(NAMDLog log)
   ui->pushButtonRun->setEnabled(true);
   // debug information
   qDebug() << Q_FUNC_INFO << ": available energy terms: " << mLog.getEnergyTitle();
+  qDebug() << Q_FUNC_INFO << ": available force terms: " << mLog.getForceTitle();
   qDebug() << Q_FUNC_INFO << ": total frames: " << mLog.getStep().size();
 }
 
@@ -110,19 +111,33 @@ void NAMDLogTab::runBinning()
   }
   selectEnergyTermDialog dialog(availableEnergyTitle, availableForceTitle, this);
   if (dialog.exec()) {
-    mSeletedTitle = dialog.selectedEnergyTitle();
-    qDebug() << Q_FUNC_INFO << ": seleted titles" << mSeletedTitle;
+    mSelectedEnergyTitle = dialog.selectedEnergyTitle();
+    mSelectedForceTitle = dialog.selectedForceTitle();
+    qDebug() << Q_FUNC_INFO << ": seleted energy terms:" << mSelectedEnergyTitle;
+    qDebug() << Q_FUNC_INFO << ": seleted force terms:" << mSelectedForceTitle;
   }
   const std::vector<int> columns = mTableModel->fromColumns();
   const std::vector<Axis> axes = mTableModel->targetAxis();
   const QString trajectoryFileName = ui->lineEditColvarsTrajectory->text();
-//  const QString outputFilePrefix = ui->lineEditOutput->text();
-  if (mSeletedTitle.empty() || columns.empty() || axes.empty() /*|| outputFilePrefix.isEmpty()*/ || trajectoryFileName.isEmpty()) {
-    qDebug() << Q_FUNC_INFO << ": invalid input";
+  const QString outputFilePrefix = ui->lineEditOutput->text();
+  if (mSelectedEnergyTitle.isEmpty() && mSelectedForceTitle.isEmpty()) {
+    qDebug() << Q_FUNC_INFO << ": no force or energy terms are selected.";
+    return;
+  }
+  if (trajectoryFileName.isEmpty()) {
+    qDebug() << Q_FUNC_INFO << ": invalid trajectory file.";
+    return;
+  }
+  if (columns.empty() || axes.empty()) {
+    qDebug() << Q_FUNC_INFO << ": invalid axes setting.";
+    return;
+  }
+  if (outputFilePrefix.isEmpty()) {
+    qDebug() << Q_FUNC_INFO << ": output file is unspecified.";
     return;
   }
   ui->pushButtonRun->setEnabled(false);
-  mEnergyBinningThread.invokeThread(mLog, mSeletedTitle, trajectoryFileName, axes, columns);
+  mBinningThread.invokeThread(mLog, mSelectedEnergyTitle, mSelectedForceTitle, trajectoryFileName, axes, columns);
 }
 
 void NAMDLogTab::binningProgress(QString status, int x)
@@ -146,15 +161,20 @@ void NAMDLogTab::removeAxis()
   mTableModel->layoutChanged();
 }
 
-void NAMDLogTab::binningDone(std::vector<HistogramScalar<double> > data)
+void NAMDLogTab::binningDone(std::vector<HistogramScalar<double> > energyData, std::vector<HistogramVector<double> > forceData)
 {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  mEnergyHistogram = data;
+  mEnergyHistogram = energyData;
+  mForceHistogram = forceData;
   const QString outputFilePrefix = ui->lineEditOutput->text();
   if (outputFilePrefix.isEmpty()) return;
-  for (int i = 0; i < mSeletedTitle.size(); ++i) {
-    const QString outputFileName = outputFilePrefix + "_" + mSeletedTitle[i].toLower() + ".dat";
+  for (int i = 0; i < mSelectedEnergyTitle.size(); ++i) {
+    const QString outputFileName = outputFilePrefix + "_" + mSelectedEnergyTitle[i].toLower() + ".dat";
     mEnergyHistogram[i].writeToFile(outputFileName);
+  }
+  for (int i = 0; i < mSelectedForceTitle.size(); ++i) {
+    const QString outputFileName = outputFilePrefix + "_" + mSelectedForceTitle[i].toLower() + ".dat";
+    mForceHistogram[i].writeToFile(outputFileName);
   }
   ui->pushButtonRun->setText("Run binning");
   ui->pushButtonRun->setEnabled(true);
@@ -207,7 +227,7 @@ QStringList selectEnergyTermDialog::selectedForceTitle() const
   qDebug() << Q_FUNC_INFO;
   QStringList selected;
   for (int i = 0; i < mAvailableForceTitle.size(); ++i) {
-    if (mEnergyCheckList[i]->isChecked()) {
+    if (mForceCheckList[i]->isChecked()) {
       selected.append(mAvailableForceTitle[i]);
     }
   }

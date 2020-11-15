@@ -438,7 +438,9 @@ public:
   HistogramVector(const std::vector<Axis> &, const size_t);
   virtual ~HistogramVector();
   virtual bool readFromStream(QTextStream &ifs, const size_t multiplicity = 0);
+  virtual bool readFromFile(const QString &filename);
   virtual bool writeToStream(QTextStream &ofs) const override;
+  virtual bool writeToFile(const QString &filename) const;
   virtual std::vector<T> operator()(const std::vector<T> &);
   T &operator[](int);
   const T &operator[](int) const;
@@ -469,6 +471,7 @@ HistogramVector<T>::HistogramVector(const std::vector<Axis> &ax,
   mData.resize(mHistogramSize * mMultiplicity, T());
   qDebug() << Q_FUNC_INFO << ": multiplicity = " << mMultiplicity;
   qDebug() << Q_FUNC_INFO << ": data size alllocated = " << mData.size();
+  qDebug() << Q_FUNC_INFO << ": axis dimension = " << mNdim;
 }
 
 template <typename T> HistogramVector<T>::~HistogramVector() {
@@ -524,6 +527,20 @@ bool HistogramVector<T>::readFromStream(QTextStream &ifs,
 }
 
 template <typename T>
+bool HistogramVector<T>::readFromFile(const QString& filename) {
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  qDebug() << Q_FUNC_INFO << ": opening " << filename;
+  QFile inputFile(filename);
+  if (inputFile.open(QFile::ReadOnly)) {
+    QTextStream stream(&inputFile);
+    return readFromStream(stream);
+  } else {
+    qDebug() << Q_FUNC_INFO << ": failed to open file!";
+    return false;
+  }
+}
+
+template <typename T>
 bool HistogramVector<T>::writeToStream(QTextStream &ofs) const {
   qDebug() << "Calling" << Q_FUNC_INFO;
   bool file_opened = HistogramBase::writeToStream(ofs);
@@ -549,6 +566,20 @@ bool HistogramVector<T>::writeToStream(QTextStream &ofs) const {
     ofs << qSetFieldWidth(0) << '\n';
   }
   return true;
+}
+
+template <typename T>
+bool HistogramVector<T>::writeToFile(const QString &filename) const {
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  qDebug() << Q_FUNC_INFO << ": writing to " << filename;
+  QFile outputFile(filename);
+  if (outputFile.open(QFile::WriteOnly)) {
+    QTextStream stream(&outputFile);
+    return writeToStream(stream);
+  } else {
+    qDebug() << Q_FUNC_INFO << ": failed to open file!";
+    return false;
+  }
 }
 
 template <typename T>

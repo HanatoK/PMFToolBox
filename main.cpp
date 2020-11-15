@@ -46,6 +46,7 @@ void initTypes()
   qRegisterMetaType<HistogramPMFHistory>("HistogramPMFHistory");
   qRegisterMetaType<NAMDLog>("NAMDLog");
   qRegisterMetaType<std::vector<HistogramScalar<double>>>("std::vector<HistogramScalar<double>>");
+  qRegisterMetaType<std::vector<HistogramVector<double>>>("std::vector<HistogramVector<double>>");
   qRegisterMetaType<PMFPathFinder>("PMFPathFinder");
 }
 

@@ -158,9 +158,9 @@ void doBinningScalar::operator()(const std::vector<double> &fields, double energ
   }
 }
 
-BinNAMDLogEnergyThread::BinNAMDLogEnergyThread(QObject *parent) : QThread(parent) {}
+BinNAMDLogThread::BinNAMDLogThread(QObject *parent) : QThread(parent) {}
 
-BinNAMDLogEnergyThread::~BinNAMDLogEnergyThread() {
+BinNAMDLogThread::~BinNAMDLogThread() {
   // am I doing the right things?
   qDebug() << Q_FUNC_INFO;
   mutex.lock();
@@ -169,15 +169,17 @@ BinNAMDLogEnergyThread::~BinNAMDLogEnergyThread() {
   quit();
 }
 
-void BinNAMDLogEnergyThread::invokeThread(const NAMDLog &log,
-                                    const QStringList &title,
+void BinNAMDLogThread::invokeThread(const NAMDLog &log,
+                                    const QStringList &energyTitle,
+                                    const QStringList &forceTitle,
                                     const QString &trajectoryFileName,
                                     const std::vector<Axis> &ax,
                                     const std::vector<int> &column) {
   qDebug() << Q_FUNC_INFO;
   QMutexLocker locker(&mutex);
   mLog = log;
-  mTitle = title;
+  mEnergyTitle = energyTitle;
+  mForceTitle = forceTitle;
   mTrajectoryFileName = trajectoryFileName;
   mAxis = ax;
   mColumn = column;
@@ -186,14 +188,18 @@ void BinNAMDLogEnergyThread::invokeThread(const NAMDLog &log,
   }
 }
 
-void BinNAMDLogEnergyThread::run() {
+void BinNAMDLogThread::run() {
   qDebug() << Q_FUNC_INFO;
   mutex.lock();
-  std::vector<HistogramScalar<double>> histEnergy(mTitle.size(),
-                                              HistogramScalar<double>(mAxis));
-  std::vector<doBinningScalar> binning;
-  for (int i = 0; i < mTitle.size(); ++i) {
-    binning.push_back(doBinningScalar(histEnergy[i], mColumn));
+  std::vector<HistogramScalar<double>> histEnergy(mEnergyTitle.size(), HistogramScalar<double>(mAxis));
+  std::vector<HistogramVector<double>> histForce(mForceTitle.size(), HistogramVector<double>(mAxis, 3));
+  std::vector<doBinningScalar> energyBinning;
+  std::vector<doBinningVector> forceBinning;
+  for (int i = 0; i < mEnergyTitle.size(); ++i) {
+    energyBinning.push_back(doBinningScalar(histEnergy[i], mColumn));
+  }
+  for (int i = 0; i < mForceTitle.size(); ++i) {
+    forceBinning.push_back(doBinningVector(histForce[i], mColumn));
   }
   HistogramScalar<double> histCount(mAxis);
   doBinningScalar countBinning(histCount, mColumn);
@@ -239,9 +245,16 @@ void BinNAMDLogEnergyThread::run() {
           break;
         }
       }
-      for (int i = 0; i < mTitle.size(); ++i) {
+      for (int i = 0; i < mEnergyTitle.size(); ++i) {
         if (lineNumber < mLog.size()) {
-          binning[i](fields, mLog.getEnergyData(mTitle[i])[lineNumber]);
+          energyBinning[i](fields, mLog.getEnergyData(mEnergyTitle[i])[lineNumber]);
+        } else {
+          qDebug() << "warning:" << "trajectory may contain more lines than the log file";
+        }
+      }
+      for (int i = 0; i < mForceTitle.size(); ++i) {
+        if (lineNumber < mLog.size()) {
+          forceBinning[i](fields, mLog.getForceData(mForceTitle[i])[lineNumber]);
         } else {
           qDebug() << "warning:" << "trajectory may contain more lines than the log file";
         }
@@ -249,14 +262,21 @@ void BinNAMDLogEnergyThread::run() {
       countBinning(fields, 1.0);
       ++lineNumber;
     }
-    for (int i = 0; i < mTitle.size(); ++i) {
+    for (int i = 0; i < mEnergyTitle.size(); ++i) {
       for (size_t j = 0; j < histEnergy[i].histogramSize(); ++j) {
         if (histCount[j] > 0) {
           histEnergy[i][j] /= histCount[j];
         }
       }
     }
-    emit doneHistogram(histEnergy);
+    for (int i = 0; i < mForceTitle.size(); ++i) {
+      for (size_t j = 0; j < histForce[i].histogramSize(); ++j) {
+        if (histCount[j] > 0) {
+          histForce[i][j] /= histCount[j];
+        }
+      }
+    }
+    emit doneHistogram(histEnergy, histForce);
   }
   mutex.unlock();
 }
@@ -290,112 +310,6 @@ void NAMDLogReaderThread::run() {
     logObject.readFromStream(ifs, this, &NAMDLogReaderThread::progress,
                              logFile.size());
     emit done(logObject);
-  }
-  mutex.unlock();
-}
-
-BinNAMDLogForceThread::BinNAMDLogForceThread(QObject *parent): QThread(parent)
-{
-
-}
-
-
-BinNAMDLogForceThread::~BinNAMDLogForceThread() {
-  qDebug() << Q_FUNC_INFO;
-  mutex.lock();
-  mutex.unlock();
-  wait();
-  quit();
-}
-
-void BinNAMDLogForceThread::invokeThread(const NAMDLog &log,
-                                    const QStringList &title,
-                                    const QString &trajectoryFileName,
-                                    const std::vector<Axis> &ax,
-                                    const std::vector<int> &column) {
-  qDebug() << Q_FUNC_INFO;
-  QMutexLocker locker(&mutex);
-  mLog = log;
-  mTitle = title;
-  mTrajectoryFileName = trajectoryFileName;
-  mAxis = ax;
-  mColumn = column;
-  if (!isRunning()) {
-    start(LowPriority);
-  }
-}
-
-void BinNAMDLogForceThread::run() {
-  qDebug() << Q_FUNC_INFO;
-  mutex.lock();
-  std::vector<HistogramVector<double>> histEnergy(mTitle.size(),
-                                              HistogramVector<double>(mAxis, 3));
-  std::vector<doBinningVector> binning;
-  for (int i = 0; i < mTitle.size(); ++i) {
-    binning.push_back(doBinningVector(histEnergy[i], mColumn));
-  }
-  HistogramScalar<double> histCount(mAxis);
-  doBinningScalar countBinning(histCount, mColumn);
-  // parse the trajectory file
-  QFile trajFile(mTrajectoryFileName);
-  if (trajFile.open(QIODevice::ReadOnly)) {
-    QTextStream ifs_traj(&trajFile);
-    QStringList tmpFields;
-    size_t lineNumber = 0;
-    QString line;
-    std::vector<double> fields;
-    double readSize = 0;
-    int previousProgress = 0;
-    bool read_ok = true;
-    const size_t fileSize = trajFile.size();
-    while (!ifs_traj.atEnd()) {
-      fields.clear();
-      tmpFields.clear();
-      ifs_traj.readLineInto(&line);
-      readSize += line.size() + 1;
-      const int readingProgress = std::nearbyint(readSize / fileSize * 100);
-      if (readingProgress % refreshPeriod == 0 || readingProgress == 100) {
-        if (previousProgress != readingProgress) {
-          previousProgress = readingProgress;
-          qDebug() << Q_FUNC_INFO << "reading " << readingProgress << "%";
-          if (readingProgress == 100)
-            emit progress("Reading trajectory file", readingProgress);
-          else
-            emit progress("Reading trajectory file", readingProgress);
-        }
-      }
-      tmpFields = line.split(QRegExp("[(),\\s]+"), Qt::SkipEmptyParts);
-      // skip blank lines
-      if (tmpFields.size() <= 0)
-        continue;
-      // skip comment lines start with #
-      if (tmpFields[0].startsWith("#"))
-        continue;
-      for (const auto &i : tmpFields) {
-        fields.push_back(i.toDouble(&read_ok));
-        if (read_ok == false) {
-          emit error("Failed to convert " + i + " to number!");
-          break;
-        }
-      }
-      for (int i = 0; i < mTitle.size(); ++i) {
-        if (lineNumber < mLog.size()) {
-          binning[i](fields, mLog.getForceData(mTitle[i])[lineNumber]);
-        } else {
-          qDebug() << "warning:" << "trajectory may contain more lines than the log file";
-        }
-      }
-      countBinning(fields, 1.0);
-      ++lineNumber;
-    }
-    for (int i = 0; i < mTitle.size(); ++i) {
-      for (size_t j = 0; j < histEnergy[i].histogramSize(); ++j) {
-        if (histCount[j] > 0) {
-          histEnergy[i][j] /= histCount[j];
-        }
-      }
-    }
-    emit doneHistogram(histEnergy);
   }
   mutex.unlock();
 }

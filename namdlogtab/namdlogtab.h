@@ -64,15 +64,16 @@ public slots:
   void binningProgress(QString status, int x);
   void addAxis();
   void removeAxis();
-  void binningDone(std::vector<HistogramScalar<double> > data);
+  void binningDone(std::vector<HistogramScalar<double> > data, std::vector<HistogramVector<double>> forceData);
 
 private:
   Ui::NAMDLogTab *ui;
   TableModelBinning *mTableModel;
   NAMDLogReaderThread mLogReaderThread;
   NAMDLog mLog;
-  BinNAMDLogEnergyThread mEnergyBinningThread;
-  QStringList mSeletedTitle;
+  BinNAMDLogThread mBinningThread;
+  QStringList mSelectedEnergyTitle;
+  QStringList mSelectedForceTitle;
   std::vector<HistogramScalar<double>> mEnergyHistogram;
   std::vector<HistogramVector<double>> mForceHistogram;
 };

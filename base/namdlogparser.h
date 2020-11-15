@@ -89,19 +89,19 @@ public:
   const std::vector<int> mColumn;
 };
 
-class BinNAMDLogEnergyThread : public QThread {
+class BinNAMDLogThread : public QThread {
   Q_OBJECT
 public:
-  BinNAMDLogEnergyThread(QObject *parent = nullptr);
-  ~BinNAMDLogEnergyThread();
-  void invokeThread(const NAMDLog &log, const QStringList &title,
+  BinNAMDLogThread(QObject *parent = nullptr);
+  ~BinNAMDLogThread();
+  void invokeThread(const NAMDLog &log, const QStringList &energyTitle, const QStringList &forceTitle,
                     const QString &trajectoryFileName, const std::vector<Axis> &ax,
                     const std::vector<int> &column);
 
 signals:
   void error(QString err);
   void done();
-  void doneHistogram(std::vector<HistogramScalar<double>> histogram);
+  void doneHistogram(std::vector<HistogramScalar<double>> histogramEnergy, std::vector<HistogramVector<double>> histogramForce);
   void progress(QString stage, int percent);
 
 protected:
@@ -110,7 +110,8 @@ protected:
 private:
   QMutex mutex;
   NAMDLog mLog;
-  QStringList mTitle;
+  QStringList mEnergyTitle;
+  QStringList mForceTitle;
   QString mTrajectoryFileName;
   std::vector<Axis> mAxis;
   std::vector<int> mColumn;
@@ -124,33 +125,6 @@ public:
   void operator()(const std::vector<double> &fields, const std::vector<double> data);
   HistogramVector<double> &mHistogram;
   const std::vector<int> mColumn;
-};
-
-class BinNAMDLogForceThread: public QThread {
-  Q_OBJECT
-public:
-  BinNAMDLogForceThread(QObject *parent = nullptr);
-  ~BinNAMDLogForceThread();
-  void invokeThread(const NAMDLog &log, const QStringList &title,
-                    const QString &trajectoryFileName, const std::vector<Axis> &ax,
-                    const std::vector<int> &column);
-signals:
-  void error(QString err);
-  void done();
-  void doneHistogram(std::vector<HistogramVector<double>> histogram);
-  void progress(QString stage, int percent);
-
-protected:
-  void run() override;
-
-private:
-  QMutex mutex;
-  NAMDLog mLog;
-  QStringList mTitle;
-  QString mTrajectoryFileName;
-  std::vector<Axis> mAxis;
-  std::vector<int> mColumn;
-  static const int refreshPeriod = 5;
 };
 
 Q_DECLARE_METATYPE(NAMDLog);
