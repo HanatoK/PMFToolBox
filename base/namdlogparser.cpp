@@ -101,6 +101,21 @@ std::vector<double> NAMDLog::getEnergyData(const QString &title, bool *ok) const
   }
 }
 
+QMap<QString, std::vector<double>>::const_iterator NAMDLog::getEnergyDataIteratorBegin() const
+{
+  return mEnergyData.constBegin();
+}
+
+QMap<QString, std::vector<double>>::const_iterator NAMDLog::getEnergyDataIteratorEnd() const
+{
+  return mEnergyData.constEnd();
+}
+
+QMap<QString, std::vector<double>>::const_iterator NAMDLog::getEnergyDataIterator(const QString &title) const
+{
+  return mEnergyData.constFind(title);
+}
+
 std::vector<ForceType> NAMDLog::getVdWForce() const {
   return mPairData.value("VDW_FORCE");
 }
@@ -123,6 +138,21 @@ std::vector<ForceType> NAMDLog::getForceData(const QString &title, bool *ok) con
   }
 }
 
+QMap<QString, std::vector<ForceType>>::const_iterator NAMDLog::getForceDataIteratorBegin() const
+{
+  return mPairData.constBegin();
+}
+
+QMap<QString, std::vector<ForceType>>::const_iterator NAMDLog::getForceDataIteratorEnd() const
+{
+  return mPairData.constEnd();
+}
+
+QMap<QString, std::vector<ForceType>>::const_iterator NAMDLog::getForceDataIterator(const QString &title) const
+{
+  return mPairData.constFind(title);
+}
+
 QStringList NAMDLog::getEnergyTitle() const { return mEnergyTitle; }
 
 QStringList NAMDLog::getForceTitle() const
@@ -143,16 +173,15 @@ size_t NAMDLog::size() const
 
 doBinningScalar::doBinningScalar(HistogramScalar<double> &histogram,
                      const std::vector<int> &column)
-    : mHistogram(histogram), mColumn(column) {}
+    : mHistogram(histogram), mColumn(column), mPosition(mHistogram.dimension(), 0.0) {}
 
 void doBinningScalar::operator()(const std::vector<double> &fields, double energy) {
   // get the position of current point from trajectory
-  std::vector<double> pos(mHistogram.dimension());
-  for (size_t i = 0; i < pos.size(); ++i) {
-    pos[i] = fields[mColumn[i]];
+  for (size_t i = 0; i < mPosition.size(); ++i) {
+    mPosition[i] = fields[mColumn[i]];
   }
   bool inBoundary = false;
-  const size_t addr = mHistogram.address(pos, &inBoundary);
+  const size_t addr = mHistogram.address(mPosition, &inBoundary);
   if (inBoundary) {
     mHistogram[addr] += energy;
   }
@@ -247,14 +276,22 @@ void BinNAMDLogThread::run() {
       }
       for (int i = 0; i < mEnergyTitle.size(); ++i) {
         if (lineNumber < mLog.size()) {
-          energyBinning[i](fields, mLog.getEnergyData(mEnergyTitle[i])[lineNumber]);
+          const auto map_iterator = mLog.getEnergyDataIterator(mEnergyTitle[i]);
+          if (map_iterator != mLog.getEnergyDataIteratorEnd()) {
+            const auto item = map_iterator.value()[lineNumber];
+            energyBinning[i](fields, item);
+          }
         } else {
           qDebug() << "warning:" << "trajectory may contain more lines than the log file";
         }
       }
       for (int i = 0; i < mForceTitle.size(); ++i) {
         if (lineNumber < mLog.size()) {
-          forceBinning[i](fields, mLog.getForceData(mForceTitle[i])[lineNumber]);
+          const auto map_iterator = mLog.getForceDataIterator(mForceTitle[i]);
+          if (map_iterator != mLog.getForceDataIteratorEnd()) {
+            const auto item = map_iterator.value()[lineNumber];
+            forceBinning[i](fields, item);
+          }
         } else {
           qDebug() << "warning:" << "trajectory may contain more lines than the log file";
         }
@@ -315,17 +352,16 @@ void NAMDLogReaderThread::run() {
 }
 
 doBinningVector::doBinningVector(HistogramVector<double> &histogram, const std::vector<int> &column)
-  : mHistogram(histogram), mColumn(column) {}
+  : mHistogram(histogram), mColumn(column), mPosition(mHistogram.dimension(), 0.0) {}
 
 void doBinningVector::operator()(const std::vector<double> &fields, const std::vector<double> data)
 {
   // get the position of current point from trajectory
-  std::vector<double> pos(mHistogram.dimension());
-  for (size_t i = 0; i < pos.size(); ++i) {
-    pos[i] = fields[mColumn[i]];
+  for (size_t i = 0; i < mPosition.size(); ++i) {
+    mPosition[i] = fields[mColumn[i]];
   }
   bool inBoundary = false;
-  const size_t addr = mHistogram.address(pos, &inBoundary);
+  const size_t addr = mHistogram.address(mPosition, &inBoundary);
   if (inBoundary) {
     for (size_t j = 0; j < mHistogram.multiplicity(); ++j){
       mHistogram[addr + j] += data[j];

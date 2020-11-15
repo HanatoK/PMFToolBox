@@ -47,9 +47,15 @@ public:
   std::vector<double> getVdW() const;
   std::vector<double> getElectrostatic() const;
   std::vector<double> getEnergyData(const QString &title, bool *ok = nullptr) const;
+  QMap<QString, std::vector<double>>::const_iterator getEnergyDataIteratorBegin() const;
+  QMap<QString, std::vector<double>>::const_iterator getEnergyDataIteratorEnd() const;
+  QMap<QString, std::vector<double>>::const_iterator getEnergyDataIterator(const QString& title) const;
   std::vector<ForceType> getVdWForce() const;
   std::vector<ForceType> getElectrostaticForce() const;
   std::vector<ForceType> getForceData(const QString &title, bool *ok = nullptr) const;
+  QMap<QString, std::vector<ForceType>>::const_iterator getForceDataIteratorBegin() const;
+  QMap<QString, std::vector<ForceType>>::const_iterator getForceDataIteratorEnd() const;
+  QMap<QString, std::vector<ForceType>>::const_iterator getForceDataIterator(const QString& title) const;
   QStringList getEnergyTitle() const;
   QStringList getForceTitle() const;
   size_t size() const;
@@ -87,6 +93,7 @@ public:
   void operator()(const std::vector<double> &fields, double energy);
   HistogramScalar<double> &mHistogram;
   const std::vector<int> mColumn;
+  std::vector<double> mPosition;
 };
 
 class BinNAMDLogThread : public QThread {
@@ -125,6 +132,7 @@ public:
   void operator()(const std::vector<double> &fields, const std::vector<double> data);
   HistogramVector<double> &mHistogram;
   const std::vector<int> mColumn;
+  std::vector<double> mPosition;
 };
 
 Q_DECLARE_METATYPE(NAMDLog);
