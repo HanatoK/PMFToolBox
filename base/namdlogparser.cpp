@@ -385,7 +385,7 @@ void doBinningVector::operator()(const std::vector<double> &fields,
   const size_t addr = mHistogram.address(mPosition, &inBoundary);
   if (inBoundary) {
     for (size_t j = 0; j < mHistogram.multiplicity(); ++j) {
-      mHistogram[addr + j] += data[j];
+      mHistogram[addr * mHistogram.multiplicity() + j] += data[j];
     }
   }
 }
