@@ -32,14 +32,14 @@ void NAMDLog::readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread,
                              qint64 fileSize) {
   QString line;
   bool firsttime = true;
-  qint64 readSize = 0;
+  double readSize = 0;
   int previousProgress = 0;
   int currentProgress = 0;
   while (!ifs.atEnd()) {
     ifs.readLineInto(&line);
     if (fileSize > 0) {
       readSize += line.size() + 1;
-      currentProgress = std::nearbyint(double(readSize) / fileSize * 100.0);
+      currentProgress = std::nearbyint(readSize / fileSize * 100.0);
     }
     if (currentProgress != previousProgress &&
         currentProgress % refreshPeriod == 0 && progress != nullptr) {
