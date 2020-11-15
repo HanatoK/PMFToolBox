@@ -68,13 +68,28 @@ void NAMDLog::readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread,
       }
     }
     if (line.startsWith("PAIR INTERACTION:")) {
-      QStringList fields =
-          line.split(QRegExp("[A-Z:_\\s]+"), Qt::SkipEmptyParts);
-      if (fields.size() == 7) {
-        mPairData["VDW_FORCE"].push_back(ForceType{
-            fields[1].toDouble(), fields[2].toDouble(), fields[3].toDouble()});
-        mPairData["ELECT_FORCE"].push_back(ForceType{
-            fields[4].toDouble(), fields[5].toDouble(), fields[6].toDouble()});
+      QStringList fields = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+      int pos_vdw_force = -1;
+      int pos_elect_force = -1;
+      for (int i = 0; i < fields.size(); ++i) {
+        if (fields[i] == "VDW_FORCE:") {
+          pos_vdw_force = i;
+        }
+        if (fields[i] == "ELECT_FORCE:") {
+          pos_elect_force = i;
+        }
+      }
+      if (pos_vdw_force > -1) {
+        mPairData["VDW_FORCE"].push_back(
+            ForceType{fields[pos_vdw_force + 1].toDouble(),
+                      fields[pos_vdw_force + 2].toDouble(),
+                      fields[pos_vdw_force + 3].toDouble()});
+      }
+      if (pos_elect_force > -1) {
+        mPairData["ELECT_FORCE"].push_back(
+            ForceType{fields[pos_elect_force + 1].toDouble(),
+                      fields[pos_elect_force + 2].toDouble(),
+                      fields[pos_elect_force + 3].toDouble()});
       }
     }
   }
@@ -88,7 +103,8 @@ std::vector<double> NAMDLog::getElectrostatic() const {
   return getEnergyData("ELECT");
 }
 
-std::vector<double> NAMDLog::getEnergyData(const QString &title, bool *ok) const {
+std::vector<double> NAMDLog::getEnergyData(const QString &title,
+                                           bool *ok) const {
   const auto keyFound = mEnergyData.find(title);
   if (keyFound == mEnergyData.end()) {
     if (ok != nullptr)
@@ -101,18 +117,18 @@ std::vector<double> NAMDLog::getEnergyData(const QString &title, bool *ok) const
   }
 }
 
-QMap<QString, std::vector<double>>::const_iterator NAMDLog::getEnergyDataIteratorBegin() const
-{
+QMap<QString, std::vector<double>>::const_iterator
+NAMDLog::getEnergyDataIteratorBegin() const {
   return mEnergyData.constBegin();
 }
 
-QMap<QString, std::vector<double>>::const_iterator NAMDLog::getEnergyDataIteratorEnd() const
-{
+QMap<QString, std::vector<double>>::const_iterator
+NAMDLog::getEnergyDataIteratorEnd() const {
   return mEnergyData.constEnd();
 }
 
-QMap<QString, std::vector<double>>::const_iterator NAMDLog::getEnergyDataIterator(const QString &title) const
-{
+QMap<QString, std::vector<double>>::const_iterator
+NAMDLog::getEnergyDataIterator(const QString &title) const {
   return mEnergyData.constFind(title);
 }
 
@@ -124,8 +140,8 @@ std::vector<ForceType> NAMDLog::getElectrostaticForce() const {
   return mPairData.value("ELECT_FORCE");
 }
 
-std::vector<ForceType> NAMDLog::getForceData(const QString &title, bool *ok) const
-{
+std::vector<ForceType> NAMDLog::getForceData(const QString &title,
+                                             bool *ok) const {
   const auto keyFound = mPairData.find(title);
   if (keyFound == mPairData.end()) {
     if (ok != nullptr)
@@ -138,25 +154,24 @@ std::vector<ForceType> NAMDLog::getForceData(const QString &title, bool *ok) con
   }
 }
 
-QMap<QString, std::vector<ForceType>>::const_iterator NAMDLog::getForceDataIteratorBegin() const
-{
+QMap<QString, std::vector<ForceType>>::const_iterator
+NAMDLog::getForceDataIteratorBegin() const {
   return mPairData.constBegin();
 }
 
-QMap<QString, std::vector<ForceType>>::const_iterator NAMDLog::getForceDataIteratorEnd() const
-{
+QMap<QString, std::vector<ForceType>>::const_iterator
+NAMDLog::getForceDataIteratorEnd() const {
   return mPairData.constEnd();
 }
 
-QMap<QString, std::vector<ForceType>>::const_iterator NAMDLog::getForceDataIterator(const QString &title) const
-{
+QMap<QString, std::vector<ForceType>>::const_iterator
+NAMDLog::getForceDataIterator(const QString &title) const {
   return mPairData.constFind(title);
 }
 
 QStringList NAMDLog::getEnergyTitle() const { return mEnergyTitle; }
 
-QStringList NAMDLog::getForceTitle() const
-{
+QStringList NAMDLog::getForceTitle() const {
   QStringList title;
   for (auto it = mPairData.begin(); it != mPairData.end(); ++it) {
     title.append(it.key());
@@ -165,17 +180,20 @@ QStringList NAMDLog::getForceTitle() const
   return title;
 }
 
-size_t NAMDLog::size() const
-{
-  if (mEnergyData.isEmpty()) return 0;
-  else return mEnergyData.begin()->size();
+size_t NAMDLog::size() const {
+  if (mEnergyData.isEmpty())
+    return 0;
+  else
+    return mEnergyData.begin()->size();
 }
 
 doBinningScalar::doBinningScalar(HistogramScalar<double> &histogram,
-                     const std::vector<int> &column)
-    : mHistogram(histogram), mColumn(column), mPosition(mHistogram.dimension(), 0.0) {}
+                                 const std::vector<int> &column)
+    : mHistogram(histogram), mColumn(column),
+      mPosition(mHistogram.dimension(), 0.0) {}
 
-void doBinningScalar::operator()(const std::vector<double> &fields, double energy) {
+void doBinningScalar::operator()(const std::vector<double> &fields,
+                                 double energy) {
   // get the position of current point from trajectory
   for (size_t i = 0; i < mPosition.size(); ++i) {
     mPosition[i] = fields[mColumn[i]];
@@ -220,8 +238,10 @@ void BinNAMDLogThread::invokeThread(const NAMDLog &log,
 void BinNAMDLogThread::run() {
   qDebug() << Q_FUNC_INFO;
   mutex.lock();
-  std::vector<HistogramScalar<double>> histEnergy(mEnergyTitle.size(), HistogramScalar<double>(mAxis));
-  std::vector<HistogramVector<double>> histForce(mForceTitle.size(), HistogramVector<double>(mAxis, 3));
+  std::vector<HistogramScalar<double>> histEnergy(
+      mEnergyTitle.size(), HistogramScalar<double>(mAxis));
+  std::vector<HistogramVector<double>> histForce(
+      mForceTitle.size(), HistogramVector<double>(mAxis, 3));
   std::vector<doBinningScalar> energyBinning;
   std::vector<doBinningVector> forceBinning;
   for (int i = 0; i < mEnergyTitle.size(); ++i) {
@@ -279,7 +299,8 @@ void BinNAMDLogThread::run() {
             energyBinning[i](fields, item);
           }
         } else {
-          qDebug() << "warning:" << "trajectory may contain more lines than the log file";
+          qDebug() << "warning:"
+                   << "trajectory may contain more lines than the log file";
         }
       }
       for (int i = 0; i < mForceTitle.size(); ++i) {
@@ -290,7 +311,8 @@ void BinNAMDLogThread::run() {
             forceBinning[i](fields, item);
           }
         } else {
-          qDebug() << "warning:" << "trajectory may contain more lines than the log file";
+          qDebug() << "warning:"
+                   << "trajectory may contain more lines than the log file";
         }
       }
       countBinning(fields, 1.0);
@@ -348,11 +370,13 @@ void NAMDLogReaderThread::run() {
   mutex.unlock();
 }
 
-doBinningVector::doBinningVector(HistogramVector<double> &histogram, const std::vector<int> &column)
-  : mHistogram(histogram), mColumn(column), mPosition(mHistogram.dimension(), 0.0) {}
+doBinningVector::doBinningVector(HistogramVector<double> &histogram,
+                                 const std::vector<int> &column)
+    : mHistogram(histogram), mColumn(column),
+      mPosition(mHistogram.dimension(), 0.0) {}
 
-void doBinningVector::operator()(const std::vector<double> &fields, const std::vector<double> data)
-{
+void doBinningVector::operator()(const std::vector<double> &fields,
+                                 const std::vector<double> data) {
   // get the position of current point from trajectory
   for (size_t i = 0; i < mPosition.size(); ++i) {
     mPosition[i] = fields[mColumn[i]];
@@ -360,7 +384,7 @@ void doBinningVector::operator()(const std::vector<double> &fields, const std::v
   bool inBoundary = false;
   const size_t addr = mHistogram.address(mPosition, &inBoundary);
   if (inBoundary) {
-    for (size_t j = 0; j < mHistogram.multiplicity(); ++j){
+    for (size_t j = 0; j < mHistogram.multiplicity(); ++j) {
       mHistogram[addr + j] += data[j];
     }
   }
