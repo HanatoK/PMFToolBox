@@ -82,6 +82,7 @@ void FindPathTab::addPatch(const QString &center, const QVector<double> &length,
   }
   index = mPatchTable->index(0, mPatchTable->dimension() + 1, QModelIndex());
   mPatchTable->setData(index, value, Qt::EditRole);
+  ui->tableViewPatch->setCurrentIndex(ui->tableViewPatch->currentIndex());
 }
 
 void FindPathTab::loadPMF() {
@@ -220,4 +221,5 @@ void FindPathTab::removePatch()
     int row = index.row();
     mPatchTable->removeRows(row, 1, QModelIndex());
   }
+  ui->tableViewPatch->setCurrentIndex(ui->tableViewPatch->currentIndex());
 }
