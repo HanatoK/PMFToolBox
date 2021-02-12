@@ -52,19 +52,26 @@ void initTypes()
 
 int runConsole(int argc, char *argv[]) {
   QCoreApplication a(argc, argv);
-  // I need something like:
-  //    git pull [options]
-  //    git checkout [options]
-  // so multiple parser may be required for that
   // TODO
   QCommandLineParser parser;
   parser.setApplicationDescription(QCoreApplication::translate("main", "A toolbox to analyze and manipulate the output of potential of mean force (PMF)."));
   parser.addHelpOption();
-  parser.addOption(QCommandLineOption("project", QCoreApplication::translate("main", "project a multidimensional PMF to selected axes.")));
-  parser.addOption(QCommandLineOption("reweight", QCoreApplication::translate("main", "reweight the colvars trajectories according to a PMF.")));
-  parser.addOption(QCommandLineOption("history", QCoreApplication::translate("main", "parse the history PMF files.")));
-  parser.addOption(QCommandLineOption("namdlog", QCoreApplication::translate("main", "parse and bin a NAMD log file (support pair interactions).")));
-  parser.addOption(QCommandLineOption("mfep", QCoreApplication::translate("main", "find the MFEP in a multidimensional PMF.")));
+  const QCommandLineOption projectOption("project",
+                                         QCoreApplication::translate("main", "project a multidimensional PMF to selected axes."));
+  const QCommandLineOption reweightOption("reweight",
+                                          QCoreApplication::translate("main", "reweight the colvars trajectories according to a PMF."));
+  const QCommandLineOption historyOption("history",
+                                         QCoreApplication::translate("main", "parse the history PMF files."));
+  const QCommandLineOption namdlogOption("namdlog",
+                                         QCoreApplication::translate("main", "parse and bin a NAMD log file (support pair interactions)."));
+  const QCommandLineOption mfepOption("mfep",
+                                      QCoreApplication::translate("main", "find the MFEP in a multidimensional PMF."));
+  parser.addOption(projectOption);
+  parser.addOption(reweightOption);
+  parser.addOption(historyOption);
+  parser.addOption(namdlogOption);
+  parser.addOption(mfepOption);
+  parser.addPositionalArgument("jsonfile", "the json configuration file");
 
   QStringList args;
   for (int i = 0; i < argc; ++i) {
@@ -72,6 +79,26 @@ int runConsole(int argc, char *argv[]) {
   }
   // TODO
   parser.process(a);
+  qDebug() << args;
+  if (parser.isSet(projectOption)) {
+    const QStringList jsonFilenameList = parser.positionalArguments();
+    if (jsonFilenameList.empty()) {
+      qDebug() << "No json file specified!";
+      a.exit(1);
+    }
+    const QString jsonFile = jsonFilenameList.first();
+    const bool status = readProjectPMFJson(jsonFile);
+    // TODO: what happens in the case of threading?
+    if (status) {
+      qDebug() << "Operation succeeded.";
+      a.quit();
+      return 0;
+    } else {
+      qDebug() << "Error occured!";
+      a.exit(1);
+      return 1;
+    }
+  }
   return a.exec();
 }
 

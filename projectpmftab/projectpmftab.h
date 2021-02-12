@@ -50,4 +50,6 @@ private:
   HistogramPMF mProjectedPMF;
 };
 
+bool readProjectPMFJson(const QString& jsonFilename);
+
 #endif // PROJECTPMF_H

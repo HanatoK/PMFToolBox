@@ -23,6 +23,8 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QJsonDocument>
+#include <QJsonArray>
 
 void ProjectPMFTab::loadPMF()
 {
@@ -170,4 +172,33 @@ ProjectPMFTab::ProjectPMFTab(QWidget *parent) :
 ProjectPMFTab::~ProjectPMFTab()
 {
   delete ui;
+}
+
+bool readProjectPMFJson(const QString &jsonFilename)
+{
+  qDebug() << "Reading" << jsonFilename;
+  QFile loadFile(jsonFilename);
+  if (!loadFile.open(QIODevice::ReadOnly)) {
+    qWarning() << QString("Could not open json file") + jsonFilename;
+    return false;
+  }
+  QByteArray jsonData = loadFile.readAll();
+  QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData));
+  const QString inputFilename = loadDoc["Input"].toString();
+  const QString outputFilename = loadDoc["Input"].toString();
+  const QJsonArray fromCols = loadDoc["From columns"].toArray();
+  const QJsonArray toCols = loadDoc["To columns"].toArray();
+  const QString unit = loadDoc["Unit"].toString();
+  const bool convertToPMF = loadDoc["Convert to PMF"].toBool();
+  const QJsonArray toTrajectories = loadDoc["Trajectory"].toArray();
+  const QJsonArray reweightingAxes = loadDoc["Reweighting Axis"].toArray();
+  // TODO
+  // dump information
+  qInfo() << "Input file:" << inputFilename;
+  qInfo() << "Output file:" << outputFilename;
+  qInfo() << "From columns:";
+  for (auto it = fromCols.begin(); it != fromCols.end(); ++it) {
+    qInfo() << it->toInt();
+  }
+  return true;
 }
