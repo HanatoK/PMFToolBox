@@ -185,20 +185,34 @@ bool readProjectPMFJson(const QString &jsonFilename)
   QByteArray jsonData = loadFile.readAll();
   QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData));
   const QString inputFilename = loadDoc["Input"].toString();
-  const QString outputFilename = loadDoc["Input"].toString();
-  const QJsonArray fromCols = loadDoc["From columns"].toArray();
-  const QJsonArray toCols = loadDoc["To columns"].toArray();
+  const QString outputFilename = loadDoc["Output"].toString();
+  const QJsonArray jsonToAxis = loadDoc["To axis"].toArray();
   const QString unit = loadDoc["Unit"].toString();
-  const bool convertToPMF = loadDoc["Convert to PMF"].toBool();
-  const QJsonArray toTrajectories = loadDoc["Trajectory"].toArray();
-  const QJsonArray reweightingAxes = loadDoc["Reweighting Axis"].toArray();
-  // TODO
-  // dump information
-  qInfo() << "Input file:" << inputFilename;
-  qInfo() << "Output file:" << outputFilename;
-  qInfo() << "From columns:";
-  for (auto it = fromCols.begin(); it != fromCols.end(); ++it) {
-    qInfo() << it->toInt();
+  const double temperature = loadDoc["Temperature"].toDouble();
+  // dump json info
+  qDebug() << Q_FUNC_INFO << "inputFilename:" << inputFilename;
+  qDebug() << Q_FUNC_INFO << "outputFilename:" << outputFilename;
+  qDebug() << loadDoc;
+  // read the origin histogram
+  HistogramPMF originPMF, projectedPMF;
+  if (!originPMF.readFromFile(inputFilename)) {
+    qWarning() << "Failed to read from" << inputFilename;
+    return false;
+  }
+  // convert to necessary vectors
+  std::vector<size_t> toAxis;
+  for (auto it = jsonToAxis.begin(); it != jsonToAxis.end(); ++it) {
+    toAxis.push_back(it->toInt());
+  }
+  // projection
+  const double kbt = kbT(temperature, unit);
+  HistogramProbability p;
+  originPMF.toProbability(p, kbt);
+  p = p.reduceDimension(toAxis);
+  projectedPMF.fromProbability(p, kbt);
+  if (!projectedPMF.writeToFile(outputFilename)) {
+    qWarning() << "Failed to write" << outputFilename;
+    return false;
   }
   return true;
 }
