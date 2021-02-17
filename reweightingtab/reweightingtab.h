@@ -59,4 +59,6 @@ private:
   HistogramPMF mPMF;
 };
 
+bool readReweightJSON(const QString& jsonFilename);
+
 #endif // REWEIGHTINGTAB_H

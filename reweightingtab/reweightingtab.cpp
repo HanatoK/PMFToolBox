@@ -23,6 +23,8 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QJsonDocument>
+#include <QJsonArray>
 
 ReweightingTab::ReweightingTab(QWidget *parent)
     : QWidget(parent), ui(new Ui::ReweightingTab),
@@ -199,4 +201,27 @@ void ReweightingTab::reweightingDone()
 void ReweightingTab::help()
 {
   // TODO
+}
+
+bool readReweightJSON(const QString &jsonFilename)
+{
+  qDebug() << "Reading" << jsonFilename;
+  QFile loadFile(jsonFilename);
+  if (!loadFile.open(QIODevice::ReadOnly)) {
+    qWarning() << QString("Could not open json file") + jsonFilename;
+    return false;
+  }
+  QByteArray jsonData = loadFile.readAll();
+  QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData));
+  const QString inputFilename = loadDoc["Input"].toString();
+  const QString outputFilename = loadDoc["Output"].toString();
+  const QJsonArray jsonFromColumns = loadDoc["From columns"].toArray();
+  const QJsonArray jsonTocolumns = loadDoc["To columns"].toArray();
+  const QString unit = loadDoc["Unit"].toString();
+  const double temperature = loadDoc["Temperature"].toDouble();
+  const bool convertToPMF = loadDoc["Convert to PMF"].toBool();
+  const QJsonArray jsonTrajectories = loadDoc["Trajectories"].toArray();
+  const QJsonArray jsonReweightingAxes = loadDoc["Reweighting Axes"].toArray();
+  // TODO
+  return true;
 }
