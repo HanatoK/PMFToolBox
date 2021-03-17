@@ -44,6 +44,7 @@ public slots:
   void saveFile();
   void addTrajectory();
   void removeTrajectory();
+  void clearTrajectory();
   void readAxisData();
   void reweighting();
   void reweightingProgress(int fileRead, int percent);

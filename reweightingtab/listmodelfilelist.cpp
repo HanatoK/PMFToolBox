@@ -92,10 +92,34 @@ void ListModelFileList::addItem(const QString &name, const QModelIndex &currentI
   dumpList();
 }
 
+void ListModelFileList::addItems(const QStringList &names, const QModelIndex &currentIndex)
+{
+  qDebug() << Q_FUNC_INFO;
+  const int numRows = names.length();
+  insertRows(currentIndex.row(), numRows);
+  int row = qBound(0, currentIndex.row(), currentIndex.row());
+  for (int i = 0; i < numRows; ++i) {
+    mFileNameList[row+i] = names[i];
+  }
+  emit layoutChanged();
+  dumpList();
+}
+
 void ListModelFileList::removeItem(const QModelIndex &currentIndex)
 {
+  qDebug() << Q_FUNC_INFO;
   removeRows(currentIndex.row(), 1);
   emit layoutChanged();
+}
+
+void ListModelFileList::clearAll()
+{
+  qDebug() << Q_FUNC_INFO;
+  if (!mFileNameList.empty()) {
+    removeRows(0, mFileNameList.size());
+  }
+  emit layoutChanged();
+  dumpList();
 }
 
 QStringList ListModelFileList::trajectoryFileNameList() const

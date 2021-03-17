@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>660</width>
-    <height>721</height>
+    <width>658</width>
+    <height>719</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -89,32 +89,7 @@
        <bool>true</bool>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <item row="1" column="1">
-        <widget class="QPushButton" name="pushButtonRemoveTrajectory">
-         <property name="font">
-          <font>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Remove</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0" colspan="2">
+       <item row="0" column="0" colspan="3">
         <widget class="QListView" name="listViewTrajectory">
          <property name="font">
           <font>
@@ -134,6 +109,33 @@
          </property>
          <property name="text">
           <string>Add</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="pushButtonRemoveTrajectory">
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Remove</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="pushButtonClearAll">
+         <property name="font">
+          <font>
+           <family>DejaVu Sans Condensed</family>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Clear All</string>
          </property>
         </widget>
        </item>

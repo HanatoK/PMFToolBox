@@ -37,7 +37,9 @@ public:
   bool removeRows(int row, int count,
                   const QModelIndex &parent = QModelIndex()) override;
   void addItem(const QString& name, const QModelIndex &currentIndex);
+  void addItems(const QStringList& names, const QModelIndex &currentIndex);
   void removeItem(const QModelIndex &currentIndex);
+  void clearAll();
   QStringList trajectoryFileNameList() const;
   void dumpList() const;
 private:

@@ -39,6 +39,7 @@ ReweightingTab::ReweightingTab(QWidget *parent)
   connect(ui->pushButtonSaveTo, &QPushButton::clicked, this, &ReweightingTab::saveFile);
   connect(ui->pushButtonAddTrajectory, &QPushButton::clicked, this, &ReweightingTab::addTrajectory);
   connect(ui->pushButtonRemoveTrajectory, &QPushButton::clicked, this, &ReweightingTab::removeTrajectory);
+  connect(ui->pushButtonClearAll, &QPushButton::clicked, this, &ReweightingTab::clearTrajectory);
   connect(ui->pushButtonReadAxes, &QPushButton::clicked, this, &ReweightingTab::readAxisData);
   connect(ui->pushButtonRun, &QPushButton::clicked, this, &ReweightingTab::reweighting);
   connect(&mWorkerThread, &ReweightingThread::error, this, &ReweightingTab::reweightingError);
@@ -85,12 +86,12 @@ void ReweightingTab::saveFile()
 void ReweightingTab::addTrajectory()
 {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  const QString inputFileName = QFileDialog::getOpenFileName(
+  const QStringList inputFileName = QFileDialog::getOpenFileNames(
       this, tr("Open trajectory file"), "",
       tr("Colvars trajectory (*.traj);;All Files (*)"));
   if (inputFileName.isEmpty()) return;
   const QModelIndex& index = ui->listViewTrajectory->currentIndex();
-  mListModel->addItem(inputFileName, index);
+  mListModel->addItems(inputFileName, index);
 }
 
 void ReweightingTab::removeTrajectory()
@@ -98,6 +99,12 @@ void ReweightingTab::removeTrajectory()
   qDebug() << "Calling" << Q_FUNC_INFO;
   const QModelIndex& index = ui->listViewTrajectory->currentIndex();
   mListModel->removeItem(index);
+}
+
+void ReweightingTab::clearTrajectory()
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  mListModel->clearAll();
 }
 
 void ReweightingTab::readAxisData()
