@@ -50,7 +50,8 @@ bool HistogramBase::readFromStream(QTextStream &ifs) {
     return false;
   QString line;
   ifs.readLineInto(&line);
-  QStringList tmp = line.split(QRegExp("\\s+"));
+  const QRegularExpression split_regex("\\s+");
+  QStringList tmp = line.split(split_regex, Qt::SkipEmptyParts);
   if (tmp.size() < 2)
     return false;
   mNdim = tmp[1].toULongLong();
@@ -61,7 +62,7 @@ bool HistogramBase::readFromStream(QTextStream &ifs) {
     tmp.clear();
     line.clear();
     ifs.readLineInto(&line);
-    tmp = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+    tmp = line.split(split_regex, Qt::SkipEmptyParts);
     if (tmp.size() < 5)
       return false;
     // initialize each axis

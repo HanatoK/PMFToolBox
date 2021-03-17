@@ -32,13 +32,17 @@ struct doReweighting {
                 const std::vector<int> &to_index, double kbT)
       : originHistogram(from), targetHistogram(to),
         originPositionIndex(from_index), targetPositionIndex(to_index),
-        mKbT(kbT) {}
+        mKbT(kbT), posOrigin(originHistogram.dimension(), 0),
+        posTarget(targetHistogram.dimension(), 0) {}
   void operator()(const std::vector<double> &fields);
   const HistogramScalar<double> &originHistogram;
   HistogramProbability &targetHistogram;
   std::vector<int> originPositionIndex;
   std::vector<int> targetPositionIndex;
   double mKbT;
+  // temporary variables
+  std::vector<double> posOrigin;
+  std::vector<double> posTarget;
 };
 
 class ReweightingThread : public QThread {

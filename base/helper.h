@@ -20,7 +20,8 @@
 #ifndef HELPER_H
 #define HELPER_H
 
-#include <QRegExp>
+//#include <QRegExp>
+#include <QRegularExpression>
 #include <QString>
 #include <QStringList>
 #include <QDebug>
@@ -73,7 +74,7 @@ template <typename T> T stringToNumber(const QString &str, bool *ok = nullptr) {
 }
 
 template <typename T> std::vector<T> splitStringToNumbers(const QString &str) {
-  QStringList tmpFields = str.split(QRegExp("[(),\\s]+"), Qt::SkipEmptyParts);
+  QStringList tmpFields = str.split(QRegularExpression("[(),\\s]+"), Qt::SkipEmptyParts);
   std::vector<T> result;
   for (auto it = tmpFields.begin(); it != tmpFields.end(); ++it) {
     result.push_back(stringToNumber<T>(*it));

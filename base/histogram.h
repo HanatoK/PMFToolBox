@@ -190,11 +190,12 @@ bool HistogramScalar<T>::readFromStream(QTextStream &ifs) {
   QStringList tmp_fields;
   mData.resize(mHistogramSize);
   size_t dataLines = 0;
+  const QRegularExpression split_regex("\\s+");
   while (!ifs.atEnd()) {
     line.clear();
     tmp_fields.clear();
     ifs.readLineInto(&line);
-    tmp_fields = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+    tmp_fields = line.split(split_regex, Qt::SkipEmptyParts);
     // skip blank lines
     if (tmp_fields.size() == int(mNdim) + 1) {
       // skip unnecessary comment lines starting with #
@@ -492,10 +493,11 @@ bool HistogramVector<T>::readFromStream(QTextStream &ifs,
   QStringList tmp_fields;
   mData.resize(mHistogramSize * mMultiplicity);
   size_t dataLines = 0;
+  const QRegularExpression split_regex("\\s+");
   while (!ifs.atEnd()) {
     line.clear();
     tmp_fields.clear();
-    tmp_fields = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+    tmp_fields = line.split(split_regex, Qt::SkipEmptyParts);
     // skip blank lines
     if (tmp_fields.size() == static_cast<int>(mNdim + mMultiplicity)) {
       // skip unnecessary comment lines starting with #

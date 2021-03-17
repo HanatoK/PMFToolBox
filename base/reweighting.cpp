@@ -20,20 +20,18 @@
 #include "base/reweighting.h"
 
 void doReweighting::operator()(const std::vector<double> &fields) {
-  std::vector<double> pos_origin(originHistogram.dimension());
-  std::vector<double> pos_target(targetHistogram.dimension());
-  for (size_t i = 0; i < pos_origin.size(); ++i) {
-    pos_origin[i] = fields[originPositionIndex[i]];
+  for (size_t i = 0; i < posOrigin.size(); ++i) {
+    posOrigin[i] = fields[originPositionIndex[i]];
   }
-  for (size_t j = 0; j < pos_target.size(); ++j) {
-    pos_target[j] = fields[targetPositionIndex[j]];
+  for (size_t j = 0; j < posTarget.size(); ++j) {
+    posTarget[j] = fields[targetPositionIndex[j]];
   }
   bool in_origin_grid = true;
   bool in_target_grid = true;
   const size_t addr_origin =
-      originHistogram.address(pos_origin, &in_origin_grid);
+      originHistogram.address(posOrigin, &in_origin_grid);
   const size_t addr_target =
-      targetHistogram.address(pos_target, &in_target_grid);
+      targetHistogram.address(posTarget, &in_target_grid);
   if (in_origin_grid && in_target_grid) {
     const double weight = -1.0 * originHistogram[addr_origin] / mKbT;
     targetHistogram[addr_target] += 1.0 * std::exp(weight);
@@ -82,6 +80,7 @@ void ReweightingThread::run()
   HistogramProbability result(mTargetAxis);
   doReweighting reweightingObject(mSourceHistogram, result, mFromColumn, mToColumn, mKbT);
   size_t numFile = 0;
+  const QRegularExpression split_regex("[(),\\s]+");
   for (auto it = mTrajectoryFileName.begin(); it != mTrajectoryFileName.end(); ++it) {
     qDebug() << "Reading file " << (*it);
     QFile trajectoryFile(*it);
@@ -110,7 +109,7 @@ void ReweightingThread::run()
               emit progress(numFile, readingProgress);
           }
         }
-        tmpFields = line.split(QRegExp("[(),\\s]+"), Qt::SkipEmptyParts);
+        tmpFields = line.split(split_regex, Qt::SkipEmptyParts);
         // skip blank lines
         if (tmpFields.size() <= 0) continue;
         // skip comment lines start with #

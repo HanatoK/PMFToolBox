@@ -87,6 +87,7 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &
   bool firsttime = true;
   double readSize = 0;
   int previousProgress = 0;
+  const QRegularExpression split_regex("\\s+");
   while (!ifs.atEnd()) {
     line.clear();
     tmp_fields.clear();
@@ -101,7 +102,7 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &
         emit progress(fileIndex, readingProgress);
       }
     }
-    tmp_fields = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+    tmp_fields = line.split(split_regex, Qt::SkipEmptyParts);
     if (tmp_fields.size() == 0) continue;
     // header lines
     if (tmp_fields[0].startsWith("#")) {

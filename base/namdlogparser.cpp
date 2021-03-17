@@ -35,6 +35,9 @@ void NAMDLog::readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread,
   double readSize = 0;
   int previousProgress = 0;
   int currentProgress = 0;
+  const QRegularExpression split_title_regex("(ETITLE:|\\s+)");
+  const QRegularExpression split_energy_regex("[A-Z:\\s]+");
+  const QRegularExpression split_pair_regex("\\s+");
   while (!ifs.atEnd()) {
     ifs.readLineInto(&line);
     if (fileSize > 0) {
@@ -50,7 +53,7 @@ void NAMDLog::readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread,
       if (line.startsWith("ETITLE:")) {
         firsttime = false;
         QStringList titles =
-            line.split(QRegExp("(ETITLE:|\\s+)"), Qt::SkipEmptyParts);
+            line.split(split_title_regex, Qt::SkipEmptyParts);
         for (auto it = titles.begin(); it != titles.end(); ++it) {
           const auto keyFound = mEnergyData.find(*it);
           if (keyFound == mEnergyData.end()) {
@@ -62,13 +65,13 @@ void NAMDLog::readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread,
     }
     if (line.startsWith("ENERGY:")) {
       QStringList fields =
-          line.split(QRegExp("[A-Z:\\s]+"), Qt::SkipEmptyParts);
+          line.split(split_energy_regex, Qt::SkipEmptyParts);
       for (int i = 0; i < mEnergyTitle.size(); ++i) {
         mEnergyData[mEnergyTitle[i]].push_back(fields[i].toDouble());
       }
     }
     if (line.startsWith("PAIR INTERACTION:")) {
-      QStringList fields = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+      QStringList fields = line.split(split_pair_regex, Qt::SkipEmptyParts);
       int pos_vdw_force = -1;
       int pos_elect_force = -1;
       for (int i = 0; i < fields.size(); ++i) {
@@ -253,6 +256,7 @@ void BinNAMDLogThread::run() {
   HistogramScalar<double> histCount(mAxis);
   doBinningScalar countBinning(histCount, mColumn);
   // parse the trajectory file
+  const QRegularExpression split_regex("[(),\\s]+");
   QFile trajFile(mTrajectoryFileName);
   if (trajFile.open(QIODevice::ReadOnly)) {
     QTextStream ifs_traj(&trajFile);
@@ -277,7 +281,7 @@ void BinNAMDLogThread::run() {
           emit progress("Reading trajectory file", readingProgress);
         }
       }
-      tmpFields = line.split(QRegExp("[(),\\s]+"), Qt::SkipEmptyParts);
+      tmpFields = line.split(split_regex, Qt::SkipEmptyParts);
       // skip blank lines
       if (tmpFields.size() <= 0)
         continue;
