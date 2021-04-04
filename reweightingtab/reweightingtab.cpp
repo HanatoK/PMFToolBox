@@ -25,6 +25,7 @@
 #include <QMessageBox>
 #include <QJsonDocument>
 #include <QJsonArray>
+#include <QJsonObject>
 
 ReweightingTab::ReweightingTab(QWidget *parent)
     : QWidget(parent), ui(new Ui::ReweightingTab),
@@ -210,7 +211,28 @@ void ReweightingTab::help()
   // TODO
 }
 
-bool readReweightJSON(const QString &jsonFilename)
+ReweightingCLI::ReweightingCLI(QObject *parent): QObject(parent) {
+  connect(&mWorkerThread, &ReweightingThread::error, this, &ReweightingCLI::reweightingError);
+  connect(&mWorkerThread, &ReweightingThread::progress, this, &ReweightingCLI::reweightingProgress);
+  connect(&mWorkerThread, &ReweightingThread::done, this, &ReweightingCLI::reweightingDone);
+}
+
+void ReweightingCLI::reweightingProgress(int fileRead, int percent) {
+  qDebug() << "Reading file " << fileRead << " (" << percent << "%)";
+}
+
+void ReweightingCLI::reweightingError(QString msg) {
+  qDebug() << msg;
+  emit allDone();
+}
+
+void ReweightingCLI::reweightingDone()
+{
+  qDebug() << "Calling slot" << Q_FUNC_INFO;
+  emit allDone();
+}
+
+bool ReweightingCLI::readReweightJSON(const QString &jsonFilename)
 {
   qDebug() << "Reading" << jsonFilename;
   QFile loadFile(jsonFilename);
@@ -221,14 +243,53 @@ bool readReweightJSON(const QString &jsonFilename)
   QByteArray jsonData = loadFile.readAll();
   QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData));
   const QString inputFilename = loadDoc["Input"].toString();
-  const QString outputFilename = loadDoc["Output"].toString();
+  mOutputFilename = loadDoc["Output"].toString();
   const QJsonArray jsonFromColumns = loadDoc["From columns"].toArray();
   const QJsonArray jsonTocolumns = loadDoc["To columns"].toArray();
   const QString unit = loadDoc["Unit"].toString();
   const double temperature = loadDoc["Temperature"].toDouble();
-  const bool convertToPMF = loadDoc["Convert to PMF"].toBool();
+  mConvertToPMF = loadDoc["Convert to PMF"].toBool();
   const QJsonArray jsonTrajectories = loadDoc["Trajectories"].toArray();
   const QJsonArray jsonReweightingAxes = loadDoc["Reweighting Axes"].toArray();
-  // TODO
+  for (const auto& i : jsonTrajectories) {
+    mFileList.push_back(i.toString());
+  }
+  for (const auto& i: jsonFromColumns) {
+    mFromColumns.push_back(i.toInt());
+  }
+  for (const auto& i: jsonTocolumns) {
+    mToColumns.push_back(i.toInt());
+  }
+  for (const auto& a: jsonReweightingAxes) {
+    const auto nested_json = a.toObject();
+    const int target_column = nested_json["Target Column"].toInt();
+    qDebug() << "Read target column: " << target_column;
+    const auto find_result = std::find(mToColumns.begin(), mToColumns.end(), target_column);
+    if (find_result != mToColumns.end()) {
+      const double lower_bound = nested_json["Lower bound"].toDouble();
+      const double upper_bound = nested_json["Upper bound"].toDouble();
+      const size_t nbins = std::nearbyint((upper_bound - lower_bound) / nested_json["Width"].toDouble());
+      mTargetAxis.push_back(Axis(lower_bound, upper_bound, nbins));
+    } else {
+      qDebug() << "Target column not found!";
+      qDebug() << "Problem json data: " << nested_json;
+      return false;
+    }
+  }
+  mInputPMF.readFromFile(inputFilename);
+  mKbT = kbT(temperature, unit);
   return true;
+}
+
+void ReweightingCLI::startReweighting()
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  mWorkerThread.reweighting(mFileList, mOutputFilename, mInputPMF,
+                            mFromColumns, mToColumns, mTargetAxis,
+                            mKbT, mConvertToPMF);
+}
+
+ReweightingCLI::~ReweightingCLI()
+{
+
 }

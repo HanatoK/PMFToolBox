@@ -96,6 +96,7 @@ int runConsole(int argc, char *argv[]) {
   if (jsonFilenameList.empty()) {
     qDebug() << "No json file specified!";
     a.exit(1);
+    return 1;
   }
   const QString jsonFile = jsonFilenameList.first();
   if (parser.isSet(projectOption)) {
@@ -109,7 +110,10 @@ int runConsole(int argc, char *argv[]) {
       return 1;
     }
   } else if (parser.isSet(reweightOption)) {
-    if (readReweightJSON(jsonFile)) {
+    ReweightingCLI cli_object(&a);
+    if (cli_object.readReweightJSON(jsonFile)) {
+      QObject::connect(&cli_object, &ReweightingCLI::allDone, &a, QCoreApplication::quit);
+      cli_object.startReweighting();
       qDebug() << "Operation succeeded.";
       a.quit();
       return 0;

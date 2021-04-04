@@ -60,6 +60,32 @@ private:
   HistogramPMF mPMF;
 };
 
-bool readReweightJSON(const QString& jsonFilename);
+class ReweightingCLI: public QObject
+{
+  Q_OBJECT
+public:
+  explicit ReweightingCLI(QObject *parent = nullptr);
+  bool readReweightJSON(const QString& jsonFilename);
+  void startReweighting();
+  ~ReweightingCLI();
+public slots:
+  void reweightingProgress(int fileRead, int percent);
+  void reweightingError(QString msg);
+  void reweightingDone();
+signals:
+  void allDone();
+private:
+  QStringList mFileList;
+  QString mOutputFilename;
+  HistogramPMF mInputPMF;
+  std::vector<int> mFromColumns;
+  std::vector<int> mToColumns;
+  std::vector<Axis> mTargetAxis;
+  double mKbT;
+  bool mConvertToPMF;
+  ReweightingThread mWorkerThread;
+};
+
+//bool readReweightJSON(const QString& jsonFilename);
 
 #endif // REWEIGHTINGTAB_H
