@@ -271,7 +271,6 @@ void BinNAMDLogThread::run() {
     const size_t fileSize = trajFile.size();
     while (!ifs_traj.atEnd()) {
       fields.clear();
-      tmpFields.clear();
       ifs_traj.readLineInto(&line);
       readSize += line.size() + 1;
       const int readingProgress = std::nearbyint(readSize / fileSize * 100);

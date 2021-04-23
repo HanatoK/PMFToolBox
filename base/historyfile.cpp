@@ -90,7 +90,6 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &
   const QRegularExpression split_regex("\\s+");
   while (!ifs.atEnd()) {
     line.clear();
-    tmpFields.clear();
     ifs.readLineInto(&line);
     readSize += line.size() + 1;
     const int readingProgress = std::nearbyint(readSize / fileSize * 100);
