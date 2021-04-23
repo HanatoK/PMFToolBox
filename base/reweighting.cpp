@@ -88,7 +88,7 @@ void ReweightingThread::run()
     if (trajectoryFile.open(QFile::ReadOnly)) {
       QTextStream ifs(&trajectoryFile);
       QString line;
-      QStringList tmpFields;
+      QVector<QStringRef> tmpFields;
       std::vector<double> fields;
       double readSize = 0;
       int previousProgress = 0;
@@ -109,12 +109,12 @@ void ReweightingThread::run()
               emit progress(numFile, readingProgress);
           }
         }
-        tmpFields = line.split(split_regex, Qt::SkipEmptyParts);
+        tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
         // skip blank lines
         if (tmpFields.size() <= 0) continue;
         // skip comment lines start with #
         if (tmpFields[0].startsWith("#")) continue;
-        for (const auto& i : tmpFields) {
+        for (const auto& i : qAsConst(tmpFields)) {
           fields.push_back(i.toDouble(&read_ok));
           if (read_ok == false) {
             emit error("Failed to convert " + i + " to number!");

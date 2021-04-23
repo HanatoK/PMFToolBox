@@ -73,8 +73,38 @@ template <typename T> T stringToNumber(const QString &str, bool *ok = nullptr) {
   }
 }
 
+template <typename T> T stringToNumber(const QStringRef &str, bool *ok = nullptr) {
+  // check signed integer type
+  if constexpr (std::is_same<T, long long int>::value) {
+    return str.toLongLong(ok);
+  } else if constexpr (std::is_same<T, long int>::value) {
+    return str.toLong(ok);
+  } else if constexpr (std::is_same<T, int>::value) {
+    return str.toInt(ok);
+  }
+  // check signed floating type
+  else if constexpr (std::is_same<T, float>::value) {
+    return str.toFloat(ok);
+  } else if constexpr (std::is_same<T, double>::value) {
+    return str.toDouble(ok);
+  }
+  // check unsigned integer type
+  else if constexpr (std::is_same<T, unsigned int>::value) {
+    return str.toUInt(ok);
+  } else if constexpr (std::is_same<T, unsigned long>::value) {
+    return str.toULong(ok);
+  } else if constexpr (std::is_same<T, unsigned long long>::value) {
+    return str.toULongLong(ok);
+  }
+  // try direct conversion
+  else {
+    return T(str);
+  }
+}
+
 template <typename T> std::vector<T> splitStringToNumbers(const QString &str) {
-  QStringList tmpFields = str.split(QRegularExpression("[(),\\s]+"), Qt::SkipEmptyParts);
+  QVector<QStringRef> tmpFields = str.splitRef(QRegularExpression("[(),\\s]+"),
+                                               Qt::SkipEmptyParts);
   std::vector<T> result;
   for (auto it = tmpFields.begin(); it != tmpFields.end(); ++it) {
     result.push_back(stringToNumber<T>(*it));

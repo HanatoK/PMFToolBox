@@ -52,26 +52,27 @@ void NAMDLog::readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread,
     if (firsttime) {
       if (line.startsWith("ETITLE:")) {
         firsttime = false;
-        QStringList titles =
-            line.split(split_title_regex, Qt::SkipEmptyParts);
+        const auto titles =
+            line.splitRef(split_title_regex, Qt::SkipEmptyParts);
         for (auto it = titles.begin(); it != titles.end(); ++it) {
-          const auto keyFound = mEnergyData.find(*it);
+          const auto key = it->toString();
+          const auto keyFound = mEnergyData.find(key);
           if (keyFound == mEnergyData.end()) {
-            mEnergyTitle.append(*it);
-            mEnergyData[*it] = std::vector<double>();
+            mEnergyTitle.append(key);
+            mEnergyData[key] = std::vector<double>();
           }
         }
       }
     }
     if (line.startsWith("ENERGY:")) {
-      QStringList fields =
-          line.split(split_energy_regex, Qt::SkipEmptyParts);
+      const auto fields =
+          line.splitRef(split_energy_regex, Qt::SkipEmptyParts);
       for (int i = 0; i < mEnergyTitle.size(); ++i) {
         mEnergyData[mEnergyTitle[i]].push_back(fields[i].toDouble());
       }
     }
     if (line.startsWith("PAIR INTERACTION:")) {
-      QStringList fields = line.split(split_pair_regex, Qt::SkipEmptyParts);
+      const auto fields = line.splitRef(split_pair_regex, Qt::SkipEmptyParts);
       int pos_vdw_force = -1;
       int pos_elect_force = -1;
       for (int i = 0; i < fields.size(); ++i) {
@@ -260,7 +261,7 @@ void BinNAMDLogThread::run() {
   QFile trajFile(mTrajectoryFileName);
   if (trajFile.open(QIODevice::ReadOnly)) {
     QTextStream ifs_traj(&trajFile);
-    QStringList tmpFields;
+    QVector<QStringRef> tmpFields;
     size_t lineNumber = 0;
     QString line;
     std::vector<double> fields;
@@ -281,14 +282,14 @@ void BinNAMDLogThread::run() {
           emit progress("Reading trajectory file", readingProgress);
         }
       }
-      tmpFields = line.split(split_regex, Qt::SkipEmptyParts);
+      tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
       // skip blank lines
       if (tmpFields.size() <= 0)
         continue;
       // skip comment lines start with #
       if (tmpFields[0].startsWith("#"))
         continue;
-      for (const auto &i : tmpFields) {
+      for (const auto &i : qAsConst(tmpFields)) {
         fields.push_back(i.toDouble(&read_ok));
         if (read_ok == false) {
           emit error("Failed to convert " + i + " to number!");

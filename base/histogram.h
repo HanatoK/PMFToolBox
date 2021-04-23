@@ -187,7 +187,7 @@ bool HistogramScalar<T>::readFromStream(QTextStream &ifs) {
   // read data into m_data
   QString line;
   std::vector<double> pos(mNdim, 0);
-  QStringList tmp_fields;
+  QVector<QStringRef> tmp_fields;
   mData.resize(mHistogramSize);
   size_t dataLines = 0;
   const QRegularExpression split_regex("\\s+");
@@ -195,7 +195,7 @@ bool HistogramScalar<T>::readFromStream(QTextStream &ifs) {
     line.clear();
     tmp_fields.clear();
     ifs.readLineInto(&line);
-    tmp_fields = line.split(split_regex, Qt::SkipEmptyParts);
+    tmp_fields = line.splitRef(split_regex, Qt::SkipEmptyParts);
     // skip blank lines
     if (tmp_fields.size() == int(mNdim) + 1) {
       // skip unnecessary comment lines starting with #
@@ -490,14 +490,14 @@ bool HistogramVector<T>::readFromStream(QTextStream &ifs,
   mMultiplicity = multiplicity > 0 ? multiplicity : mNdim;
   QString line;
   std::vector<double> pos(mNdim, 0);
-  QStringList tmp_fields;
+  QVector<QStringRef> tmp_fields;
   mData.resize(mHistogramSize * mMultiplicity);
   size_t dataLines = 0;
   const QRegularExpression split_regex("\\s+");
   while (!ifs.atEnd()) {
     line.clear();
     tmp_fields.clear();
-    tmp_fields = line.split(split_regex, Qt::SkipEmptyParts);
+    tmp_fields = line.splitRef(split_regex, Qt::SkipEmptyParts);
     // skip blank lines
     if (tmp_fields.size() == static_cast<int>(mNdim + mMultiplicity)) {
       // skip unnecessary comment lines starting with #
