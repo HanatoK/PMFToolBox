@@ -83,14 +83,14 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &
   QString line;
   std::vector<double> pos(PMFHistory.dimension(), 0);
   std::vector<double> pmfData(PMFHistory.histogramSize(), 0);
-  QVector<QStringRef> tmp_fields;
+  QVector<QStringRef> tmpFields;
   bool firsttime = true;
   double readSize = 0;
   int previousProgress = 0;
   const QRegularExpression split_regex("\\s+");
   while (!ifs.atEnd()) {
     line.clear();
-    tmp_fields.clear();
+    tmpFields.clear();
     ifs.readLineInto(&line);
     readSize += line.size() + 1;
     const int readingProgress = std::nearbyint(readSize / fileSize * 100);
@@ -102,11 +102,11 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &
         emit progress(fileIndex, readingProgress);
       }
     }
-    tmp_fields = line.splitRef(split_regex, Qt::SkipEmptyParts);
-    if (tmp_fields.size() == 0) continue;
+    tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
+    if (tmpFields.size() == 0) continue;
     // header lines
-    if (tmp_fields[0].startsWith("#")) {
-      if (tmp_fields.size() == 2 && !firsttime) {
+    if (tmpFields[0].startsWith("#")) {
+      if (tmpFields.size() == 2 && !firsttime) {
         PMFHistory.appendHistogram(pmfData);
         continue;
       } else {
@@ -114,13 +114,13 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &
       }
     }
     // data lines
-    if (tmp_fields.size() == int(PMFHistory.dimension() + 1)) {
+    if (tmpFields.size() == int(PMFHistory.dimension() + 1)) {
       firsttime = false;
       for (size_t i = 0; i < PMFHistory.dimension(); ++i) {
-        pos[i] = tmp_fields[i].toDouble();
+        pos[i] = tmpFields[i].toDouble();
       }
       const size_t addr = PMFHistory.address(pos);
-      pmfData[addr] = tmp_fields[PMFHistory.dimension()].toDouble();
+      pmfData[addr] = tmpFields[PMFHistory.dimension()].toDouble();
     }
   }
   PMFHistory.appendHistogram(pmfData);

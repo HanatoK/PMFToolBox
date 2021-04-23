@@ -187,36 +187,36 @@ bool HistogramScalar<T>::readFromStream(QTextStream &ifs) {
   // read data into m_data
   QString line;
   std::vector<double> pos(mNdim, 0);
-  QVector<QStringRef> tmp_fields;
+  QVector<QStringRef> tmpFields;
   mData.resize(mHistogramSize);
   size_t dataLines = 0;
   const QRegularExpression split_regex("\\s+");
   while (!ifs.atEnd()) {
     line.clear();
-    tmp_fields.clear();
+    tmpFields.clear();
     ifs.readLineInto(&line);
-    tmp_fields = line.splitRef(split_regex, Qt::SkipEmptyParts);
+    tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
     // skip blank lines
-    if (tmp_fields.size() == int(mNdim) + 1) {
+    if (tmpFields.size() == int(mNdim) + 1) {
       // skip unnecessary comment lines starting with #
-      if (!tmp_fields[0].startsWith("#")) {
+      if (!tmpFields[0].startsWith("#")) {
         bool ok = true;
         for (size_t i = 0; i < mNdim; ++i) {
-          pos[i] = tmp_fields[i].toDouble(&ok);
+          pos[i] = tmpFields[i].toDouble(&ok);
           if (!ok)
             return false;
         }
         // find the position
         const size_t addr = address(pos);
         if (ok) {
-          mData[addr] = stringToNumber<T>(tmp_fields[mNdim], &ok);
+          mData[addr] = stringToNumber<T>(tmpFields[mNdim], &ok);
           if (!ok)
             return false;
           else
             ++dataLines;
         }
       }
-    } else if (tmp_fields.size() == 0) {
+    } else if (tmpFields.size() == 0) {
       continue;
     } else {
       return false;
@@ -490,21 +490,21 @@ bool HistogramVector<T>::readFromStream(QTextStream &ifs,
   mMultiplicity = multiplicity > 0 ? multiplicity : mNdim;
   QString line;
   std::vector<double> pos(mNdim, 0);
-  QVector<QStringRef> tmp_fields;
+  QVector<QStringRef> tmpFields;
   mData.resize(mHistogramSize * mMultiplicity);
   size_t dataLines = 0;
   const QRegularExpression split_regex("\\s+");
   while (!ifs.atEnd()) {
     line.clear();
-    tmp_fields.clear();
-    tmp_fields = line.splitRef(split_regex, Qt::SkipEmptyParts);
+    tmpFields.clear();
+    tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
     // skip blank lines
-    if (tmp_fields.size() == static_cast<int>(mNdim + mMultiplicity)) {
+    if (tmpFields.size() == static_cast<int>(mNdim + mMultiplicity)) {
       // skip unnecessary comment lines starting with #
-      if (!tmp_fields[0].startsWith("#")) {
+      if (!tmpFields[0].startsWith("#")) {
         bool ok = true;
         for (size_t i = 0; i < mNdim; ++i) {
-          pos[i] = tmp_fields[i].toDouble(&ok);
+          pos[i] = tmpFields[i].toDouble(&ok);
           if (!ok)
             return false;
         }
@@ -513,7 +513,7 @@ bool HistogramVector<T>::readFromStream(QTextStream &ifs,
         if (ok) {
           for (size_t j = 0; j < mMultiplicity; ++j) {
             mData[addr * mMultiplicity + j] =
-                stringToNumber<T>(tmp_fields[mNdim + j], &ok);
+                stringToNumber<T>(tmpFields[mNdim + j], &ok);
             if (!ok)
               return false;
             else
