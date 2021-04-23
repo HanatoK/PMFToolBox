@@ -66,7 +66,7 @@ class ReweightingCLI: public QObject
 public:
   explicit ReweightingCLI(QObject *parent = nullptr);
   bool readReweightJSON(const QString& jsonFilename);
-  void startReweighting();
+  void start();
   ~ReweightingCLI();
 public slots:
   void reweightingProgress(int fileRead, int percent);

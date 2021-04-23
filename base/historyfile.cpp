@@ -36,7 +36,7 @@ void HistoryReaderThread::readFromFile(const QStringList &fileNameList)
 {
   qDebug() << Q_FUNC_INFO;
   QMutexLocker locker(&mutex);
-  mHistoryFileName = fileNameList;
+  mHistoryFilename = fileNameList;
   if (!isRunning()) {
     start(LowPriority);
   }
@@ -48,12 +48,12 @@ void HistoryReaderThread::run()
   qDebug() << Q_FUNC_INFO;
   mutex.lock();
   HistogramPMFHistory result;
-  if (mHistoryFileName.isEmpty()) {
+  if (mHistoryFilename.isEmpty()) {
     emit error("No PMF history files");
     return;
   }
   // use the first history file to initialize the axis
-  QFile histFile(mHistoryFileName[0]);
+  QFile histFile(mHistoryFilename[0]);
   bool ok = true;
   QTextStream stream;
   if (histFile.open(QFile::ReadOnly)) {
@@ -64,9 +64,9 @@ void HistoryReaderThread::run()
     emit error("Error on opening file " + histFile.fileName());
     return;
   }
-  for (int i = 0; i < mHistoryFileName.size(); ++i) {
+  for (int i = 0; i < mHistoryFilename.size(); ++i) {
     if (ok) {
-      QFile histFile(mHistoryFileName[i]);
+      QFile histFile(mHistoryFilename[i]);
       if (histFile.open(QFile::ReadOnly)) {
         stream.setDevice(&histFile);
         ok = readFromStream(stream, result, i, histFile.size());

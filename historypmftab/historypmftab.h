@@ -61,4 +61,31 @@ private:
   static const int OUTPUT_WIDTH = 14;
 };
 
+
+class HistoryCLI: public QObject {
+  Q_OBJECT
+public:
+  explicit HistoryCLI(QObject *parent = nullptr);
+  bool readHistoryJSON(const QString& jsonFilename);
+  void start();
+  void writeRMSDToFile(const std::vector<double>& rmsd, const QString& filename);
+  ~HistoryCLI();
+public slots:
+  void progress(int fileRead, int percent);
+  void done(const HistogramPMFHistory& hist);
+  void error(QString msg);
+signals:
+  void allDone();
+private:
+  bool mDoSplitting;
+  bool mDoComputingRMSD;
+  HistogramPMF mReferencePMF;
+  HistoryReaderThread mReaderThread;
+  HistogramPMFHistory mPMFHistory;
+  QStringList mHistoryFilename;
+  QString mOutputPrefix;
+  static const int OUTPUT_PRECISION = 7;
+  static const int OUTPUT_WIDTH = 14;
+};
+
 #endif // HISTORYPMFTAB_H

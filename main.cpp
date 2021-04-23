@@ -110,12 +110,23 @@ int runConsole(int argc, char *argv[]) {
       return 1;
     }
   } else if (parser.isSet(reweightOption)) {
-    ReweightingCLI cli_object(&a);
-    if (cli_object.readReweightJSON(jsonFile)) {
-      QObject::connect(&cli_object, &ReweightingCLI::allDone, &a, QCoreApplication::quit);
-      cli_object.startReweighting();
-      qDebug() << "Operation succeeded.";
-      a.quit();
+    ReweightingCLI reweightingCLIObject(&a);
+    if (reweightingCLIObject.readReweightJSON(jsonFile)) {
+      QObject::connect(&reweightingCLIObject, &ReweightingCLI::allDone,
+                       &a, QCoreApplication::quit);
+      reweightingCLIObject.start();
+      return 0;
+    } else {
+      qDebug() << "Error occured!";
+      a.exit(1);
+      return 1;
+    }
+  } else if (parser.isSet(historyOption)) {
+    HistoryCLI historyCLIObject(&a);
+    if (historyCLIObject.readHistoryJSON(jsonFile)) {
+      QObject::connect(&historyCLIObject, &HistoryCLI::allDone,
+                       &a, QCoreApplication::quit);
+      historyCLIObject.start();
       return 0;
     } else {
       qDebug() << "Error occured!";

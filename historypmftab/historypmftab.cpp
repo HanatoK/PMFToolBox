@@ -22,6 +22,8 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QJsonDocument>
+#include <QJsonArray>
 
 HistoryPMFTab::HistoryPMFTab(QWidget *parent) :
   QWidget(parent),
@@ -216,4 +218,104 @@ void HistoryPMFTab::splitDone(const HistogramPMFHistory &hist)
   ui->pushButtonSplit->setEnabled(true);
   ui->pushButtonComputeRMSD->setEnabled(true);
   ui->pushButtonSplit->setText(tr("Split"));
+}
+
+HistoryCLI::HistoryCLI(QObject *parent): QObject(parent)
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  connect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryCLI::progress);
+  connect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryCLI::done);
+  connect(&mReaderThread, &HistoryReaderThread::error, this, &HistoryCLI::error);
+}
+
+bool HistoryCLI::readHistoryJSON(const QString &jsonFilename)
+{
+  qDebug() << "Reading" << jsonFilename;
+  QFile loadFile(jsonFilename);
+  if (!loadFile.open(QIODevice::ReadOnly)) {
+    qWarning() << QString("Could not open json file") + jsonFilename;
+    return false;
+  }
+  QByteArray jsonData = loadFile.readAll();
+  QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData));
+  const QString referenceFilename = loadDoc["Reference"].toString();
+  mOutputPrefix = loadDoc["Output"].toString();
+  const QJsonArray jsonHistoryFiles = loadDoc["History PMF Files"].toArray();
+  mDoSplitting = loadDoc["Split"].toBool();
+  mDoComputingRMSD = loadDoc["RMSD"].toBool();
+  for (const auto& i : jsonHistoryFiles) {
+    mHistoryFilename.append(i.toString());
+  }
+  mReferencePMF.readFromFile(referenceFilename);
+  return true;
+}
+
+void HistoryCLI::start()
+{
+  mReaderThread.readFromFile(mHistoryFilename);
+}
+
+void HistoryCLI::writeRMSDToFile(const std::vector<double> &rmsd, const QString &filename)
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  qDebug() << Q_FUNC_INFO << ": trying to open file " << filename;
+  QFile RMSDFile(filename);
+  if (RMSDFile.open(QIODevice::WriteOnly)) {
+    QTextStream ofs(&RMSDFile);
+    ofs.setRealNumberNotation(QTextStream::FixedNotation);
+    for (size_t i = 0; i < rmsd.size(); ++i) {
+      ofs << qSetFieldWidth(OUTPUT_WIDTH);
+      ofs << i;
+      ofs << qSetFieldWidth(0) << ' ';
+      ofs << qSetFieldWidth(OUTPUT_WIDTH);
+      ofs.setRealNumberPrecision(OUTPUT_PRECISION);
+      ofs << rmsd[i];
+      ofs << qSetFieldWidth(0) << '\n';
+    }
+  } else {
+    const QString errorMsg{"Cannot open output file for writing RMSD."};
+    qDebug() << Q_FUNC_INFO << errorMsg;
+    return;
+  }
+}
+
+HistoryCLI::~HistoryCLI()
+{
+
+}
+
+void HistoryCLI::progress(int fileRead, int percent)
+{
+  qDebug() << "Reading file " << mHistoryFilename[fileRead] << " (" << percent << "%)";
+}
+
+void HistoryCLI::done(const HistogramPMFHistory &hist)
+{
+  qDebug() << "Calling slot" << Q_FUNC_INFO;
+  mPMFHistory = hist;
+  if (mDoComputingRMSD) {
+    std::vector<double> rmsd;
+    if (mReferencePMF.dimension() > 0) {
+      qDebug() << Q_FUNC_INFO << ": compute rmsd with respect to the reference PMF.";
+      rmsd = mPMFHistory.computeRMSD(mReferencePMF.data());
+    } else {
+      qDebug() << Q_FUNC_INFO << ": compute rmsd with respect to the last frame of the history file.";
+      rmsd = mPMFHistory.computeRMSD();
+    }
+    if (mOutputPrefix.size() > 0) {
+      writeRMSDToFile(rmsd, mOutputPrefix + "_rmsd.dat");
+    }
+  }
+  if (mDoSplitting) {
+    mPMFHistory.splitToFile(mOutputPrefix);
+  }
+  qDebug() << "Operation succeeded.";
+  emit allDone();
+}
+
+void HistoryCLI::error(QString msg)
+{
+  qDebug() << msg;
+  // TODO: should emit a separate error signal.
+  emit allDone();
 }

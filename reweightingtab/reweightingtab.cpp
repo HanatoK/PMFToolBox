@@ -218,7 +218,7 @@ ReweightingCLI::ReweightingCLI(QObject *parent): QObject(parent) {
 }
 
 void ReweightingCLI::reweightingProgress(int fileRead, int percent) {
-  qDebug() << "Reading file " << fileRead << " (" << percent << "%)";
+  qDebug() << "Reading file " << mFileList[fileRead] << " (" << percent << "%)";
 }
 
 void ReweightingCLI::reweightingError(QString msg) {
@@ -229,6 +229,7 @@ void ReweightingCLI::reweightingError(QString msg) {
 void ReweightingCLI::reweightingDone()
 {
   qDebug() << "Calling slot" << Q_FUNC_INFO;
+  qDebug() << "Operation succeeded.";
   emit allDone();
 }
 
@@ -281,7 +282,7 @@ bool ReweightingCLI::readReweightJSON(const QString &jsonFilename)
   return true;
 }
 
-void ReweightingCLI::startReweighting()
+void ReweightingCLI::start()
 {
   qDebug() << "Calling" << Q_FUNC_INFO;
   mWorkerThread.reweighting(mFileList, mOutputFilename, mInputPMF,
