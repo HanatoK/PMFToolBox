@@ -85,6 +85,5 @@ QList<LicenseInfo> AboutDialog::licensesInfo() const
 {
   QList<LicenseInfo> result;
   result.push_back(LicenseInfo{"PMFToolBox", getStringFromResource(":/licenses/LICENSE")});
-  result.push_back(LicenseInfo{"CLI11", getStringFromResource(":/licenses/external/LICENSE.CLI11")});
   return result;
 }
