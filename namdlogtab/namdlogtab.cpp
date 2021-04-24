@@ -313,7 +313,9 @@ void NAMDLogCLI::loadNAMDLogDone(NAMDLog log)
 
 void NAMDLogCLI::binningProgress(QString status, int x)
 {
-  qDebug() << status + " " + QString::number(x) + "%";
+  Q_UNUSED(status);
+  Q_UNUSED(x);
+//  qDebug() << status + " " + QString::number(x) + "%";
 }
 
 void NAMDLogCLI::binningDone(std::vector<HistogramScalar<double> > energyData,
