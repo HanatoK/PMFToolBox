@@ -22,6 +22,8 @@
 
 #include <QFileDialog>
 #include <QDialog>
+#include <QJsonArray>
+#include <QJsonDocument>
 
 NAMDLogTab::NAMDLogTab(QWidget *parent) :
   QWidget(parent),
@@ -40,7 +42,7 @@ NAMDLogTab::NAMDLogTab(QWidget *parent) :
   connect(ui->pushButtonRemoveAxis, &QPushButton::clicked, this, &NAMDLogTab::removeAxis);
   connect(&mLogReaderThread, &NAMDLogReaderThread::done, this, &NAMDLogTab::loadNAMDLogDone);
   connect(&mLogReaderThread, &NAMDLogReaderThread::progress, this, &NAMDLogTab::logReadingProgress);
-  connect(&mBinningThread, &BinNAMDLogThread::doneHistogram, this, &NAMDLogTab::binningDone);
+  connect(&mBinningThread, &BinNAMDLogThread::done, this, &NAMDLogTab::binningDone);
   connect(&mBinningThread, &BinNAMDLogThread::progress, this, &NAMDLogTab::binningProgress);
 }
 
@@ -150,7 +152,7 @@ void NAMDLogTab::addAxis()
   qDebug() << "Calling" << Q_FUNC_INFO;
   const QModelIndex& index = ui->tableViewAxis->currentIndex();
   mTableModel->insertRows(index.row(), 1);
-  mTableModel->layoutChanged();
+  emit mTableModel->layoutChanged();
 }
 
 void NAMDLogTab::removeAxis()
@@ -158,10 +160,11 @@ void NAMDLogTab::removeAxis()
   qDebug() << "Calling" << Q_FUNC_INFO;
   const QModelIndex& index = ui->tableViewAxis->currentIndex();
   mTableModel->removeRows(index.row(), 1);
-  mTableModel->layoutChanged();
+  emit mTableModel->layoutChanged();
 }
 
-void NAMDLogTab::binningDone(std::vector<HistogramScalar<double> > energyData, std::vector<HistogramVector<double> > forceData)
+void NAMDLogTab::binningDone(std::vector<HistogramScalar<double>> energyData,
+                             std::vector<HistogramVector<double>> forceData)
 {
   qDebug() << "Calling" << Q_FUNC_INFO;
   mEnergyHistogram = energyData;
@@ -232,4 +235,100 @@ QStringList selectEnergyTermDialog::selectedForceTitle() const
     }
   }
   return selected;
+}
+
+NAMDLogCLI::NAMDLogCLI(QObject *parent): QObject(parent)
+{
+  connect(&mLogReaderThread, &NAMDLogReaderThread::progress, this, &NAMDLogCLI::logReadingProgress);
+  connect(&mLogReaderThread, &NAMDLogReaderThread::done, this, &NAMDLogCLI::loadNAMDLogDone);
+  connect(&mBinningThread, &BinNAMDLogThread::progress, this, &NAMDLogCLI::binningProgress);
+  connect(&mBinningThread, &BinNAMDLogThread::done, this, &NAMDLogCLI::binningDone);
+}
+
+void NAMDLogCLI::start()
+{
+  mLogReaderThread.invokeThread(mLogFilename);
+}
+
+bool NAMDLogCLI::readJSON(const QString &jsonFilename)
+{
+  qDebug() << "Reading" << jsonFilename;
+  QFile loadFile(jsonFilename);
+  if (!loadFile.open(QIODevice::ReadOnly)) {
+    qWarning() << QString("Could not open json file") + jsonFilename;
+    return false;
+  }
+  const QByteArray jsonData = loadFile.readAll();
+  QJsonParseError jsonParseError;
+  const QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData, &jsonParseError));
+  if (loadDoc.isNull()) {
+    qWarning() << QString("Invalid json file:") + jsonFilename;
+    qWarning() << "Json parse error:" << jsonParseError.errorString();
+    return false;
+  }
+  mLogFilename = loadDoc["NAMD log"].toString();
+  mTrajectoryFilename = loadDoc["Trajectory"].toString();
+  mOutputPrefix = loadDoc["Output"].toString();
+  const QJsonArray jsonEnergies = loadDoc["Energies"].toArray();
+  const QJsonArray jsonForces = loadDoc["Forces"].toArray();
+  const QJsonArray jsonAxes = loadDoc["Axes"].toArray();
+  for (const auto& i : jsonEnergies) {
+    mSelectedEnergyTitle.append(i.toString());
+  }
+  for (const auto& i : jsonForces) {
+    mSelectedForceTitle.append(i.toString());
+  }
+  for (const auto& i : jsonAxes) {
+    mColumns.push_back(i["Column"].toInt());
+    const double lower_bound = i["Lower bound"].toDouble();
+    const double upper_bound = i["Upper bound"].toDouble();
+    const double width = i["Width"].toDouble();
+    const size_t bins = std::nearbyint((upper_bound - lower_bound) / width);
+    mAxes.push_back(Axis(lower_bound, upper_bound, bins));
+  }
+  return true;
+}
+
+NAMDLogCLI::~NAMDLogCLI()
+{
+
+}
+
+void NAMDLogCLI::logReadingProgress(int x)
+{
+  qDebug() << "Calling " << Q_FUNC_INFO << " progress: " << x;
+}
+
+void NAMDLogCLI::loadNAMDLogDone(NAMDLog log)
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  mLog = log;
+  qDebug() << Q_FUNC_INFO << ": available energy terms: " << mLog.getEnergyTitle();
+  qDebug() << Q_FUNC_INFO << ": available force terms: " << mLog.getForceTitle();
+  qDebug() << Q_FUNC_INFO << ": total frames: " << mLog.getStep().size();
+  // TODO: invoke the binning thread
+  mBinningThread.invokeThread(mLog, mSelectedEnergyTitle, mSelectedForceTitle,
+                              mTrajectoryFilename, mAxes, mColumns);
+}
+
+void NAMDLogCLI::binningProgress(QString status, int x)
+{
+  qDebug() << status + " " + QString::number(x) + "%";
+}
+
+void NAMDLogCLI::binningDone(std::vector<HistogramScalar<double> > energyData,
+                             std::vector<HistogramVector<double> > forceData)
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  mEnergyHistogram = energyData;
+  mForceHistogram = forceData;
+  for (int i = 0; i < mSelectedEnergyTitle.size(); ++i) {
+    const QString outputFileName = mOutputPrefix + "_" + mSelectedEnergyTitle[i].toLower() + ".dat";
+    mEnergyHistogram[i].writeToFile(outputFileName);
+  }
+  for (int i = 0; i < mSelectedForceTitle.size(); ++i) {
+    const QString outputFileName = mOutputPrefix + "_" + mSelectedForceTitle[i].toLower() + ".dat";
+    mForceHistogram[i].writeToFile(outputFileName);
+  }
+  emit allDone();
 }

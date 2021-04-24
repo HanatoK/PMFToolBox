@@ -107,8 +107,7 @@ public:
 
 signals:
   void error(QString err);
-  void done();
-  void doneHistogram(std::vector<HistogramScalar<double>> histogramEnergy, std::vector<HistogramVector<double>> histogramForce);
+  void done(std::vector<HistogramScalar<double>> histogramEnergy, std::vector<HistogramVector<double>> histogramForce);
   void progress(QString stage, int percent);
 
 protected:
@@ -120,8 +119,8 @@ private:
   QStringList mEnergyTitle;
   QStringList mForceTitle;
   QString mTrajectoryFileName;
-  std::vector<Axis> mAxis;
-  std::vector<int> mColumn;
+  std::vector<Axis> mAxes;
+  std::vector<int> mColumns;
   static const int refreshPeriod = 5;
 };
 

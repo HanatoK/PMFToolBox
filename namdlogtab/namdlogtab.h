@@ -64,11 +64,42 @@ public slots:
   void binningProgress(QString status, int x);
   void addAxis();
   void removeAxis();
-  void binningDone(std::vector<HistogramScalar<double> > data, std::vector<HistogramVector<double>> forceData);
+  void binningDone(std::vector<HistogramScalar<double>> energyData,
+                   std::vector<HistogramVector<double>> forceData);
 
 private:
   Ui::NAMDLogTab *ui;
   TableModelBinning *mTableModel;
+  NAMDLogReaderThread mLogReaderThread;
+  NAMDLog mLog;
+  BinNAMDLogThread mBinningThread;
+  QStringList mSelectedEnergyTitle;
+  QStringList mSelectedForceTitle;
+  std::vector<HistogramScalar<double>> mEnergyHistogram;
+  std::vector<HistogramVector<double>> mForceHistogram;
+};
+
+class NAMDLogCLI: public QObject {
+  Q_OBJECT
+public:
+  explicit NAMDLogCLI(QObject *parent = nullptr);
+  void start();
+  bool readJSON(const QString& jsonFilename);
+  ~NAMDLogCLI();
+public slots:
+  void logReadingProgress(int x);
+  void loadNAMDLogDone(NAMDLog log);
+  void binningProgress(QString status, int x);
+  void binningDone(std::vector<HistogramScalar<double>> energyData,
+                   std::vector<HistogramVector<double>> forceData);
+signals:
+  void allDone();
+private:
+  QString mLogFilename;
+  QString mOutputPrefix;
+  QString mTrajectoryFilename;
+  std::vector<Axis> mAxes;
+  std::vector<int> mColumns;
   NAMDLogReaderThread mLogReaderThread;
   NAMDLog mLog;
   BinNAMDLogThread mBinningThread;

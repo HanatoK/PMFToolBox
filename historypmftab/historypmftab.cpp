@@ -228,7 +228,7 @@ HistoryCLI::HistoryCLI(QObject *parent): QObject(parent)
   connect(&mReaderThread, &HistoryReaderThread::error, this, &HistoryCLI::error);
 }
 
-bool HistoryCLI::readHistoryJSON(const QString &jsonFilename)
+bool HistoryCLI::readJSON(const QString &jsonFilename)
 {
   qDebug() << "Reading" << jsonFilename;
   QFile loadFile(jsonFilename);
@@ -236,8 +236,14 @@ bool HistoryCLI::readHistoryJSON(const QString &jsonFilename)
     qWarning() << QString("Could not open json file") + jsonFilename;
     return false;
   }
-  QByteArray jsonData = loadFile.readAll();
-  QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData));
+  const QByteArray jsonData = loadFile.readAll();
+  QJsonParseError jsonParseError;
+  const QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData, &jsonParseError));
+  if (loadDoc.isNull()) {
+    qWarning() << QString("Invalid json file:") + jsonFilename;
+    qWarning() << "Json parse error:" << jsonParseError.errorString();
+    return false;
+  }
   const QString referenceFilename = loadDoc["Reference"].toString();
   mOutputPrefix = loadDoc["Output"].toString();
   const QJsonArray jsonHistoryFiles = loadDoc["History PMF Files"].toArray();

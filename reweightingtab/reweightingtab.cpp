@@ -233,7 +233,7 @@ void ReweightingCLI::reweightingDone()
   emit allDone();
 }
 
-bool ReweightingCLI::readReweightJSON(const QString &jsonFilename)
+bool ReweightingCLI::readJSON(const QString &jsonFilename)
 {
   qDebug() << "Reading" << jsonFilename;
   QFile loadFile(jsonFilename);
@@ -242,7 +242,13 @@ bool ReweightingCLI::readReweightJSON(const QString &jsonFilename)
     return false;
   }
   QByteArray jsonData = loadFile.readAll();
-  QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData));
+  QJsonParseError jsonParseError;
+  const QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData, &jsonParseError));
+  if (loadDoc.isNull()) {
+    qWarning() << QString("Invalid json file:") + jsonFilename;
+    qWarning() << "Json parse error:" << jsonParseError.errorString();
+    return false;
+  }
   const QString inputFilename = loadDoc["Input"].toString();
   mOutputFilename = loadDoc["Output"].toString();
   const QJsonArray jsonFromColumns = loadDoc["From columns"].toArray();

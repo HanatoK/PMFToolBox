@@ -99,9 +99,7 @@ int runConsole(int argc, char *argv[]) {
     return 1;
   }
   const QString jsonFile = jsonFilenameList.first();
-//  HistoryCLI historyCLIObject(&a);
-//  ReweightingCLI reweightingCLIObject(&a);
-  QObject* CLIObject;
+  QObject* CLIObject = nullptr;
   if (parser.isSet(projectOption)) {
     if (readProjectPMFJson(jsonFile)) {
       qDebug() << "Operation succeeded.";
@@ -115,7 +113,7 @@ int runConsole(int argc, char *argv[]) {
   } else if (parser.isSet(reweightOption)) {
     CLIObject = new ReweightingCLI(&a);
     auto reweightingCLIObject = dynamic_cast<ReweightingCLI*>(CLIObject);
-    if (reweightingCLIObject->readReweightJSON(jsonFile)) {
+    if (reweightingCLIObject->readJSON(jsonFile)) {
       QObject::connect(reweightingCLIObject, &ReweightingCLI::allDone,
                        &a, QCoreApplication::quit);
       reweightingCLIObject->start();
@@ -127,10 +125,22 @@ int runConsole(int argc, char *argv[]) {
   } else if (parser.isSet(historyOption)) {
     CLIObject = new HistoryCLI(&a);
     auto historyCLIObject = dynamic_cast<HistoryCLI*>(CLIObject);
-    if (historyCLIObject->readHistoryJSON(jsonFile)) {
+    if (historyCLIObject->readJSON(jsonFile)) {
       QObject::connect(historyCLIObject, &HistoryCLI::allDone,
                        &a, QCoreApplication::quit);
       historyCLIObject->start();
+    } else {
+      qDebug() << "Error occured!";
+      a.exit(1);
+      return 1;
+    }
+  } else if (parser.isSet(namdlogOption)) {
+    CLIObject = new NAMDLogCLI(&a);
+    auto NAMDLogCLIObject = dynamic_cast<NAMDLogCLI*>(CLIObject);
+    if (NAMDLogCLIObject->readJSON(jsonFile)) {
+      QObject::connect(NAMDLogCLIObject, &NAMDLogCLI::allDone,
+                       &a, QCoreApplication::quit);
+      NAMDLogCLIObject->start();
     } else {
       qDebug() << "Error occured!";
       a.exit(1);

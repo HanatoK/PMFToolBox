@@ -61,12 +61,11 @@ private:
   static const int OUTPUT_WIDTH = 14;
 };
 
-
 class HistoryCLI: public QObject {
   Q_OBJECT
 public:
   explicit HistoryCLI(QObject *parent = nullptr);
-  bool readHistoryJSON(const QString& jsonFilename);
+  bool readJSON(const QString& jsonFilename);
   void start();
   void writeRMSDToFile(const std::vector<double>& rmsd, const QString& filename);
   ~HistoryCLI();

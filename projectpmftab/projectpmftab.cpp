@@ -183,7 +183,13 @@ bool readProjectPMFJson(const QString &jsonFilename)
     return false;
   }
   QByteArray jsonData = loadFile.readAll();
-  QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData));
+  QJsonParseError jsonParseError;
+  const QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData, &jsonParseError));
+  if (loadDoc.isNull()) {
+    qWarning() << QString("Invalid json file:") + jsonFilename;
+    qWarning() << "Json parse error:" << jsonParseError.errorString();
+    return false;
+  }
   const QString inputFilename = loadDoc["Input"].toString();
   const QString outputFilename = loadDoc["Output"].toString();
   const QJsonArray jsonToAxis = loadDoc["To axis"].toArray();

@@ -232,8 +232,8 @@ void BinNAMDLogThread::invokeThread(const NAMDLog &log,
   mEnergyTitle = energyTitle;
   mForceTitle = forceTitle;
   mTrajectoryFileName = trajectoryFileName;
-  mAxis = ax;
-  mColumn = column;
+  mAxes = ax;
+  mColumns = column;
   if (!isRunning()) {
     start(LowPriority);
   }
@@ -243,19 +243,19 @@ void BinNAMDLogThread::run() {
   qDebug() << Q_FUNC_INFO;
   mutex.lock();
   std::vector<HistogramScalar<double>> histEnergy(
-      mEnergyTitle.size(), HistogramScalar<double>(mAxis));
+      mEnergyTitle.size(), HistogramScalar<double>(mAxes));
   std::vector<HistogramVector<double>> histForce(
-      mForceTitle.size(), HistogramVector<double>(mAxis, 3));
+      mForceTitle.size(), HistogramVector<double>(mAxes, 3));
   std::vector<doBinningScalar> energyBinning;
   std::vector<doBinningVector> forceBinning;
   for (int i = 0; i < mEnergyTitle.size(); ++i) {
-    energyBinning.push_back(doBinningScalar(histEnergy[i], mColumn));
+    energyBinning.push_back(doBinningScalar(histEnergy[i], mColumns));
   }
   for (int i = 0; i < mForceTitle.size(); ++i) {
-    forceBinning.push_back(doBinningVector(histForce[i], mColumn));
+    forceBinning.push_back(doBinningVector(histForce[i], mColumns));
   }
-  HistogramScalar<double> histCount(mAxis);
-  doBinningScalar countBinning(histCount, mColumn);
+  HistogramScalar<double> histCount(mAxes);
+  doBinningScalar countBinning(histCount, mColumns);
   // parse the trajectory file
   const QRegularExpression split_regex("[(),\\s]+");
   QFile trajFile(mTrajectoryFileName);
@@ -336,7 +336,7 @@ void BinNAMDLogThread::run() {
         }
       }
     }
-    emit doneHistogram(histEnergy, histForce);
+    emit done(histEnergy, histForce);
   }
   mutex.unlock();
 }
