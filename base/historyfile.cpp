@@ -88,6 +88,7 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &
   double readSize = 0;
   int previousProgress = 0;
   const QRegularExpression split_regex("\\s+");
+  const int maxFileIndex = mHistoryFilename.size() - 1;
   while (!ifs.atEnd()) {
     line.clear();
     ifs.readLineInto(&line);
@@ -96,9 +97,9 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &
     if (readingProgress % refreshPeriod == 0 || readingProgress == 100) {
       if (previousProgress != readingProgress) {
         previousProgress = readingProgress;
-        qDebug() << Q_FUNC_INFO << "reading " << readingProgress << "%";
+//        qDebug() << Q_FUNC_INFO << "reading " << readingProgress << "%";
         if (readingProgress == 100) fileIndex += 1;
-        emit progress(fileIndex, readingProgress);
+        emit progress(qMin(maxFileIndex, fileIndex), readingProgress);
       }
     }
     tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);

@@ -252,6 +252,7 @@ bool HistoryCLI::readHistoryJSON(const QString &jsonFilename)
 
 void HistoryCLI::start()
 {
+  qDebug() << "Calling" << Q_FUNC_INFO;
   mReaderThread.readFromFile(mHistoryFilename);
 }
 
@@ -281,7 +282,7 @@ void HistoryCLI::writeRMSDToFile(const std::vector<double> &rmsd, const QString 
 
 HistoryCLI::~HistoryCLI()
 {
-
+  qDebug() << "Calling" << Q_FUNC_INFO;
 }
 
 void HistoryCLI::progress(int fileRead, int percent)

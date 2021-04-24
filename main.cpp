@@ -99,6 +99,9 @@ int runConsole(int argc, char *argv[]) {
     return 1;
   }
   const QString jsonFile = jsonFilenameList.first();
+//  HistoryCLI historyCLIObject(&a);
+//  ReweightingCLI reweightingCLIObject(&a);
+  QObject* CLIObject;
   if (parser.isSet(projectOption)) {
     if (readProjectPMFJson(jsonFile)) {
       qDebug() << "Operation succeeded.";
@@ -110,24 +113,24 @@ int runConsole(int argc, char *argv[]) {
       return 1;
     }
   } else if (parser.isSet(reweightOption)) {
-    ReweightingCLI reweightingCLIObject(&a);
-    if (reweightingCLIObject.readReweightJSON(jsonFile)) {
-      QObject::connect(&reweightingCLIObject, &ReweightingCLI::allDone,
+    CLIObject = new ReweightingCLI(&a);
+    auto reweightingCLIObject = dynamic_cast<ReweightingCLI*>(CLIObject);
+    if (reweightingCLIObject->readReweightJSON(jsonFile)) {
+      QObject::connect(reweightingCLIObject, &ReweightingCLI::allDone,
                        &a, QCoreApplication::quit);
-      reweightingCLIObject.start();
-      return 0;
+      reweightingCLIObject->start();
     } else {
       qDebug() << "Error occured!";
       a.exit(1);
       return 1;
     }
   } else if (parser.isSet(historyOption)) {
-    HistoryCLI historyCLIObject(&a);
-    if (historyCLIObject.readHistoryJSON(jsonFile)) {
-      QObject::connect(&historyCLIObject, &HistoryCLI::allDone,
+    CLIObject = new HistoryCLI(&a);
+    auto historyCLIObject = dynamic_cast<HistoryCLI*>(CLIObject);
+    if (historyCLIObject->readHistoryJSON(jsonFile)) {
+      QObject::connect(historyCLIObject, &HistoryCLI::allDone,
                        &a, QCoreApplication::quit);
-      historyCLIObject.start();
-      return 0;
+      historyCLIObject->start();
     } else {
       qDebug() << "Error occured!";
       a.exit(1);

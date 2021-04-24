@@ -79,7 +79,7 @@ void ReweightingThread::run()
   mutex.lock();
   HistogramProbability result(mTargetAxis);
   doReweighting reweightingObject(mSourceHistogram, result, mFromColumn, mToColumn, mKbT);
-  size_t numFile = 0;
+  int numFile = 0;
   const QRegularExpression split_regex("[(),\\s]+");
   for (auto it = mTrajectoryFileName.begin(); it != mTrajectoryFileName.end(); ++it) {
     qDebug() << "Reading file " << (*it);
@@ -104,8 +104,6 @@ void ReweightingThread::run()
             previousProgress = readingProgress;
             qDebug() << Q_FUNC_INFO << "reading " << readingProgress << "%";
             if (readingProgress == 100)
-              emit progress(numFile+1, readingProgress);
-            else
               emit progress(numFile, readingProgress);
           }
         }

@@ -292,5 +292,5 @@ void ReweightingCLI::start()
 
 ReweightingCLI::~ReweightingCLI()
 {
-
+  qDebug() << "Calling" << Q_FUNC_INFO;
 }
