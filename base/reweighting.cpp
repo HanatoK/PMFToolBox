@@ -38,6 +38,27 @@ void doReweighting::operator()(const std::vector<double> &fields) {
   }
 }
 
+void doReweighting::operator()(const QVector<QStringRef> &fields, bool &read_ok) {
+  for (size_t i = 0; i < posOrigin.size(); ++i) {
+    posOrigin[i] = fields[originPositionIndex[i]].toDouble(&read_ok);
+    if (read_ok == false) return;
+  }
+  for (size_t j = 0; j < posTarget.size(); ++j) {
+    posTarget[j] = fields[targetPositionIndex[j]].toDouble(&read_ok);
+    if (read_ok == false) return;
+  }
+  bool in_origin_grid = true;
+  bool in_target_grid = true;
+  const size_t addr_origin =
+      originHistogram.address(posOrigin, &in_origin_grid);
+  const size_t addr_target =
+      targetHistogram.address(posTarget, &in_target_grid);
+  if (in_origin_grid && in_target_grid) {
+    const double weight = -1.0 * originHistogram[addr_origin] / mKbT;
+    targetHistogram[addr_target] += 1.0 * std::exp(weight);
+  }
+}
+
 ReweightingThread::ReweightingThread(QObject *parent) : QThread(parent) {}
 
 void ReweightingThread::reweighting(const QStringList &trajectoryFileName, const QString &outputFileName,
@@ -89,12 +110,10 @@ void ReweightingThread::run()
       QTextStream ifs(&trajectoryFile);
       QString line;
       QVector<QStringRef> tmpFields;
-      std::vector<double> fields;
       double readSize = 0;
       int previousProgress = 0;
       bool read_ok = true;
       while (!ifs.atEnd()) {
-        fields.clear();
         line.clear();
         ifs.readLineInto(&line);
         readSize += line.size() + 1;
@@ -103,8 +122,7 @@ void ReweightingThread::run()
           if (previousProgress != readingProgress) {
             previousProgress = readingProgress;
             qDebug() << Q_FUNC_INFO << "reading " << readingProgress << "%";
-            if (readingProgress == 100)
-              emit progress(numFile, readingProgress);
+            emit progress(numFile, readingProgress);
           }
         }
         tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
@@ -112,14 +130,11 @@ void ReweightingThread::run()
         if (tmpFields.size() <= 0) continue;
         // skip comment lines start with #
         if (tmpFields[0].startsWith("#")) continue;
-        for (const auto& i : qAsConst(tmpFields)) {
-          fields.push_back(i.toDouble(&read_ok));
-          if (read_ok == false) {
-            emit error("Failed to convert " + i + " to number!");
-            break;
-          }
+        reweightingObject(tmpFields, read_ok);
+        if (read_ok == false) {
+          emit error("Failed to convert to number!");
+          break;
         }
-        reweightingObject(fields);
       }
       ++numFile;
     } else {

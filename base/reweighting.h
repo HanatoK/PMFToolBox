@@ -35,6 +35,7 @@ struct doReweighting {
         mKbT(kbT), posOrigin(originHistogram.dimension(), 0),
         posTarget(targetHistogram.dimension(), 0) {}
   void operator()(const std::vector<double> &fields);
+  void operator()(const QVector<QStringRef> &fields, bool& read_ok);
   const HistogramScalar<double> &originHistogram;
   HistogramProbability &targetHistogram;
   std::vector<int> originPositionIndex;
