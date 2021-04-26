@@ -27,8 +27,8 @@
 #include <QTextStream>
 #include <QThread>
 #include <QVector3D>
-#include <vector>
 #include <cstring>
+#include <vector>
 
 using ForceType = std::vector<double>;
 
@@ -46,16 +46,24 @@ public:
   std::vector<double> getStep() const;
   std::vector<double> getVdW() const;
   std::vector<double> getElectrostatic() const;
-  std::vector<double> getEnergyData(const QString &title, bool *ok = nullptr) const;
-  QMap<QString, std::vector<double>>::const_iterator getEnergyDataIteratorBegin() const;
-  QMap<QString, std::vector<double>>::const_iterator getEnergyDataIteratorEnd() const;
-  QMap<QString, std::vector<double>>::const_iterator getEnergyDataIterator(const QString& title) const;
+  std::vector<double> getEnergyData(const QString &title,
+                                    bool *ok = nullptr) const;
+  QMap<QString, std::vector<double>>::const_iterator
+  getEnergyDataIteratorBegin() const;
+  QMap<QString, std::vector<double>>::const_iterator
+  getEnergyDataIteratorEnd() const;
+  QMap<QString, std::vector<double>>::const_iterator
+  getEnergyDataIterator(const QString &title) const;
   std::vector<ForceType> getVdWForce() const;
   std::vector<ForceType> getElectrostaticForce() const;
-  std::vector<ForceType> getForceData(const QString &title, bool *ok = nullptr) const;
-  QMap<QString, std::vector<ForceType>>::const_iterator getForceDataIteratorBegin() const;
-  QMap<QString, std::vector<ForceType>>::const_iterator getForceDataIteratorEnd() const;
-  QMap<QString, std::vector<ForceType>>::const_iterator getForceDataIterator(const QString& title) const;
+  std::vector<ForceType> getForceData(const QString &title,
+                                      bool *ok = nullptr) const;
+  QMap<QString, std::vector<ForceType>>::const_iterator
+  getForceDataIteratorBegin() const;
+  QMap<QString, std::vector<ForceType>>::const_iterator
+  getForceDataIteratorEnd() const;
+  QMap<QString, std::vector<ForceType>>::const_iterator
+  getForceDataIterator(const QString &title) const;
   QStringList getEnergyTitle() const;
   QStringList getForceTitle() const;
   size_t size() const;
@@ -89,8 +97,8 @@ private:
 struct doBinningScalar {
 public:
   doBinningScalar(HistogramScalar<double> &histogram,
-            const std::vector<int> &column);
-  void operator()(const std::vector<double> &fields, double energy);
+                  const std::vector<int> &column);
+  void operator()(const QVector<QStringRef> &fields, double energy, bool& read_ok);
   HistogramScalar<double> &mHistogram;
   const std::vector<int> mColumn;
   std::vector<double> mPosition;
@@ -101,13 +109,16 @@ class BinNAMDLogThread : public QThread {
 public:
   BinNAMDLogThread(QObject *parent = nullptr);
   ~BinNAMDLogThread();
-  void invokeThread(const NAMDLog &log, const QStringList &energyTitle, const QStringList &forceTitle,
-                    const QString &trajectoryFileName, const std::vector<Axis> &ax,
+  void invokeThread(const NAMDLog &log, const QStringList &energyTitle,
+                    const QStringList &forceTitle,
+                    const QString &trajectoryFileName,
+                    const std::vector<Axis> &ax,
                     const std::vector<int> &column);
 
 signals:
   void error(QString err);
-  void done(std::vector<HistogramScalar<double>> histogramEnergy, std::vector<HistogramVector<double>> histogramForce);
+  void done(std::vector<HistogramScalar<double>> histogramEnergy,
+            std::vector<HistogramVector<double>> histogramForce);
   void progress(QString stage, int percent);
 
 protected:
@@ -127,8 +138,9 @@ private:
 struct doBinningVector {
 public:
   doBinningVector(HistogramVector<double> &histogram,
-            const std::vector<int> &column);
-  void operator()(const std::vector<double> &fields, const std::vector<double> data);
+                  const std::vector<int> &column);
+  void operator()(const QVector<QStringRef> &fields,
+                  const std::vector<double> &data, bool &read_ok);
   HistogramVector<double> &mHistogram;
   const std::vector<int> mColumn;
   std::vector<double> mPosition;

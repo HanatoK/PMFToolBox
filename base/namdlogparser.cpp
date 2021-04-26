@@ -196,11 +196,12 @@ doBinningScalar::doBinningScalar(HistogramScalar<double> &histogram,
     : mHistogram(histogram), mColumn(column),
       mPosition(mHistogram.dimension(), 0.0) {}
 
-void doBinningScalar::operator()(const std::vector<double> &fields,
-                                 double energy) {
+void doBinningScalar::operator()(const QVector<QStringRef> &fields,
+                                 double energy, bool &read_ok) {
   // get the position of current point from trajectory
   for (size_t i = 0; i < mPosition.size(); ++i) {
-    mPosition[i] = fields[mColumn[i]];
+    mPosition[i] = fields[mColumn[i]].toDouble(&read_ok);
+    if (!read_ok) return;
   }
   bool inBoundary = false;
   const size_t addr = mHistogram.address(mPosition, &inBoundary);
@@ -264,13 +265,11 @@ void BinNAMDLogThread::run() {
     QVector<QStringRef> tmpFields;
     size_t lineNumber = 0;
     QString line;
-    std::vector<double> fields;
     double readSize = 0;
     int previousProgress = 0;
     bool read_ok = true;
     const size_t fileSize = trajFile.size();
     while (!ifs_traj.atEnd()) {
-      fields.clear();
       ifs_traj.readLineInto(&line);
       readSize += line.size() + 1;
       const int readingProgress = std::nearbyint(readSize / fileSize * 100);
@@ -288,19 +287,15 @@ void BinNAMDLogThread::run() {
       // skip comment lines start with #
       if (tmpFields[0].startsWith("#"))
         continue;
-      for (const auto &i : qAsConst(tmpFields)) {
-        fields.push_back(i.toDouble(&read_ok));
-        if (read_ok == false) {
-          emit error("Failed to convert " + i + " to number!");
-          break;
-        }
-      }
       for (int i = 0; i < mEnergyTitle.size(); ++i) {
         if (lineNumber < mLog.size()) {
           const auto map_iterator = mLog.getEnergyDataIterator(mEnergyTitle[i]);
           if (map_iterator != mLog.getEnergyDataIteratorEnd()) {
             const auto item = map_iterator.value()[lineNumber];
-            energyBinning[i](fields, item);
+            energyBinning[i](tmpFields, item, read_ok);
+            if (!read_ok) {
+              emit error("Failed to read file. Please check the format of the log.");
+            }
           }
         } else {
           qDebug() << "warning:"
@@ -312,14 +307,14 @@ void BinNAMDLogThread::run() {
           const auto map_iterator = mLog.getForceDataIterator(mForceTitle[i]);
           if (map_iterator != mLog.getForceDataIteratorEnd()) {
             const auto item = map_iterator.value()[lineNumber];
-            forceBinning[i](fields, item);
+            forceBinning[i](tmpFields, item, read_ok);
           }
         } else {
           qDebug() << "warning:"
                    << "trajectory may contain more lines than the log file";
         }
       }
-      countBinning(fields, 1.0);
+      countBinning(tmpFields, 1.0, read_ok);
       ++lineNumber;
     }
     for (int i = 0; i < mEnergyTitle.size(); ++i) {
@@ -379,11 +374,11 @@ doBinningVector::doBinningVector(HistogramVector<double> &histogram,
     : mHistogram(histogram), mColumn(column),
       mPosition(mHistogram.dimension(), 0.0) {}
 
-void doBinningVector::operator()(const std::vector<double> &fields,
-                                 const std::vector<double> data) {
+void doBinningVector::operator()(const QVector<QStringRef> &fields,
+                                 const std::vector<double> &data, bool &read_ok) {
   // get the position of current point from trajectory
   for (size_t i = 0; i < mPosition.size(); ++i) {
-    mPosition[i] = fields[mColumn[i]];
+    mPosition[i] = fields[mColumn[i]].toDouble(&read_ok);
   }
   bool inBoundary = false;
   const size_t addr = mHistogram.address(mPosition, &inBoundary);

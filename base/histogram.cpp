@@ -59,7 +59,6 @@ bool HistogramBase::readFromStream(QTextStream &ifs) {
   mAccu.resize(mNdim);
   // now we know how many axes should be read
   for (size_t i = 0; i < mNdim; ++i) {
-    tmp.clear();
     line.clear();
     ifs.readLineInto(&line);
     tmp = line.splitRef(split_regex, Qt::SkipEmptyParts);
