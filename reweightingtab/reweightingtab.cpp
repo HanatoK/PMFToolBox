@@ -188,7 +188,7 @@ void ReweightingTab::reweighting()
 void ReweightingTab::reweightingProgress(int fileRead, int percent)
 {
   const int numFiles = mListModel->trajectoryFileNameList().size();
-  const QString newText = "Running " + QString(" (%1/%2) %3").arg(fileRead).arg(numFiles).arg(percent) + "%";
+  const QString newText = "Running " + QString(" (%1/%2) %3").arg(fileRead+1).arg(numFiles).arg(percent) + "%";
   ui->pushButtonRun->setText(newText);
 }
 
