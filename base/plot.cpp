@@ -20,31 +20,25 @@
 #include "plot.h"
 #include "base/turbocolormap.h"
 
-#include <qwt_scale_widget.h>
 #include <qwt_matrix_raster_data.h>
-#include <qwt_plot_spectrogram.h>
-#include <qwt_plot_layout.h>
 #include <qwt_plot_curve.h>
+#include <qwt_plot_layout.h>
+#include <qwt_plot_spectrogram.h>
+#include <qwt_scale_widget.h>
 
-PMFPlot::PMFPlot(QWidget *parent): QwtPlot(parent)
-{
+PMFPlot::PMFPlot(QWidget *parent) : QwtPlot(parent) { initialize(); }
+
+PMFPlot::PMFPlot(const QwtText &title, QWidget *parent)
+    : QwtPlot(title, parent) {
   initialize();
 }
 
-PMFPlot::PMFPlot(const QwtText &title, QWidget *parent): QwtPlot(title, parent)
-{
-  initialize();
-}
+PMFPlot::~PMFPlot() {}
 
-PMFPlot::~PMFPlot()
-{
-
-}
-
-bool PMFPlot::plotPMF2D(const HistogramScalar<double> &histogram)
-{
+bool PMFPlot::plotPMF2D(const HistogramScalar<double> &histogram) {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  if (histogram.dimension() != 2) return false;
+  if (histogram.dimension() != 2)
+    return false;
   detachItems();
   // setup axis
   enableAxis(QwtPlot::Axis::yLeft, true);
@@ -60,7 +54,8 @@ bool PMFPlot::plotPMF2D(const HistogramScalar<double> &histogram)
   const size_t numYbins = histogram.axes()[1].bin();
   qDebug() << "X bins = " << numXbins << " ; Y bins = " << numYbins;
   // from Qt 5.14, range constructor
-  const QVector<double>& zData{histogram.data().begin(), histogram.data().end()};
+  const QVector<double> &zData{histogram.data().begin(),
+                               histogram.data().end()};
   // setup the scales of x,y axes
   setAxisScale(QwtPlot::xBottom, histogram.axes()[0].lowerBound(),
                histogram.axes()[0].upperBound());
@@ -70,12 +65,10 @@ bool PMFPlot::plotPMF2D(const HistogramScalar<double> &histogram)
   const double zMin = *std::min_element(zData.begin(), zData.end());
   const double zMax = *std::max_element(zData.begin(), zData.end());
   matrix->setValueMatrix(zData, numXbins);
-  matrix->setInterval(Qt::XAxis,
-                      QwtInterval(histogram.axes()[0].lowerBound(),
-                                  histogram.axes()[0].upperBound()));
-  matrix->setInterval(Qt::YAxis,
-                      QwtInterval(histogram.axes()[1].lowerBound(),
-                                  histogram.axes()[1].upperBound()));
+  matrix->setInterval(Qt::XAxis, QwtInterval(histogram.axes()[0].lowerBound(),
+                                             histogram.axes()[0].upperBound()));
+  matrix->setInterval(Qt::YAxis, QwtInterval(histogram.axes()[1].lowerBound(),
+                                             histogram.axes()[1].upperBound()));
   matrix->setInterval(Qt::ZAxis, QwtInterval(zMin, zMax));
   // create contour plot
   QwtPlotSpectrogram *image2D = new QwtPlotSpectrogram("image");
@@ -94,18 +87,17 @@ bool PMFPlot::plotPMF2D(const HistogramScalar<double> &histogram)
   rightAxis->setColorMap(zInterval, new TurboColorMap());
   qDebug() << "zInterval.minValue() = " << zInterval.minValue()
            << " ; zInterval.maxValue() = " << zInterval.maxValue();
-  setAxisScale(QwtPlot::yRight, zInterval.minValue(),
-                     zInterval.maxValue());
+  setAxisScale(QwtPlot::yRight, zInterval.minValue(), zInterval.maxValue());
   enableAxis(QwtPlot::yRight);
   plotLayout()->setAlignCanvasToScales(true);
   replot();
   return true;
 }
 
-bool PMFPlot::plotPMF1D(const HistogramScalar<double> &histogram)
-{
+bool PMFPlot::plotPMF1D(const HistogramScalar<double> &histogram) {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  if (histogram.dimension() != 1) return false;
+  if (histogram.dimension() != 1)
+    return false;
   detachItems();
   enableAxis(QwtPlot::Axis::yLeft, true);
   enableAxis(QwtPlot::Axis::xBottom, true);
@@ -116,7 +108,7 @@ bool PMFPlot::plotPMF1D(const HistogramScalar<double> &histogram)
   setAxisTitle(QwtPlot::Axis::yLeft, free_energy_title);
   setAxisTitle(QwtPlot::Axis::xBottom, "X");
   setAxisScale(QwtPlot::xBottom, histogram.axes()[0].lowerBound(),
-                     histogram.axes()[0].upperBound());
+               histogram.axes()[0].upperBound());
   const double yMin =
       *std::min_element(histogram.data().begin(), histogram.data().end());
   const double yMax =
@@ -141,16 +133,16 @@ bool PMFPlot::plotPMF1D(const HistogramScalar<double> &histogram)
   return true;
 }
 
-void PMFPlot::plotPath2D(const std::vector<std::vector<double> > &pathPositions, bool clearFigure)
-{
+void PMFPlot::plotPath2D(const std::vector<std::vector<double>> &pathPositions,
+                         bool clearFigure) {
   if (clearFigure) {
     detachItems();
   }
-  QwtPlotCurve* curve = new QwtPlotCurve("curve");
+  QwtPlotCurve *curve = new QwtPlotCurve("curve");
   curve->setPen(Qt::black, 2);
   curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
   QPolygonF points;
-  for (const auto& point: pathPositions) {
+  for (const auto &point : pathPositions) {
     points.append(QPointF(point[0], point[1]));
   }
   curve->setSamples(points);
@@ -159,8 +151,8 @@ void PMFPlot::plotPath2D(const std::vector<std::vector<double> > &pathPositions,
   replot();
 }
 
-void PMFPlot::plotEnergyAlongPath(const std::vector<double> &energies, bool clearFigure)
-{
+void PMFPlot::plotEnergyAlongPath(const std::vector<double> &energies,
+                                  bool clearFigure) {
   const double xMin = 0.0;
   const double xMax = 1.0;
   const double yMin = *std::min_element(energies.begin(), energies.end());
@@ -192,8 +184,7 @@ void PMFPlot::plotEnergyAlongPath(const std::vector<double> &energies, bool clea
   replot();
 }
 
-void PMFPlot::initialize()
-{
+void PMFPlot::initialize() {
   setCanvasBackground(Qt::white);
   enableAxis(QwtPlot::Axis::yLeft, false);
   enableAxis(QwtPlot::Axis::xBottom, false);
@@ -208,19 +199,14 @@ void PMFPlot::initialize()
   mColorbarFont.setPointSize(14);
 }
 
-RMSDPlot::RMSDPlot(QWidget *parent): QwtPlot(parent)
-{
-  initialize();
-}
+RMSDPlot::RMSDPlot(QWidget *parent) : QwtPlot(parent) { initialize(); }
 
-RMSDPlot::RMSDPlot(const QwtText &title, QWidget *parent): QwtPlot(title, parent)
-{
+RMSDPlot::RMSDPlot(const QwtText &title, QWidget *parent)
+    : QwtPlot(title, parent) {
   qDebug() << "Calling" << Q_FUNC_INFO;
-
 }
 
-void RMSDPlot::PlotRMSD(const std::vector<double> &rmsd)
-{
+void RMSDPlot::PlotRMSD(const std::vector<double> &rmsd) {
   qDebug() << "Calling" << Q_FUNC_INFO;
   detachItems();
   enableAxis(QwtPlot::Axis::yLeft, true);
@@ -230,10 +216,8 @@ void RMSDPlot::PlotRMSD(const std::vector<double> &rmsd)
   const int lowerBound = 0;
   const int upperBound = rmsd.size() - 1;
   setAxisScale(QwtPlot::xBottom, lowerBound, upperBound);
-  const double yMin =
-      *std::min_element(rmsd.begin(), rmsd.end());
-  const double yMax =
-      *std::max_element(rmsd.begin(), rmsd.end());
+  const double yMin = *std::min_element(rmsd.begin(), rmsd.end());
+  const double yMax = *std::max_element(rmsd.begin(), rmsd.end());
   setAxisScale(QwtPlot::yLeft, yMin, yMax);
   axisWidget(QwtPlot::Axis::yLeft)->setFont(mPlotFont);
   axisWidget(QwtPlot::Axis::xBottom)->setFont(mPlotFont);
@@ -249,13 +233,9 @@ void RMSDPlot::PlotRMSD(const std::vector<double> &rmsd)
   replot();
 }
 
-RMSDPlot::~RMSDPlot()
-{
+RMSDPlot::~RMSDPlot() {}
 
-}
-
-void RMSDPlot::initialize()
-{
+void RMSDPlot::initialize() {
   setCanvasBackground(Qt::white);
   enableAxis(QwtPlot::Axis::yLeft, false);
   enableAxis(QwtPlot::Axis::xBottom, false);

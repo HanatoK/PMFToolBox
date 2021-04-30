@@ -20,12 +20,10 @@
 #include "tablemodelbinning.h"
 
 TableModelBinning::TableModelBinning(QObject *parent)
-  : QAbstractTableModel(parent)
-{
-}
+    : QAbstractTableModel(parent) {}
 
-QVariant TableModelBinning::headerData(int section, Qt::Orientation orientation, int role) const
-{
+QVariant TableModelBinning::headerData(int section, Qt::Orientation orientation,
+                                       int role) const {
   if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
     switch (section) {
     case 0:
@@ -48,16 +46,14 @@ QVariant TableModelBinning::headerData(int section, Qt::Orientation orientation,
   return QVariant();
 }
 
-int TableModelBinning::rowCount(const QModelIndex &parent) const
-{
+int TableModelBinning::rowCount(const QModelIndex &parent) const {
   if (parent.isValid())
     return 0;
 
   return mAxisList.size();
 }
 
-int TableModelBinning::columnCount(const QModelIndex &parent) const
-{
+int TableModelBinning::columnCount(const QModelIndex &parent) const {
   Q_UNUSED(parent);
   // column 0: column number in trajectory
   // column 1: lower bound
@@ -66,8 +62,7 @@ int TableModelBinning::columnCount(const QModelIndex &parent) const
   return 4;
 }
 
-QVariant TableModelBinning::data(const QModelIndex &index, int role) const
-{
+QVariant TableModelBinning::data(const QModelIndex &index, int role) const {
   if (!index.isValid())
     return QVariant();
 
@@ -95,8 +90,7 @@ QVariant TableModelBinning::data(const QModelIndex &index, int role) const
 }
 
 bool TableModelBinning::insertRows(int position, int rows,
-                                   const QModelIndex &index)
-{
+                                   const QModelIndex &index) {
   qDebug() << Q_FUNC_INFO;
   qDebug() << "insert " << rows << " row at position " << position;
   position = qBound(0, position, position);
@@ -109,8 +103,7 @@ bool TableModelBinning::insertRows(int position, int rows,
 }
 
 bool TableModelBinning::removeRows(int position, int rows,
-                                   const QModelIndex &index)
-{
+                                   const QModelIndex &index) {
   qDebug() << Q_FUNC_INFO;
   qDebug() << "insert " << rows << " row at position " << position;
   beginRemoveRows(index, position, position + rows - 1);
@@ -122,8 +115,8 @@ bool TableModelBinning::removeRows(int position, int rows,
   return true;
 }
 
-bool TableModelBinning::setData(const QModelIndex &index, const QVariant &value, int role)
-{
+bool TableModelBinning::setData(const QModelIndex &index, const QVariant &value,
+                                int role) {
   qDebug() << "Calling" << Q_FUNC_INFO;
   if (index.isValid() && role == Qt::EditRole) {
     const int row = index.row();
@@ -131,7 +124,8 @@ bool TableModelBinning::setData(const QModelIndex &index, const QVariant &value,
     switch (index.column()) {
     // FIXME: actually unable to setup the lower, upper and width
     case 0: {
-      qDebug() << "Change the column of axis " << row << " from " << mAxisList[row].mColumn << " to " << value;
+      qDebug() << "Change the column of axis " << row << " from "
+               << mAxisList[row].mColumn << " to " << value;
       mAxisList[row].mColumn = value.toInt();
       break;
     }
@@ -161,33 +155,29 @@ bool TableModelBinning::setData(const QModelIndex &index, const QVariant &value,
   return false;
 }
 
-Qt::ItemFlags TableModelBinning::flags(const QModelIndex &index) const
-{
+Qt::ItemFlags TableModelBinning::flags(const QModelIndex &index) const {
   if (!index.isValid())
     return Qt::ItemIsEnabled;
   return Qt::ItemIsEditable | QAbstractTableModel::flags(index);
 }
 
-std::vector<int> TableModelBinning::fromColumns() const
-{
+std::vector<int> TableModelBinning::fromColumns() const {
   std::vector<int> result;
-  for (const auto& i : mAxisList) {
+  for (const auto &i : mAxisList) {
     result.push_back(i.mColumn);
   }
   return result;
 }
 
-std::vector<Axis> TableModelBinning::targetAxis() const
-{
+std::vector<Axis> TableModelBinning::targetAxis() const {
   std::vector<Axis> result;
-  for (const auto& i : mAxisList) {
+  for (const auto &i : mAxisList) {
     result.push_back(i.mAxis);
   }
   return result;
 }
 
-void TableModelBinning::clearAll()
-{
+void TableModelBinning::clearAll() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   beginResetModel();
   mAxisList.clear();

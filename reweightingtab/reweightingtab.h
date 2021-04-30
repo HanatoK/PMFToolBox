@@ -20,9 +20,9 @@
 #ifndef REWEIGHTINGTAB_H
 #define REWEIGHTINGTAB_H
 
-#include "reweightingtab/tablemodelreweightingaxis.h"
-#include "reweightingtab/listmodelfilelist.h"
 #include "base/reweighting.h"
+#include "reweightingtab/listmodelfilelist.h"
+#include "reweightingtab/tablemodelreweightingaxis.h"
 
 #include <QWidget>
 
@@ -30,8 +30,7 @@ namespace Ui {
 class ReweightingTab;
 }
 
-class ReweightingTab : public QWidget
-{
+class ReweightingTab : public QWidget {
   Q_OBJECT
 
 public:
@@ -60,12 +59,11 @@ private:
   HistogramPMF mPMF;
 };
 
-class ReweightingCLI: public QObject
-{
+class ReweightingCLI : public QObject {
   Q_OBJECT
 public:
   explicit ReweightingCLI(QObject *parent = nullptr);
-  bool readJSON(const QString& jsonFilename);
+  bool readJSON(const QString &jsonFilename);
   void start();
   ~ReweightingCLI();
 public slots:
@@ -74,6 +72,7 @@ public slots:
   void reweightingDone();
 signals:
   void allDone();
+
 private:
   QStringList mFileList;
   QString mOutputFilename;
@@ -86,6 +85,6 @@ private:
   ReweightingThread mWorkerThread;
 };
 
-//bool readReweightJSON(const QString& jsonFilename);
+// bool readReweightJSON(const QString& jsonFilename);
 
 #endif // REWEIGHTINGTAB_H

@@ -30,13 +30,13 @@ namespace Ui {
 class HistoryPMFTab;
 }
 
-class HistoryPMFTab : public QWidget
-{
+class HistoryPMFTab : public QWidget {
   Q_OBJECT
 
 public:
   explicit HistoryPMFTab(QWidget *parent = nullptr);
-  void writeRMSDToFile(const std::vector<double> &rmsd, const QString& filename);
+  void writeRMSDToFile(const std::vector<double> &rmsd,
+                       const QString &filename);
   ~HistoryPMFTab();
 
 public slots:
@@ -46,10 +46,10 @@ public slots:
   void removeHistoryFile();
   void computeRMSD();
   void computeRMSDProgress(int fileRead, int percent);
-  void computeRMSDDone(const HistogramPMFHistory& hist);
+  void computeRMSDDone(const HistogramPMFHistory &hist);
   void split();
   void splitProgress(int fileRead, int percent);
-  void splitDone(const HistogramPMFHistory& hist);
+  void splitDone(const HistogramPMFHistory &hist);
 
 private:
   Ui::HistoryPMFTab *ui;
@@ -57,24 +57,24 @@ private:
   HistogramPMF mReferencePMF;
   HistoryReaderThread mReaderThread;
   HistogramPMFHistory mPMFHistory;
-  static const int OUTPUT_PRECISION = 7;
-  static const int OUTPUT_WIDTH = 14;
 };
 
-class HistoryCLI: public QObject {
+class HistoryCLI : public QObject {
   Q_OBJECT
 public:
   explicit HistoryCLI(QObject *parent = nullptr);
-  bool readJSON(const QString& jsonFilename);
+  bool readJSON(const QString &jsonFilename);
   void start();
-  void writeRMSDToFile(const std::vector<double>& rmsd, const QString& filename);
+  void writeRMSDToFile(const std::vector<double> &rmsd,
+                       const QString &filename);
   ~HistoryCLI();
 public slots:
   void progress(int fileRead, int percent);
-  void done(const HistogramPMFHistory& hist);
+  void done(const HistogramPMFHistory &hist);
   void error(QString msg);
 signals:
   void allDone();
+
 private:
   bool mDoSplitting;
   bool mDoComputingRMSD;
@@ -83,8 +83,6 @@ private:
   HistogramPMFHistory mPMFHistory;
   QStringList mHistoryFilename;
   QString mOutputPrefix;
-  static const int OUTPUT_PRECISION = 7;
-  static const int OUTPUT_WIDTH = 14;
 };
 
 #endif // HISTORYPMFTAB_H

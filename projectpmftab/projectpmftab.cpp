@@ -18,33 +18,31 @@
 */
 
 #include "projectpmftab.h"
-#include "ui_projectpmftab.h"
 #include "base/helper.h"
+#include "ui_projectpmftab.h"
 
 #include <QFileDialog>
-#include <QMessageBox>
-#include <QJsonDocument>
 #include <QJsonArray>
+#include <QJsonDocument>
+#include <QMessageBox>
 
-void ProjectPMFTab::loadPMF()
-{
+void ProjectPMFTab::loadPMF() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   const QString inputFileName = QFileDialog::getOpenFileName(
       this, tr("Open input PMF file"), "",
       tr("Potential of Mean force (*.pmf);;All Files (*)"));
-  if (inputFileName.isEmpty()) return;
+  if (inputFileName.isEmpty())
+    return;
   if (mOriginPMF.readFromFile(inputFileName)) {
     ui->lineEditInputPMF->setText(inputFileName);
     qDebug() << Q_FUNC_INFO << "Reading " << inputFileName << " successfully.";
   } else {
     QMessageBox errorBox;
-    errorBox.critical(this, "Error",
-                      "Error on opening file " + inputFileName);
+    errorBox.critical(this, "Error", "Error on opening file " + inputFileName);
   }
 }
 
-void ProjectPMFTab::saveFile()
-{
+void ProjectPMFTab::saveFile() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   const QString outputFileName = QFileDialog::getSaveFileName(
       this, tr("Save reweighted PMF file to"), "",
@@ -52,12 +50,13 @@ void ProjectPMFTab::saveFile()
   ui->lineEditOutput->setText(outputFileName);
 }
 
-void ProjectPMFTab::projectPMF()
-{
+void ProjectPMFTab::projectPMF() {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  const std::vector<size_t> toAxis = splitStringToNumbers<size_t>(ui->lineEditProjectTo->text());
+  const std::vector<size_t> toAxis =
+      splitStringToNumbers<size_t>(ui->lineEditProjectTo->text());
   const QString saveFile = ui->lineEditOutput->text();
-  const double kbt = kbT(ui->lineEditTemperature->text().toDouble(), ui->comboBoxUnit->currentText());
+  const double kbt = kbT(ui->lineEditTemperature->text().toDouble(),
+                         ui->comboBoxUnit->currentText());
   // check origin PMF
   if (mOriginPMF.dimension() == 0 || mOriginPMF.histogramSize() == 0) {
     const QString errorMsg("PMF file is not loaded or invalid!");
@@ -77,7 +76,9 @@ void ProjectPMFTab::projectPMF()
   // check axis input
   for (size_t i = 0; i < toAxis.size(); ++i) {
     if (toAxis[i] >= mOriginPMF.dimension()) {
-      const QString errorMsg = QString("Axis %1 is larger than the dimensionality of the PMF.").arg(toAxis[i]);
+      const QString errorMsg =
+          QString("Axis %1 is larger than the dimensionality of the PMF.")
+              .arg(toAxis[i]);
       qDebug() << Q_FUNC_INFO << ": " << errorMsg;
       QMessageBox errorBox;
       errorBox.critical(this, "Error", errorMsg);
@@ -94,8 +95,7 @@ void ProjectPMFTab::projectPMF()
   mProjectedPMF.writeToFile(saveFile);
 }
 
-void ProjectPMFTab::plotOriginPMF()
-{
+void ProjectPMFTab::plotOriginPMF() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   switch (mOriginPMF.dimension()) {
   case 0: {
@@ -116,7 +116,8 @@ void ProjectPMFTab::plotOriginPMF()
     break;
   }
   default: {
-    const QString errorMsg = QString("%1D plotting is not implemented.").arg(mOriginPMF.dimension());
+    const QString errorMsg =
+        QString("%1D plotting is not implemented.").arg(mOriginPMF.dimension());
     qDebug() << Q_FUNC_INFO << ": " << errorMsg;
     QMessageBox errorBox;
     errorBox.critical(this, "Error", errorMsg);
@@ -125,8 +126,7 @@ void ProjectPMFTab::plotOriginPMF()
   }
 }
 
-void ProjectPMFTab::plotProjectedPMF()
-{
+void ProjectPMFTab::plotProjectedPMF() {
   // TODO: debug
   qDebug() << "Calling" << Q_FUNC_INFO;
   switch (mProjectedPMF.dimension()) {
@@ -148,7 +148,8 @@ void ProjectPMFTab::plotProjectedPMF()
     break;
   }
   default: {
-    const QString errorMsg = QString("%1D plotting is not implemented.").arg(mProjectedPMF.dimension());
+    const QString errorMsg = QString("%1D plotting is not implemented.")
+                                 .arg(mProjectedPMF.dimension());
     qDebug() << Q_FUNC_INFO << ": " << errorMsg;
     QMessageBox errorBox;
     errorBox.critical(this, "Error", errorMsg);
@@ -157,25 +158,24 @@ void ProjectPMFTab::plotProjectedPMF()
   }
 }
 
-ProjectPMFTab::ProjectPMFTab(QWidget *parent) :
-  QWidget(parent),
-  ui(new Ui::ProjectPMFTab)
-{
+ProjectPMFTab::ProjectPMFTab(QWidget *parent)
+    : QWidget(parent), ui(new Ui::ProjectPMFTab) {
   ui->setupUi(this);
-  connect(ui->pushButtonOpen, &QPushButton::clicked, this, &ProjectPMFTab::loadPMF);
-  connect(ui->pushButtonSaveTo, &QPushButton::clicked, this, &ProjectPMFTab::saveFile);
-  connect(ui->pushButtonProjectAndSave, &QPushButton::clicked, this, &ProjectPMFTab::projectPMF);
-  connect(ui->pushButtonPlotOriginPMF, &QPushButton::clicked, this, &ProjectPMFTab::plotOriginPMF);
-  connect(ui->pushButtonPlotProjectedPMF, &QPushButton::clicked, this, &ProjectPMFTab::plotProjectedPMF);
+  connect(ui->pushButtonOpen, &QPushButton::clicked, this,
+          &ProjectPMFTab::loadPMF);
+  connect(ui->pushButtonSaveTo, &QPushButton::clicked, this,
+          &ProjectPMFTab::saveFile);
+  connect(ui->pushButtonProjectAndSave, &QPushButton::clicked, this,
+          &ProjectPMFTab::projectPMF);
+  connect(ui->pushButtonPlotOriginPMF, &QPushButton::clicked, this,
+          &ProjectPMFTab::plotOriginPMF);
+  connect(ui->pushButtonPlotProjectedPMF, &QPushButton::clicked, this,
+          &ProjectPMFTab::plotProjectedPMF);
 }
 
-ProjectPMFTab::~ProjectPMFTab()
-{
-  delete ui;
-}
+ProjectPMFTab::~ProjectPMFTab() { delete ui; }
 
-bool readProjectPMFJson(const QString &jsonFilename)
-{
+bool readProjectPMFJson(const QString &jsonFilename) {
   qDebug() << "Reading" << jsonFilename;
   QFile loadFile(jsonFilename);
   if (!loadFile.open(QIODevice::ReadOnly)) {
@@ -184,7 +184,8 @@ bool readProjectPMFJson(const QString &jsonFilename)
   }
   QByteArray jsonData = loadFile.readAll();
   QJsonParseError jsonParseError;
-  const QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData, &jsonParseError));
+  const QJsonDocument loadDoc(
+      QJsonDocument::fromJson(jsonData, &jsonParseError));
   if (loadDoc.isNull()) {
     qWarning() << QString("Invalid json file:") + jsonFilename;
     qWarning() << "Json parse error:" << jsonParseError.errorString();

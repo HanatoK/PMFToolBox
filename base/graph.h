@@ -27,14 +27,14 @@
 #include <algorithm>
 #include <compare>
 #include <cstddef>
+#include <deque>
 #include <functional>
 #include <initializer_list>
 #include <iostream>
 #include <limits>
+#include <list>
 #include <queue>
 #include <vector>
-#include <list>
-#include <deque>
 
 #if defined(USE_BOOST_FIBONACCI_HEAP)
 #include <boost/heap/fibonacci_heap.hpp>
@@ -171,7 +171,8 @@ Graph::FindPathResult Graph::Dijkstra(
         const DistanceType new_distance =
             calc_new_dist(distances[to_visit], neighbor_node->mWeight);
 #ifdef DEBUG_DIJKSTRA
-        qDebug() << "Current distance of vertex " << neighbor_index << "is" << distances[neighbor_index];
+        qDebug() << "Current distance of vertex " << neighbor_index << "is"
+                 << distances[neighbor_index];
 #endif
         if (new_distance < distances[neighbor_index]) {
 #ifdef DEBUG_DIJKSTRA
@@ -183,7 +184,8 @@ Graph::FindPathResult Graph::Dijkstra(
         }
       } else {
 #ifdef DEBUG_DIJKSTRA
-        qDebug() << "Neighbor vertex" << neighbor_index << "is already visited. Skip it";
+        qDebug() << "Neighbor vertex" << neighbor_index
+                 << "is already visited. Skip it";
 #endif
       }
       std::advance(neighbor_node, 1);
@@ -197,7 +199,8 @@ Graph::FindPathResult Graph::Dijkstra(
     qDebug() << "===============================================";
 #endif
   }
-  qDebug() << "Dijkstra's algorithm takes" << timer.elapsed() << "milliseconds; total number of loops:" << loop;
+  qDebug() << "Dijkstra's algorithm takes" << timer.elapsed()
+           << "milliseconds; total number of loops:" << loop;
   std::vector<size_t> path;
   size_t target = end;
   while (previous[target] != mNumNodes) {
@@ -259,7 +262,8 @@ Graph::FindPathResult Graph::SPFA(
       qDebug() << "Current distance:" << distances[neighbor_index];
       qDebug() << "Current path:" << paths[neighbor_index];
       qDebug() << "Path of the previous vertex:" << paths[to_visit];
-      qDebug() << "Distance of previous vertex from start:" << distances[to_visit];
+      qDebug() << "Distance of previous vertex from start:"
+               << distances[to_visit];
       qDebug() << "Calculated new distance:" << new_distance;
 #endif
       if (new_distance < distances[neighbor_index]) {
@@ -271,7 +275,7 @@ Graph::FindPathResult Graph::SPFA(
         paths[neighbor_index] = paths[to_visit];
         paths[neighbor_index].push_back(neighbor_index);
 #ifdef DEBUG_SPFA
-       qDebug() << "New path =" << paths[neighbor_index];
+        qDebug() << "New path =" << paths[neighbor_index];
 #endif
         if (in_search_queue[neighbor_index] == false) {
           search_queue.push_back(neighbor_index);
@@ -296,9 +300,10 @@ Graph::FindPathResult Graph::SPFA(
     qDebug() << "i =" << i << ":" << paths[i];
   }
 #endif
-  qDebug() << "SPFA takes" << timer.elapsed() << "milliseconds; total number of loops:" << loop;
+  qDebug() << "SPFA takes" << timer.elapsed()
+           << "milliseconds; total number of loops:" << loop;
   std::vector<size_t> path;
-  for (const auto& i : paths[end]) {
+  for (const auto &i : paths[end]) {
     path.push_back(i);
   }
   std::vector<double> res_distance(distances.size());
@@ -319,8 +324,8 @@ public:
   friend auto operator<=>(const MFEPDistance &lhs, const MFEPDistance &rhs);
   explicit operator double() const;
 #ifdef USE_BOOST_HEAP
-  MFEPDistance(const MFEPDistance& rhs);
-  void operator=(const MFEPDistance& rhs);
+  MFEPDistance(const MFEPDistance &rhs);
+  void operator=(const MFEPDistance &rhs);
 #endif
 
 private:
@@ -330,7 +335,7 @@ private:
   boost::heap::binomial_heap<double> mDistance;
 #elif defined(USE_BOOST_D_ARY_HEAP)
   boost::heap::d_ary_heap<double, boost::heap::arity<ARITY>> mDistance;
-#elif defined (USE_BOOST_PRIORITY_QUEUQ)
+#elif defined(USE_BOOST_PRIORITY_QUEUQ)
   boost::heap::priority_queue<double> mDistance;
 #else
   std::priority_queue<double> mDistance;

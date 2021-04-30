@@ -27,12 +27,13 @@ QString getVersionString() {
 }
 
 QString boolToString(bool x) {
-  if (x == true) return "True";
-  else return "False";
+  if (x == true)
+    return "True";
+  else
+    return "False";
 }
 
-double kbT(const double temperature, const QString &unit)
-{
+double kbT(const double temperature, const QString &unit) {
   qDebug() << "Calling" << Q_FUNC_INFO;
   double factor = 1.0;
   if (unit.compare("kcal/mol", Qt::CaseInsensitive) == 0) {

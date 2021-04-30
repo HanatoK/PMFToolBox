@@ -24,7 +24,8 @@
 #include <QMessageBox>
 
 FindPathTab::FindPathTab(QWidget *parent)
-    : QWidget(parent), ui(new Ui::FindPathTab), mPatchTable(new PatchTableModel(this)) {
+    : QWidget(parent), ui(new Ui::FindPathTab),
+      mPatchTable(new PatchTableModel(this)) {
   ui->setupUi(this);
   setupAvailableAlgorithms();
   ui->tableViewPatch->setModel(mPatchTable);
@@ -38,9 +39,12 @@ FindPathTab::FindPathTab(QWidget *parent)
           &FindPathTab::findPathDone);
   connect(ui->pushButtonPathOnPMF, &QPushButton::clicked, this,
           &FindPathTab::plotPathOnPMF);
-  connect(ui->pushButtonEnergyAlongPath, &QPushButton::clicked, this, &FindPathTab::plotEnergy);
-  connect(ui->pushButtonAddPatch, &QPushButton::clicked, this, &FindPathTab::showAddPatchDialog);
-  connect(ui->pushButtonRemovePatch, &QPushButton::clicked, this, &FindPathTab::removePatch);
+  connect(ui->pushButtonEnergyAlongPath, &QPushButton::clicked, this,
+          &FindPathTab::plotEnergy);
+  connect(ui->pushButtonAddPatch, &QPushButton::clicked, this,
+          &FindPathTab::showAddPatchDialog);
+  connect(ui->pushButtonRemovePatch, &QPushButton::clicked, this,
+          &FindPathTab::removePatch);
 }
 
 FindPathTab::~FindPathTab() { delete ui; }
@@ -63,8 +67,8 @@ Graph::FindPathAlgorithm FindPathTab::selectedAlgorithm() const {
   return mAvailableAlgorithms[selectedText];
 }
 
-void FindPathTab::addPatch(const QString &center, const QVector<double> &length, const double value)
-{
+void FindPathTab::addPatch(const QString &center, const QVector<double> &length,
+                           const double value) {
   qDebug() << "Calling" << Q_FUNC_INFO;
   qDebug() << Q_FUNC_INFO << "add patch:"
            << "center =" << center;
@@ -117,7 +121,8 @@ void FindPathTab::findPath() {
   const Graph::FindPathAlgorithm algorithm = selectedAlgorithm();
   // TODO: allow to use a list of patches
   const auto tmp_patchList = mPatchTable->patchList();
-  std::vector<GridDataPatch> patchList(tmp_patchList.begin(), tmp_patchList.end());
+  std::vector<GridDataPatch> patchList(tmp_patchList.begin(),
+                                       tmp_patchList.end());
   const Graph::FindPathMode mode = Graph::FindPathMode::MFEPMode;
   // check
   if (mPMF.dimension() == 0) {
@@ -179,8 +184,7 @@ void FindPathTab::plotPathOnPMF() {
   ui->widgetPlot->plotPath2D(mPMFPathFinder.pathPosition());
 }
 
-void FindPathTab::plotEnergy()
-{
+void FindPathTab::plotEnergy() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   const std::vector<double> energy = mPMFPathFinder.pathEnergy();
   if (energy.empty()) {
@@ -190,8 +194,7 @@ void FindPathTab::plotEnergy()
   ui->widgetPlot->plotEnergyAlongPath(energy, true);
 }
 
-void FindPathTab::showAddPatchDialog()
-{
+void FindPathTab::showAddPatchDialog() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   if (mPMF.histogramSize() == 0 || mPMF.dimension() == 0) {
     QMessageBox errorBox;
@@ -212,8 +215,7 @@ void FindPathTab::showAddPatchDialog()
   }
 }
 
-void FindPathTab::removePatch()
-{
+void FindPathTab::removePatch() {
   qDebug() << Q_FUNC_INFO;
   const QModelIndexList indexes =
       ui->tableViewPatch->selectionModel()->selectedIndexes();

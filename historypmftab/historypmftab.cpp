@@ -21,27 +21,31 @@
 #include "ui_historypmftab.h"
 
 #include <QFileDialog>
-#include <QMessageBox>
-#include <QJsonDocument>
 #include <QJsonArray>
+#include <QJsonDocument>
+#include <QMessageBox>
 
-HistoryPMFTab::HistoryPMFTab(QWidget *parent) :
-  QWidget(parent),
-  ui(new Ui::HistoryPMFTab),
-  mListModel(new ListModelFileList(this))
-{
+HistoryPMFTab::HistoryPMFTab(QWidget *parent)
+    : QWidget(parent), ui(new Ui::HistoryPMFTab),
+      mListModel(new ListModelFileList(this)) {
   ui->setupUi(this);
   ui->listViewHistoryFile->setModel(mListModel);
-  connect(ui->pushButtonOpen, &QPushButton::clicked, this, &HistoryPMFTab::loadReferencePMF);
-  connect(ui->pushButtonSaveTo, &QPushButton::clicked, this, &HistoryPMFTab::saveFile);
-  connect(ui->pushButtonAdd, &QPushButton::clicked, this, &HistoryPMFTab::addHistoryFile);
-  connect(ui->pushButtonRemove, &QPushButton::clicked, this, &HistoryPMFTab::removeHistoryFile);
-  connect(ui->pushButtonSplit, &QPushButton::clicked, this, &HistoryPMFTab::split);
-  connect(ui->pushButtonComputeRMSD, &QPushButton::clicked, this, &HistoryPMFTab::computeRMSD);
+  connect(ui->pushButtonOpen, &QPushButton::clicked, this,
+          &HistoryPMFTab::loadReferencePMF);
+  connect(ui->pushButtonSaveTo, &QPushButton::clicked, this,
+          &HistoryPMFTab::saveFile);
+  connect(ui->pushButtonAdd, &QPushButton::clicked, this,
+          &HistoryPMFTab::addHistoryFile);
+  connect(ui->pushButtonRemove, &QPushButton::clicked, this,
+          &HistoryPMFTab::removeHistoryFile);
+  connect(ui->pushButtonSplit, &QPushButton::clicked, this,
+          &HistoryPMFTab::split);
+  connect(ui->pushButtonComputeRMSD, &QPushButton::clicked, this,
+          &HistoryPMFTab::computeRMSD);
 }
 
-void HistoryPMFTab::writeRMSDToFile(const std::vector<double>& rmsd, const QString &filename)
-{
+void HistoryPMFTab::writeRMSDToFile(const std::vector<double> &rmsd,
+                                    const QString &filename) {
   qDebug() << "Calling" << Q_FUNC_INFO;
   qDebug() << Q_FUNC_INFO << ": trying to open file " << filename;
   QFile RMSDFile(filename);
@@ -66,60 +70,55 @@ void HistoryPMFTab::writeRMSDToFile(const std::vector<double>& rmsd, const QStri
   }
 }
 
-HistoryPMFTab::~HistoryPMFTab()
-{
-  delete ui;
-}
+HistoryPMFTab::~HistoryPMFTab() { delete ui; }
 
-void HistoryPMFTab::loadReferencePMF()
-{
+void HistoryPMFTab::loadReferencePMF() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   const QString inputFileName = QFileDialog::getOpenFileName(
       this, tr("Open reference PMF file"), "",
       tr("Potential of Mean force (*.pmf);;All Files (*)"));
-  if (inputFileName.isEmpty()) return;
+  if (inputFileName.isEmpty())
+    return;
   if (mReferencePMF.readFromFile(inputFileName)) {
     ui->lineEditReferencePMF->setText(inputFileName);
     qDebug() << Q_FUNC_INFO << "Reading " << inputFileName << " successfully.";
   } else {
     QMessageBox errorBox;
-    errorBox.critical(this, "Error",
-                      "Error on opening file " + inputFileName);
+    errorBox.critical(this, "Error", "Error on opening file " + inputFileName);
   }
 }
 
-void HistoryPMFTab::saveFile()
-{
+void HistoryPMFTab::saveFile() {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  const QString outputFileName = QFileDialog::getSaveFileName(
-      this, tr("Save output to"), "");
+  const QString outputFileName =
+      QFileDialog::getSaveFileName(this, tr("Save output to"), "");
   ui->lineEditOutputPrefix->setText(outputFileName);
 }
 
-void HistoryPMFTab::addHistoryFile()
-{
+void HistoryPMFTab::addHistoryFile() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   const QString inputFileName = QFileDialog::getOpenFileName(
       this, tr("Open history PMF file"), "",
       tr("History PMF file (*.pmf);;All Files (*)"));
-  if (inputFileName.isEmpty()) return;
-  const QModelIndex& index = ui->listViewHistoryFile->currentIndex();
+  if (inputFileName.isEmpty())
+    return;
+  const QModelIndex &index = ui->listViewHistoryFile->currentIndex();
   mListModel->addItem(inputFileName, index);
 }
 
-void HistoryPMFTab::removeHistoryFile()
-{
+void HistoryPMFTab::removeHistoryFile() {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  const QModelIndex& index = ui->listViewHistoryFile->currentIndex();
+  const QModelIndex &index = ui->listViewHistoryFile->currentIndex();
   mListModel->removeItem(index);
 }
 
-void HistoryPMFTab::computeRMSD()
-{
+void HistoryPMFTab::computeRMSD() {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  connect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::computeRMSDDone);
-  connect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryPMFTab::computeRMSDProgress);
-  const QStringList& inputFile = mListModel->trajectoryFileNameList();
+  connect(&mReaderThread, &HistoryReaderThread::done, this,
+          &HistoryPMFTab::computeRMSDDone);
+  connect(&mReaderThread, &HistoryReaderThread::progress, this,
+          &HistoryPMFTab::computeRMSDProgress);
+  const QStringList &inputFile = mListModel->trajectoryFileNameList();
   if (inputFile.isEmpty()) {
     const QString errorMsg{"No input file."};
     qDebug() << Q_FUNC_INFO << errorMsg;
@@ -133,27 +132,33 @@ void HistoryPMFTab::computeRMSD()
   mReaderThread.readFromFile(inputFile);
 }
 
-void HistoryPMFTab::computeRMSDProgress(int fileRead, int percent)
-{
+void HistoryPMFTab::computeRMSDProgress(int fileRead, int percent) {
   const int numFiles = mListModel->trajectoryFileNameList().size();
-  const QString newText = "Reading " + QString(" (%1/%2) %3").arg(fileRead).arg(numFiles).arg(percent) + "%";
+  const QString newText =
+      "Reading " +
+      QString(" (%1/%2) %3").arg(fileRead).arg(numFiles).arg(percent) + "%";
   ui->pushButtonComputeRMSD->setText(newText);
 }
 
-void HistoryPMFTab::computeRMSDDone(const HistogramPMFHistory& hist) {
+void HistoryPMFTab::computeRMSDDone(const HistogramPMFHistory &hist) {
   qDebug() << "Calling" << Q_FUNC_INFO;
   mPMFHistory = hist;
-  disconnect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryPMFTab::computeRMSDProgress);
-  disconnect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::computeRMSDDone);
+  disconnect(&mReaderThread, &HistoryReaderThread::progress, this,
+             &HistoryPMFTab::computeRMSDProgress);
+  disconnect(&mReaderThread, &HistoryReaderThread::done, this,
+             &HistoryPMFTab::computeRMSDDone);
   std::vector<double> rmsd;
   if (mReferencePMF.dimension() > 0) {
-    qDebug() << Q_FUNC_INFO << ": compute rmsd with respect to the reference PMF.";
+    qDebug() << Q_FUNC_INFO
+             << ": compute rmsd with respect to the reference PMF.";
     rmsd = mPMFHistory.computeRMSD(mReferencePMF.data());
   } else {
-    qDebug() << Q_FUNC_INFO << ": compute rmsd with respect to the last frame of the history file.";
+    qDebug()
+        << Q_FUNC_INFO
+        << ": compute rmsd with respect to the last frame of the history file.";
     rmsd = mPMFHistory.computeRMSD();
   }
-  const QString& outputPrefix = ui->lineEditOutputPrefix->text();
+  const QString &outputPrefix = ui->lineEditOutputPrefix->text();
   // write RMSD if output prefix is available
   if (outputPrefix.size() > 0) {
     writeRMSDToFile(rmsd, outputPrefix + "_rmsd.dat");
@@ -165,13 +170,14 @@ void HistoryPMFTab::computeRMSDDone(const HistogramPMFHistory& hist) {
   ui->pushButtonComputeRMSD->setText(tr("Compute RMSD"));
 }
 
-void HistoryPMFTab::split()
-{
+void HistoryPMFTab::split() {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  connect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::splitDone);
-  connect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryPMFTab::splitProgress);
-  const QStringList& inputFile = mListModel->trajectoryFileNameList();
-  const QString& outputPrefix = ui->lineEditOutputPrefix->text();
+  connect(&mReaderThread, &HistoryReaderThread::done, this,
+          &HistoryPMFTab::splitDone);
+  connect(&mReaderThread, &HistoryReaderThread::progress, this,
+          &HistoryPMFTab::splitProgress);
+  const QStringList &inputFile = mListModel->trajectoryFileNameList();
+  const QString &outputPrefix = ui->lineEditOutputPrefix->text();
   if (inputFile.isEmpty()) {
     const QString errorMsg{"No input file."};
     qDebug() << Q_FUNC_INFO << errorMsg;
@@ -192,20 +198,22 @@ void HistoryPMFTab::split()
   mReaderThread.readFromFile(inputFile);
 }
 
-void HistoryPMFTab::splitProgress(int fileRead, int percent)
-{
+void HistoryPMFTab::splitProgress(int fileRead, int percent) {
   const int numFiles = mListModel->trajectoryFileNameList().size();
-  const QString newText = "Reading " + QString(" (%1/%2) %3").arg(fileRead).arg(numFiles).arg(percent) + "%";
+  const QString newText =
+      "Reading " +
+      QString(" (%1/%2) %3").arg(fileRead).arg(numFiles).arg(percent) + "%";
   ui->pushButtonSplit->setText(newText);
 }
 
-void HistoryPMFTab::splitDone(const HistogramPMFHistory &hist)
-{
+void HistoryPMFTab::splitDone(const HistogramPMFHistory &hist) {
   qDebug() << "Calling" << Q_FUNC_INFO;
   mPMFHistory = hist;
-  disconnect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryPMFTab::splitProgress);
-  disconnect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryPMFTab::splitDone);
-  const QString& outputPrefix = ui->lineEditOutputPrefix->text();
+  disconnect(&mReaderThread, &HistoryReaderThread::progress, this,
+             &HistoryPMFTab::splitProgress);
+  disconnect(&mReaderThread, &HistoryReaderThread::done, this,
+             &HistoryPMFTab::splitDone);
+  const QString &outputPrefix = ui->lineEditOutputPrefix->text();
   if (outputPrefix.isEmpty()) {
     const QString errorMsg{"Output prefix is empty."};
     qDebug() << Q_FUNC_INFO << errorMsg;
@@ -220,16 +228,16 @@ void HistoryPMFTab::splitDone(const HistogramPMFHistory &hist)
   ui->pushButtonSplit->setText(tr("Split"));
 }
 
-HistoryCLI::HistoryCLI(QObject *parent): QObject(parent)
-{
+HistoryCLI::HistoryCLI(QObject *parent) : QObject(parent) {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  connect(&mReaderThread, &HistoryReaderThread::progress, this, &HistoryCLI::progress);
+  connect(&mReaderThread, &HistoryReaderThread::progress, this,
+          &HistoryCLI::progress);
   connect(&mReaderThread, &HistoryReaderThread::done, this, &HistoryCLI::done);
-  connect(&mReaderThread, &HistoryReaderThread::error, this, &HistoryCLI::error);
+  connect(&mReaderThread, &HistoryReaderThread::error, this,
+          &HistoryCLI::error);
 }
 
-bool HistoryCLI::readJSON(const QString &jsonFilename)
-{
+bool HistoryCLI::readJSON(const QString &jsonFilename) {
   qDebug() << "Reading" << jsonFilename;
   QFile loadFile(jsonFilename);
   if (!loadFile.open(QIODevice::ReadOnly)) {
@@ -238,7 +246,8 @@ bool HistoryCLI::readJSON(const QString &jsonFilename)
   }
   const QByteArray jsonData = loadFile.readAll();
   QJsonParseError jsonParseError;
-  const QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData, &jsonParseError));
+  const QJsonDocument loadDoc(
+      QJsonDocument::fromJson(jsonData, &jsonParseError));
   if (loadDoc.isNull()) {
     qWarning() << QString("Invalid json file:") + jsonFilename;
     qWarning() << "Json parse error:" << jsonParseError.errorString();
@@ -249,21 +258,20 @@ bool HistoryCLI::readJSON(const QString &jsonFilename)
   const QJsonArray jsonHistoryFiles = loadDoc["History PMF Files"].toArray();
   mDoSplitting = loadDoc["Split"].toBool();
   mDoComputingRMSD = loadDoc["RMSD"].toBool();
-  for (const auto& i : jsonHistoryFiles) {
+  for (const auto &i : jsonHistoryFiles) {
     mHistoryFilename.append(i.toString());
   }
   mReferencePMF.readFromFile(referenceFilename);
   return true;
 }
 
-void HistoryCLI::start()
-{
+void HistoryCLI::start() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   mReaderThread.readFromFile(mHistoryFilename);
 }
 
-void HistoryCLI::writeRMSDToFile(const std::vector<double> &rmsd, const QString &filename)
-{
+void HistoryCLI::writeRMSDToFile(const std::vector<double> &rmsd,
+                                 const QString &filename) {
   qDebug() << "Calling" << Q_FUNC_INFO;
   qDebug() << Q_FUNC_INFO << ": trying to open file " << filename;
   QFile RMSDFile(filename);
@@ -286,27 +294,26 @@ void HistoryCLI::writeRMSDToFile(const std::vector<double> &rmsd, const QString 
   }
 }
 
-HistoryCLI::~HistoryCLI()
-{
-  qDebug() << "Calling" << Q_FUNC_INFO;
+HistoryCLI::~HistoryCLI() { qDebug() << "Calling" << Q_FUNC_INFO; }
+
+void HistoryCLI::progress(int fileRead, int percent) {
+  qDebug() << "Reading file " << mHistoryFilename[fileRead] << " (" << percent
+           << "%)";
 }
 
-void HistoryCLI::progress(int fileRead, int percent)
-{
-  qDebug() << "Reading file " << mHistoryFilename[fileRead] << " (" << percent << "%)";
-}
-
-void HistoryCLI::done(const HistogramPMFHistory &hist)
-{
+void HistoryCLI::done(const HistogramPMFHistory &hist) {
   qDebug() << "Calling slot" << Q_FUNC_INFO;
   mPMFHistory = hist;
   if (mDoComputingRMSD) {
     std::vector<double> rmsd;
     if (mReferencePMF.dimension() > 0) {
-      qDebug() << Q_FUNC_INFO << ": compute rmsd with respect to the reference PMF.";
+      qDebug() << Q_FUNC_INFO
+               << ": compute rmsd with respect to the reference PMF.";
       rmsd = mPMFHistory.computeRMSD(mReferencePMF.data());
     } else {
-      qDebug() << Q_FUNC_INFO << ": compute rmsd with respect to the last frame of the history file.";
+      qDebug() << Q_FUNC_INFO
+               << ": compute rmsd with respect to the last frame of the "
+                  "history file.";
       rmsd = mPMFHistory.computeRMSD();
     }
     if (mOutputPrefix.size() > 0) {
@@ -320,8 +327,7 @@ void HistoryCLI::done(const HistogramPMFHistory &hist)
   emit allDone();
 }
 
-void HistoryCLI::error(QString msg)
-{
+void HistoryCLI::error(QString msg) {
   qDebug() << msg;
   // TODO: should emit a separate error signal.
   emit allDone();

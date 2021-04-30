@@ -81,16 +81,14 @@ void Graph::printGraph(std::ostream &os) const {
   }
 }
 
-void Graph::summary() const
-{
+void Graph::summary() const {
   qDebug() << "Summary of the graph:";
   qDebug() << "Number of nodes:" << mHead.size();
   qDebug() << "Number of edges:" << totalEdges();
   qDebug() << "Is directed?" << mIsDirected;
 }
 
-size_t Graph::totalEdges() const
-{
+size_t Graph::totalEdges() const {
   size_t count = 0;
   for (size_t i = 0; i < mHead.size(); ++i) {
     for (size_t j = 1; j < mHead[i].size(); ++j) {
@@ -106,7 +104,7 @@ void Graph::DFS(size_t start, std::function<void(const Node &)> func) const {
 }
 
 Graph::FindPathResult Graph::Dijkstra(size_t start, size_t end,
-                                       Graph::FindPathMode mode) {
+                                      Graph::FindPathMode mode) {
   switch (mode) {
   case Graph::FindPathMode::SumOfEdges: {
     const double dist_inf = std::numeric_limits<double>::max();
@@ -136,14 +134,13 @@ Graph::FindPathResult Graph::Dijkstra(size_t start, size_t end,
   }
 }
 
-Graph::FindPathResult Graph::SPFA(size_t start, size_t end, Graph::FindPathMode mode)
-{
+Graph::FindPathResult Graph::SPFA(size_t start, size_t end,
+                                  Graph::FindPathMode mode) {
   switch (mode) {
   case Graph::FindPathMode::SumOfEdges: {
     const double dist_inf = std::numeric_limits<double>::max();
-    return SPFA<double>(
-        start, end, 0, dist_inf,
-        [](const double &x, const double &y) { return x + y; });
+    return SPFA<double>(start, end, 0, dist_inf,
+                        [](const double &x, const double &y) { return x + y; });
     break;
   }
   case Graph::FindPathMode::MaximumEdges: {
@@ -167,8 +164,7 @@ Graph::FindPathResult Graph::SPFA(size_t start, size_t end, Graph::FindPathMode 
   }
 }
 
-double Graph::findMaxSumWeight() const
-{
+double Graph::findMaxSumWeight() const {
   double result = 0;
   for (size_t i = 0; i < mNumNodes; ++i) {
     auto this_node = mHead[i].cbegin();
@@ -229,9 +225,9 @@ void Graph::sortByWeight() {
     auto it_sort_start = current_list.begin();
     auto it_sort_end = current_list.end();
     std::advance(it_sort_start, 1);
-    std::sort(
-        it_sort_start, it_sort_end,
-        [](const Node &a, const Node &b) { return a.mWeight < b.mWeight; });
+    std::sort(it_sort_start, it_sort_end, [](const Node &a, const Node &b) {
+      return a.mWeight < b.mWeight;
+    });
   }
 }
 
@@ -244,8 +240,7 @@ MFEPDistance::MFEPDistance(const std::initializer_list<double> &l) {
 }
 
 #ifdef USE_BOOST_HEAP
-MFEPDistance::MFEPDistance(const MFEPDistance &rhs)
-{
+MFEPDistance::MFEPDistance(const MFEPDistance &rhs) {
   this->mDistance.clear();
   for (auto it = rhs.mDistance.begin(); it != rhs.mDistance.end(); ++it) {
     this->mDistance.push(*it);
@@ -260,8 +255,7 @@ MFEPDistance MFEPDistance::operator+(const double &rhs) const {
 }
 
 #ifdef USE_BOOST_HEAP
-void MFEPDistance::operator=(const MFEPDistance &rhs)
-{
+void MFEPDistance::operator=(const MFEPDistance &rhs) {
   this->mDistance.clear();
   for (auto it = rhs.mDistance.begin(); it != rhs.mDistance.end(); ++it) {
     this->mDistance.push(*it);
@@ -428,8 +422,7 @@ auto operator<=>(const MFEPDistance &lhs, const MFEPDistance &rhs) {
 #endif
 }
 
-void Graph::FindPathResult::dump() const
-{
+void Graph::FindPathResult::dump() const {
   qDebug() << "Calling" << Q_FUNC_INFO;
   qDebug() << "Dump the result of the path finder:";
   qDebug() << "Number of loops:" << mNumLoops;
@@ -440,8 +433,7 @@ void Graph::FindPathResult::dump() const
   }
 }
 
-QDebug operator<<(QDebug dbg, const MFEPDistance &rhs)
-{
+QDebug operator<<(QDebug dbg, const MFEPDistance &rhs) {
   auto tmpRhsQueue(rhs.mDistance);
   QString debug_string;
   while (!tmpRhsQueue.empty()) {

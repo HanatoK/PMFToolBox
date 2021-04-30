@@ -19,10 +19,10 @@
 
 #include "histogram.h"
 
+#include <QElapsedTimer>
 #include <algorithm>
 #include <cmath>
 #include <iterator>
-#include <QElapsedTimer>
 
 HistogramBase::HistogramBase()
     : mNdim(0), mHistogramSize(0), mAxes(0), mPointTable(0), mAccu(0) {}
@@ -141,7 +141,7 @@ size_t HistogramBase::address(const std::vector<double> &position,
 }
 
 std::vector<double> HistogramBase::reverseAddress(size_t address,
-                                              bool *inBoundary) const {
+                                                  bool *inBoundary) const {
   std::vector<double> pos(mNdim, 0);
   if (address >= mHistogramSize) {
     if (inBoundary != nullptr) {
@@ -161,9 +161,9 @@ std::vector<double> HistogramBase::reverseAddress(size_t address,
   return pos;
 }
 
-std::pair<size_t, bool> HistogramBase::neighbor(const std::vector<double> &position,
-                                            size_t axisIndex,
-                                            bool previous) const {
+std::pair<size_t, bool>
+HistogramBase::neighbor(const std::vector<double> &position, size_t axisIndex,
+                        bool previous) const {
   const double bin_width_i = mAxes[axisIndex].width();
   std::vector<double> pos_next(position);
   if (previous == true) {
@@ -177,8 +177,8 @@ std::pair<size_t, bool> HistogramBase::neighbor(const std::vector<double> &posit
 }
 
 std::pair<size_t, bool> HistogramBase::neighborByAddress(size_t address,
-                                                     size_t axisIndex,
-                                                     bool previous) const {
+                                                         size_t axisIndex,
+                                                         bool previous) const {
   if (address >= mHistogramSize)
     return std::make_pair(0, false);
   std::vector<size_t> index(mNdim, 0);
@@ -233,7 +233,8 @@ HistogramBase::allNeighbor(const std::vector<double> &position) const {
   return results;
 }
 
-std::vector<std::pair<size_t, bool> > HistogramBase::allNeighborByAddress(size_t address) const {
+std::vector<std::pair<size_t, bool>>
+HistogramBase::allNeighborByAddress(size_t address) const {
   std::vector<std::pair<size_t, bool>> results(mNdim * 2);
   for (size_t i = 0; i < mNdim; ++i) {
     results[i * 2] = neighborByAddress(address, i, true);
@@ -252,8 +253,7 @@ std::vector<std::vector<double>> HistogramBase::pointTable() {
   return mPointTable;
 }
 
-const std::vector<std::vector<double> > &HistogramBase::pointTable() const
-{
+const std::vector<std::vector<double>> &HistogramBase::pointTable() const {
   return mPointTable;
 }
 
@@ -491,8 +491,8 @@ void HistogramProbability::convertToFreeEnergy(double kbt) {
   this->mData = f_data;
 }
 
-HistogramProbability
-HistogramProbability::reduceDimension(const std::vector<size_t> &new_dims) const {
+HistogramProbability HistogramProbability::reduceDimension(
+    const std::vector<size_t> &new_dims) const {
   qDebug() << "Calling" << Q_FUNC_INFO;
   std::vector<Axis> new_ax;
   for (size_t i = 0; i < new_dims.size(); ++i) {
@@ -540,7 +540,8 @@ std::vector<double> HistogramPMFHistory::computeRMSD() const {
   return computeRMSD(lastFrame);
 }
 
-std::vector<double> HistogramPMFHistory::computeRMSD(const std::vector<double> &referenceData) const {
+std::vector<double> HistogramPMFHistory::computeRMSD(
+    const std::vector<double> &referenceData) const {
   qDebug() << "Calling" << Q_FUNC_INFO;
   std::vector<double> result;
   for (int i = 0; i < mHistoryData.size(); ++i) {
@@ -593,13 +594,10 @@ void HistogramPMFHistory::splitToFile(const QString &prefix) const {
   }
 }
 
-PMFPathFinder::PMFPathFinder()
-{
-  hasData = false;
-}
+PMFPathFinder::PMFPathFinder() { hasData = false; }
 
-PMFPathFinder::PMFPathFinder(const HistogramScalar<double> &histogram, const std::vector<GridDataPatch> &patchList)
-{
+PMFPathFinder::PMFPathFinder(const HistogramScalar<double> &histogram,
+                             const std::vector<GridDataPatch> &patchList) {
   mHistogram = histogram;
   mPatchList = patchList;
   mHistogramBackup = histogram;
@@ -633,13 +631,9 @@ void PMFPathFinder::setup(const HistogramScalar<double> &histogram,
   hasData = true;
 }
 
-bool PMFPathFinder::initialized() const
-{
-  return hasData;
-}
+bool PMFPathFinder::initialized() const { return hasData; }
 
-void PMFPathFinder::findPath()
-{
+void PMFPathFinder::findPath() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   // setup the graph
   setupGraph();
@@ -667,14 +661,13 @@ void PMFPathFinder::findPath()
   }
 }
 
-void PMFPathFinder::writePath(const QString &filename) const
-{
+void PMFPathFinder::writePath(const QString &filename) const {
   qDebug() << "Calling" << Q_FUNC_INFO;
   QFile ofs_file(filename);
   if (ofs_file.open(QFile::WriteOnly)) {
     QTextStream out_stream(&ofs_file);
     out_stream.setRealNumberNotation(QTextStream::FixedNotation);
-    const auto& path = mResult.mPathNodes;
+    const auto &path = mResult.mPathNodes;
     for (size_t i = 0; i < path.size(); ++i) {
       const auto pos = mHistogram.reverseAddress(path[i]);
       for (size_t j = 0; j < mHistogram.dimension(); ++j) {
@@ -693,8 +686,7 @@ void PMFPathFinder::writePath(const QString &filename) const
   }
 }
 
-void PMFPathFinder::writeVisitedRegion(const QString &filename) const
-{
+void PMFPathFinder::writeVisitedRegion(const QString &filename) const {
   qDebug() << "Calling" << Q_FUNC_INFO;
   QFile ofs_file(filename);
   if (ofs_file.open(QFile::WriteOnly)) {
@@ -718,29 +710,20 @@ void PMFPathFinder::writeVisitedRegion(const QString &filename) const
   }
 }
 
-void PMFPathFinder::writePatchedPMF(const QString &filename) const
-{
+void PMFPathFinder::writePatchedPMF(const QString &filename) const {
   qDebug() << "Calling" << Q_FUNC_INFO;
   mHistogram.writeToFile(filename);
 }
 
-Graph::FindPathResult PMFPathFinder::result() const
-{
-  return mResult;
-}
+Graph::FindPathResult PMFPathFinder::result() const { return mResult; }
 
-HistogramScalar<double> PMFPathFinder::histogram() const
-{
-  return mHistogram;
-}
+HistogramScalar<double> PMFPathFinder::histogram() const { return mHistogram; }
 
-HistogramScalar<double> PMFPathFinder::histogramBackup() const
-{
+HistogramScalar<double> PMFPathFinder::histogramBackup() const {
   return mHistogramBackup;
 }
 
-void PMFPathFinder::setupGraph()
-{
+void PMFPathFinder::setupGraph() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   QElapsedTimer timer;
   timer.start();
@@ -749,21 +732,21 @@ void PMFPathFinder::setupGraph()
     const auto allNeighbors = mHistogram.allNeighborByAddress(i);
     for (size_t j = 0; j < allNeighbors.size(); ++j) {
       if (allNeighbors[j].second == true) {
-//        const double& pmf_i = mHistogram[i];
-        const double& pmf_j = mHistogram[allNeighbors[j].first];
-//        const double grad_ij =  pmf_j - pmf_i;
-//        const double weight = grad_ij;
+        //        const double& pmf_i = mHistogram[i];
+        const double &pmf_j = mHistogram[allNeighbors[j].first];
+        //        const double grad_ij =  pmf_j - pmf_i;
+        //        const double weight = grad_ij;
         const double weight = pmf_j;
         mGraph.setEdge(i, allNeighbors[j].first, weight);
       }
     }
   }
-  qDebug() << "Convert the PMF to a graph takes" << timer.elapsed() << "milliseconds.";
+  qDebug() << "Convert the PMF to a graph takes" << timer.elapsed()
+           << "milliseconds.";
   mGraph.summary();
 }
 
-void PMFPathFinder::applyPatch()
-{
+void PMFPathFinder::applyPatch() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   mHistogram = mHistogramBackup;
   for (size_t i = 0; i < mHistogram.histogramSize(); ++i) {
@@ -773,40 +756,37 @@ void PMFPathFinder::applyPatch()
       for (size_t k = 0; k < mHistogram.dimension(); ++k) {
         const double width = mHistogram.axes()[k].width();
         const size_t num_bins = std::floor(mPatchList[j].mLength[k] / width);
-        const double lower_bound = mPatchList[j].mCenter[k] - 0.5 * mPatchList[j].mLength[k];
-        const double upper_bound = mPatchList[j].mCenter[k] + 0.5 * mPatchList[j].mLength[k];
+        const double lower_bound =
+            mPatchList[j].mCenter[k] - 0.5 * mPatchList[j].mLength[k];
+        const double upper_bound =
+            mPatchList[j].mCenter[k] + 0.5 * mPatchList[j].mLength[k];
         const Axis current_ax(lower_bound, upper_bound, num_bins, false);
-//        qDebug() << "Construct an axis of" << current_ax;
+        //        qDebug() << "Construct an axis of" << current_ax;
         if (!current_ax.inBoundary(pos[k])) {
           in_bound = false;
         } else {
-//          qDebug() << pos << "is in the boundary of the patch.";
+          //          qDebug() << pos << "is in the boundary of the patch.";
         }
       }
       if (in_bound) {
-//        qDebug() << "Previous value:" << mHistogram[i];
+        //        qDebug() << "Previous value:" << mHistogram[i];
         mHistogram[i] += mPatchList[j].mValue;
-//        qDebug() << "Updated value:" << mHistogram[i];
+        //        qDebug() << "Updated value:" << mHistogram[i];
       }
     }
   }
 }
 
-std::vector<double> PMFPathFinder::posEnd() const
-{
-  return mPosEnd;
-}
+std::vector<double> PMFPathFinder::posEnd() const { return mPosEnd; }
 
-void PMFPathFinder::setPosEnd(const std::vector<double> &posEnd)
-{
+void PMFPathFinder::setPosEnd(const std::vector<double> &posEnd) {
   mPosEnd = posEnd;
 }
 
-std::vector<std::vector<double> > PMFPathFinder::pathPosition() const
-{
+std::vector<std::vector<double>> PMFPathFinder::pathPosition() const {
   qDebug() << "Calling" << Q_FUNC_INFO;
   std::vector<std::vector<double>> path_position;
-  const auto& path = mResult.mPathNodes;
+  const auto &path = mResult.mPathNodes;
   for (size_t i = 0; i < path.size(); ++i) {
     const auto pos = mHistogram.reverseAddress(path[i]);
     path_position.push_back(pos);
@@ -814,11 +794,10 @@ std::vector<std::vector<double> > PMFPathFinder::pathPosition() const
   return path_position;
 }
 
-std::vector<double> PMFPathFinder::pathEnergy() const
-{
+std::vector<double> PMFPathFinder::pathEnergy() const {
   qDebug() << "Calling" << Q_FUNC_INFO;
   std::vector<double> energy;
-  const auto& path = mResult.mPathNodes;
+  const auto &path = mResult.mPathNodes;
   for (size_t i = 0; i < path.size(); ++i) {
     const double e = mHistogram[path[i]];
     energy.push_back(e);
@@ -826,22 +805,16 @@ std::vector<double> PMFPathFinder::pathEnergy() const
   return energy;
 }
 
-std::vector<double> PMFPathFinder::posStart() const
-{
-  return mPosStart;
-}
+std::vector<double> PMFPathFinder::posStart() const { return mPosStart; }
 
-void PMFPathFinder::setPosStart(const std::vector<double> &posStart)
-{
+void PMFPathFinder::setPosStart(const std::vector<double> &posStart) {
   mPosStart = posStart;
 }
 
-std::vector<GridDataPatch> PMFPathFinder::patchList() const
-{
+std::vector<GridDataPatch> PMFPathFinder::patchList() const {
   return mPatchList;
 }
 
-void PMFPathFinder::setPatchList(const std::vector<GridDataPatch> &patchList)
-{
+void PMFPathFinder::setPatchList(const std::vector<GridDataPatch> &patchList) {
   mPatchList = patchList;
 }

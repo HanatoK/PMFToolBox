@@ -18,14 +18,14 @@
 */
 
 #include "reweightingtab.h"
-#include "ui_reweightingtab.h"
 #include "base/helper.h"
+#include "ui_reweightingtab.h"
 
 #include <QFileDialog>
-#include <QMessageBox>
-#include <QJsonDocument>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QJsonObject>
+#include <QMessageBox>
 
 ReweightingTab::ReweightingTab(QWidget *parent)
     : QWidget(parent), ui(new Ui::ReweightingTab),
@@ -36,47 +36,54 @@ ReweightingTab::ReweightingTab(QWidget *parent)
   ui->tableViewReweightingAxis->horizontalHeader()->setSectionResizeMode(
       QHeaderView::Stretch);
   ui->listViewTrajectory->setModel(mListModel);
-  connect(ui->pushButtonOpen, &QPushButton::clicked, this, &ReweightingTab::loadPMF);
-  connect(ui->pushButtonSaveTo, &QPushButton::clicked, this, &ReweightingTab::saveFile);
-  connect(ui->pushButtonAddTrajectory, &QPushButton::clicked, this, &ReweightingTab::addTrajectory);
-  connect(ui->pushButtonRemoveTrajectory, &QPushButton::clicked, this, &ReweightingTab::removeTrajectory);
-  connect(ui->pushButtonClearAll, &QPushButton::clicked, this, &ReweightingTab::clearTrajectory);
-  connect(ui->pushButtonReadAxes, &QPushButton::clicked, this, &ReweightingTab::readAxisData);
-  connect(ui->pushButtonRun, &QPushButton::clicked, this, &ReweightingTab::reweighting);
-  connect(&mWorkerThread, &ReweightingThread::error, this, &ReweightingTab::reweightingError);
-  connect(&mWorkerThread, &ReweightingThread::progress, this, &ReweightingTab::reweightingProgress);
-  connect(&mWorkerThread, &ReweightingThread::done, this, &ReweightingTab::reweightingDone);
+  connect(ui->pushButtonOpen, &QPushButton::clicked, this,
+          &ReweightingTab::loadPMF);
+  connect(ui->pushButtonSaveTo, &QPushButton::clicked, this,
+          &ReweightingTab::saveFile);
+  connect(ui->pushButtonAddTrajectory, &QPushButton::clicked, this,
+          &ReweightingTab::addTrajectory);
+  connect(ui->pushButtonRemoveTrajectory, &QPushButton::clicked, this,
+          &ReweightingTab::removeTrajectory);
+  connect(ui->pushButtonClearAll, &QPushButton::clicked, this,
+          &ReweightingTab::clearTrajectory);
+  connect(ui->pushButtonReadAxes, &QPushButton::clicked, this,
+          &ReweightingTab::readAxisData);
+  connect(ui->pushButtonRun, &QPushButton::clicked, this,
+          &ReweightingTab::reweighting);
+  connect(&mWorkerThread, &ReweightingThread::error, this,
+          &ReweightingTab::reweightingError);
+  connect(&mWorkerThread, &ReweightingThread::progress, this,
+          &ReweightingTab::reweightingProgress);
+  connect(&mWorkerThread, &ReweightingThread::done, this,
+          &ReweightingTab::reweightingDone);
 }
 
 ReweightingTab::~ReweightingTab() { delete ui; }
 
-double ReweightingTab::getKbT() const
-{
+double ReweightingTab::getKbT() const {
   qDebug() << "Calling" << Q_FUNC_INFO;
   const double temperature = ui->lineEditTemperature->text().toDouble();
   const QString unit = ui->comboBoxUnit->currentText();
   return kbT(temperature, unit);
 }
 
-void ReweightingTab::loadPMF()
-{
+void ReweightingTab::loadPMF() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   const QString inputFileName = QFileDialog::getOpenFileName(
       this, tr("Open input PMF file"), "",
       tr("Potential of Mean force (*.pmf);;All Files (*)"));
-  if (inputFileName.isEmpty()) return;
+  if (inputFileName.isEmpty())
+    return;
   if (mPMF.readFromFile(inputFileName)) {
     ui->lineEditInputPMF->setText(inputFileName);
     qDebug() << Q_FUNC_INFO << "Reading " << inputFileName << " successfully.";
   } else {
     QMessageBox errorBox;
-    errorBox.critical(this, "Error",
-                      "Error on opening file " + inputFileName);
+    errorBox.critical(this, "Error", "Error on opening file " + inputFileName);
   }
 }
 
-void ReweightingTab::saveFile()
-{
+void ReweightingTab::saveFile() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   const QString outputFileName = QFileDialog::getSaveFileName(
       this, tr("Save reweighted PMF file to"), "",
@@ -84,36 +91,35 @@ void ReweightingTab::saveFile()
   ui->lineEditOutput->setText(outputFileName);
 }
 
-void ReweightingTab::addTrajectory()
-{
+void ReweightingTab::addTrajectory() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   const QStringList inputFileName = QFileDialog::getOpenFileNames(
       this, tr("Open trajectory file"), "",
       tr("Colvars trajectory (*.traj);;All Files (*)"));
-  if (inputFileName.isEmpty()) return;
-  const QModelIndex& index = ui->listViewTrajectory->currentIndex();
+  if (inputFileName.isEmpty())
+    return;
+  const QModelIndex &index = ui->listViewTrajectory->currentIndex();
   mListModel->addItems(inputFileName, index);
 }
 
-void ReweightingTab::removeTrajectory()
-{
+void ReweightingTab::removeTrajectory() {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  const QModelIndex& index = ui->listViewTrajectory->currentIndex();
+  const QModelIndex &index = ui->listViewTrajectory->currentIndex();
   mListModel->removeItem(index);
 }
 
-void ReweightingTab::clearTrajectory()
-{
+void ReweightingTab::clearTrajectory() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   mListModel->clearAll();
 }
 
-void ReweightingTab::readAxisData()
-{
+void ReweightingTab::readAxisData() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   mTableModel->clearAll();
-  const std::vector<int> fromAxis = splitStringToNumbers<int>(ui->lineEditFromColumns->text());
-  const std::vector<int> toAxis = splitStringToNumbers<int>(ui->lineEditToColumns->text());
+  const std::vector<int> fromAxis =
+      splitStringToNumbers<int>(ui->lineEditFromColumns->text());
+  const std::vector<int> toAxis =
+      splitStringToNumbers<int>(ui->lineEditToColumns->text());
   if (fromAxis.empty() || toAxis.empty()) {
     qDebug() << Q_FUNC_INFO << ": axes are empty.";
     return;
@@ -145,8 +151,7 @@ void ReweightingTab::readAxisData()
   }
 }
 
-void ReweightingTab::reweighting()
-{
+void ReweightingTab::reweighting() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   const QStringList fileList = mListModel->trajectoryFileNameList();
   const std::vector<int> fromColumns = mTableModel->fromColumns();
@@ -182,39 +187,41 @@ void ReweightingTab::reweighting()
   }
   ui->pushButtonRun->setText(tr("Running"));
   ui->pushButtonRun->setEnabled(false);
-  mWorkerThread.reweighting(fileList, outputFileName, mPMF, fromColumns, toColumns, targetAxis, getKbT(), usePMF);
+  mWorkerThread.reweighting(fileList, outputFileName, mPMF, fromColumns,
+                            toColumns, targetAxis, getKbT(), usePMF);
 }
 
-void ReweightingTab::reweightingProgress(int fileRead, int percent)
-{
+void ReweightingTab::reweightingProgress(int fileRead, int percent) {
   const int numFiles = mListModel->trajectoryFileNameList().size();
-  const QString newText = "Running " + QString(" (%1/%2) %3").arg(fileRead+1).arg(numFiles).arg(percent) + "%";
+  const QString newText =
+      "Running " +
+      QString(" (%1/%2) %3").arg(fileRead + 1).arg(numFiles).arg(percent) + "%";
   ui->pushButtonRun->setText(newText);
 }
 
-void ReweightingTab::reweightingError(QString msg)
-{
+void ReweightingTab::reweightingError(QString msg) {
   QMessageBox errorBox;
   errorBox.critical(this, "Error", msg);
   ui->pushButtonRun->setEnabled(true);
   ui->pushButtonRun->setText(tr("Run"));
 }
 
-void ReweightingTab::reweightingDone()
-{
+void ReweightingTab::reweightingDone() {
   ui->pushButtonRun->setEnabled(true);
   ui->pushButtonRun->setText(tr("Run"));
 }
 
-void ReweightingTab::help()
-{
+void ReweightingTab::help() {
   // TODO
 }
 
-ReweightingCLI::ReweightingCLI(QObject *parent): QObject(parent) {
-  connect(&mWorkerThread, &ReweightingThread::error, this, &ReweightingCLI::reweightingError);
-  connect(&mWorkerThread, &ReweightingThread::progress, this, &ReweightingCLI::reweightingProgress);
-  connect(&mWorkerThread, &ReweightingThread::done, this, &ReweightingCLI::reweightingDone);
+ReweightingCLI::ReweightingCLI(QObject *parent) : QObject(parent) {
+  connect(&mWorkerThread, &ReweightingThread::error, this,
+          &ReweightingCLI::reweightingError);
+  connect(&mWorkerThread, &ReweightingThread::progress, this,
+          &ReweightingCLI::reweightingProgress);
+  connect(&mWorkerThread, &ReweightingThread::done, this,
+          &ReweightingCLI::reweightingDone);
 }
 
 void ReweightingCLI::reweightingProgress(int fileRead, int percent) {
@@ -226,15 +233,13 @@ void ReweightingCLI::reweightingError(QString msg) {
   emit allDone();
 }
 
-void ReweightingCLI::reweightingDone()
-{
+void ReweightingCLI::reweightingDone() {
   qDebug() << "Calling slot" << Q_FUNC_INFO;
   qDebug() << "Operation succeeded.";
   emit allDone();
 }
 
-bool ReweightingCLI::readJSON(const QString &jsonFilename)
-{
+bool ReweightingCLI::readJSON(const QString &jsonFilename) {
   qDebug() << "Reading" << jsonFilename;
   QFile loadFile(jsonFilename);
   if (!loadFile.open(QIODevice::ReadOnly)) {
@@ -243,7 +248,8 @@ bool ReweightingCLI::readJSON(const QString &jsonFilename)
   }
   QByteArray jsonData = loadFile.readAll();
   QJsonParseError jsonParseError;
-  const QJsonDocument loadDoc(QJsonDocument::fromJson(jsonData, &jsonParseError));
+  const QJsonDocument loadDoc(
+      QJsonDocument::fromJson(jsonData, &jsonParseError));
   if (loadDoc.isNull()) {
     qWarning() << QString("Invalid json file:") + jsonFilename;
     qWarning() << "Json parse error:" << jsonParseError.errorString();
@@ -258,24 +264,26 @@ bool ReweightingCLI::readJSON(const QString &jsonFilename)
   mConvertToPMF = loadDoc["Convert to PMF"].toBool();
   const QJsonArray jsonTrajectories = loadDoc["Trajectories"].toArray();
   const QJsonArray jsonReweightingAxes = loadDoc["Reweighting Axes"].toArray();
-  for (const auto& i : jsonTrajectories) {
+  for (const auto &i : jsonTrajectories) {
     mFileList.push_back(i.toString());
   }
-  for (const auto& i: jsonFromColumns) {
+  for (const auto &i : jsonFromColumns) {
     mFromColumns.push_back(i.toInt());
   }
-  for (const auto& i: jsonTocolumns) {
+  for (const auto &i : jsonTocolumns) {
     mToColumns.push_back(i.toInt());
   }
-  for (const auto& a: jsonReweightingAxes) {
+  for (const auto &a : jsonReweightingAxes) {
     const auto nested_json = a.toObject();
     const int target_column = nested_json["Target Column"].toInt();
     qDebug() << "Read target column: " << target_column;
-    const auto find_result = std::find(mToColumns.begin(), mToColumns.end(), target_column);
+    const auto find_result =
+        std::find(mToColumns.begin(), mToColumns.end(), target_column);
     if (find_result != mToColumns.end()) {
       const double lower_bound = nested_json["Lower bound"].toDouble();
       const double upper_bound = nested_json["Upper bound"].toDouble();
-      const size_t nbins = std::nearbyint((upper_bound - lower_bound) / nested_json["Width"].toDouble());
+      const size_t nbins = std::nearbyint((upper_bound - lower_bound) /
+                                          nested_json["Width"].toDouble());
       mTargetAxis.push_back(Axis(lower_bound, upper_bound, nbins));
     } else {
       qDebug() << "Target column not found!";
@@ -288,15 +296,10 @@ bool ReweightingCLI::readJSON(const QString &jsonFilename)
   return true;
 }
 
-void ReweightingCLI::start()
-{
+void ReweightingCLI::start() {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  mWorkerThread.reweighting(mFileList, mOutputFilename, mInputPMF,
-                            mFromColumns, mToColumns, mTargetAxis,
-                            mKbT, mConvertToPMF);
+  mWorkerThread.reweighting(mFileList, mOutputFilename, mInputPMF, mFromColumns,
+                            mToColumns, mTargetAxis, mKbT, mConvertToPMF);
 }
 
-ReweightingCLI::~ReweightingCLI()
-{
-  qDebug() << "Calling" << Q_FUNC_INFO;
-}
+ReweightingCLI::~ReweightingCLI() { qDebug() << "Calling" << Q_FUNC_INFO; }

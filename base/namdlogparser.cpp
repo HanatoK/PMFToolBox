@@ -65,8 +65,7 @@ void NAMDLog::readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread,
       }
     }
     if (line.startsWith("ENERGY:")) {
-      const auto fields =
-          line.splitRef(split_energy_regex, Qt::SkipEmptyParts);
+      const auto fields = line.splitRef(split_energy_regex, Qt::SkipEmptyParts);
       for (int i = 0; i < mEnergyTitle.size(); ++i) {
         mEnergyData[mEnergyTitle[i]].push_back(fields[i].toDouble());
       }
@@ -201,7 +200,8 @@ void doBinningScalar::operator()(const QVector<QStringRef> &fields,
   // get the position of current point from trajectory
   for (size_t i = 0; i < mPosition.size(); ++i) {
     mPosition[i] = fields[mColumn[i]].toDouble(&read_ok);
-    if (!read_ok) return;
+    if (!read_ok)
+      return;
   }
   bool inBoundary = false;
   const size_t addr = mHistogram.address(mPosition, &inBoundary);
@@ -294,7 +294,8 @@ void BinNAMDLogThread::run() {
             const auto item = map_iterator.value()[lineNumber];
             energyBinning[i](tmpFields, item, read_ok);
             if (!read_ok) {
-              emit error("Failed to read file. Please check the format of the log.");
+              emit error(
+                  "Failed to read file. Please check the format of the log.");
             }
           }
         } else {
@@ -375,7 +376,8 @@ doBinningVector::doBinningVector(HistogramVector<double> &histogram,
       mPosition(mHistogram.dimension(), 0.0) {}
 
 void doBinningVector::operator()(const QVector<QStringRef> &fields,
-                                 const std::vector<double> &data, bool &read_ok) {
+                                 const std::vector<double> &data,
+                                 bool &read_ok) {
   // get the position of current point from trajectory
   for (size_t i = 0; i < mPosition.size(); ++i) {
     mPosition[i] = fields[mColumn[i]].toDouble(&read_ok);

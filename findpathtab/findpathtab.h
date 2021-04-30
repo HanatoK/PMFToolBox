@@ -30,8 +30,7 @@ namespace Ui {
 class FindPathTab;
 }
 
-class FindPathTab : public QWidget
-{
+class FindPathTab : public QWidget {
   Q_OBJECT
 
 public:
@@ -39,7 +38,8 @@ public:
   ~FindPathTab();
   void setupAvailableAlgorithms();
   Graph::FindPathAlgorithm selectedAlgorithm() const;
-  void addPatch(const QString& center, const QVector<double>& length, const double value);
+  void addPatch(const QString &center, const QVector<double> &length,
+                const double value);
 
 public slots:
   void loadPMF();

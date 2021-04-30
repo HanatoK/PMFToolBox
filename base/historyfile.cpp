@@ -19,9 +19,7 @@
 
 #include "base/historyfile.h"
 
-HistoryReaderThread::HistoryReaderThread(QObject *parent): QThread(parent)
-{
-}
+HistoryReaderThread::HistoryReaderThread(QObject *parent) : QThread(parent) {}
 
 HistoryReaderThread::~HistoryReaderThread() {
   // am I doing the right things?
@@ -32,8 +30,7 @@ HistoryReaderThread::~HistoryReaderThread() {
   quit();
 }
 
-void HistoryReaderThread::readFromFile(const QStringList &fileNameList)
-{
+void HistoryReaderThread::readFromFile(const QStringList &fileNameList) {
   qDebug() << Q_FUNC_INFO;
   QMutexLocker locker(&mutex);
   mHistoryFilename = fileNameList;
@@ -42,8 +39,7 @@ void HistoryReaderThread::readFromFile(const QStringList &fileNameList)
   }
 }
 
-void HistoryReaderThread::run()
-{
+void HistoryReaderThread::run() {
   // TODO
   qDebug() << Q_FUNC_INFO;
   mutex.lock();
@@ -77,8 +73,9 @@ void HistoryReaderThread::run()
   mutex.unlock();
 }
 
-bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &PMFHistory, int fileIndex, int fileSize)
-{
+bool HistoryReaderThread::readFromStream(QTextStream &ifs,
+                                         HistogramPMFHistory &PMFHistory,
+                                         int fileIndex, int fileSize) {
   qDebug() << Q_FUNC_INFO;
   QString line;
   std::vector<double> pos(PMFHistory.dimension(), 0);
@@ -97,13 +94,16 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs, HistogramPMFHistory &
     if (readingProgress % refreshPeriod == 0 || readingProgress == 100) {
       if (previousProgress != readingProgress) {
         previousProgress = readingProgress;
-//        qDebug() << Q_FUNC_INFO << "reading " << readingProgress << "%";
-        if (readingProgress == 100) fileIndex += 1;
+        //        qDebug() << Q_FUNC_INFO << "reading " << readingProgress <<
+        //        "%";
+        if (readingProgress == 100)
+          fileIndex += 1;
         emit progress(qMin(maxFileIndex, fileIndex), readingProgress);
       }
     }
     tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
-    if (tmpFields.size() == 0) continue;
+    if (tmpFields.size() == 0)
+      continue;
     // header lines
     if (tmpFields[0].startsWith("#")) {
       if (tmpFields.size() == 2 && !firsttime) {

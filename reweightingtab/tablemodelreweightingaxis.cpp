@@ -178,8 +178,8 @@ Qt::ItemFlags TableModelReweightingAxis::flags(const QModelIndex &index) const {
   }
 }
 
-void TableModelReweightingAxis::addItem(const Axis &ax, int col, bool inPMF, bool reweightingTo)
-{
+void TableModelReweightingAxis::addItem(const Axis &ax, int col, bool inPMF,
+                                        bool reweightingTo) {
   qDebug() << "Calling" << Q_FUNC_INFO;
   AxisView tmp;
   tmp.mAxis = ax;
@@ -190,35 +190,34 @@ void TableModelReweightingAxis::addItem(const Axis &ax, int col, bool inPMF, boo
   emit layoutChanged();
 }
 
-std::vector<int> TableModelReweightingAxis::fromColumns() const
-{
+std::vector<int> TableModelReweightingAxis::fromColumns() const {
   std::vector<int> result;
   for (auto it = mAxisList.begin(); it != mAxisList.end(); ++it) {
-    if (it->mInPMF) result.push_back(it->mColumn);
+    if (it->mInPMF)
+      result.push_back(it->mColumn);
   }
   return result;
 }
 
-std::vector<Axis> TableModelReweightingAxis::targetAxis() const
-{
+std::vector<Axis> TableModelReweightingAxis::targetAxis() const {
   std::vector<Axis> result;
   for (auto it = mAxisList.begin(); it != mAxisList.end(); ++it) {
-    if (it->mReweightingTo) result.push_back(it->mAxis);
+    if (it->mReweightingTo)
+      result.push_back(it->mAxis);
   }
   return result;
 }
 
-std::vector<int> TableModelReweightingAxis::toColumns() const
-{
+std::vector<int> TableModelReweightingAxis::toColumns() const {
   std::vector<int> result;
   for (auto it = mAxisList.begin(); it != mAxisList.end(); ++it) {
-    if (it->mReweightingTo) result.push_back(it->mColumn);
+    if (it->mReweightingTo)
+      result.push_back(it->mColumn);
   }
   return result;
 }
 
-void TableModelReweightingAxis::clearAll()
-{
+void TableModelReweightingAxis::clearAll() {
   qDebug() << "Calling" << Q_FUNC_INFO;
   beginResetModel();
   mAxisList.clear();

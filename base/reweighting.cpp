@@ -38,14 +38,17 @@ void doReweighting::operator()(const std::vector<double> &fields) {
   }
 }
 
-void doReweighting::operator()(const QVector<QStringRef> &fields, bool &read_ok) {
+void doReweighting::operator()(const QVector<QStringRef> &fields,
+                               bool &read_ok) {
   for (size_t i = 0; i < posOrigin.size(); ++i) {
     posOrigin[i] = fields[originPositionIndex[i]].toDouble(&read_ok);
-    if (read_ok == false) return;
+    if (read_ok == false)
+      return;
   }
   for (size_t j = 0; j < posTarget.size(); ++j) {
     posTarget[j] = fields[targetPositionIndex[j]].toDouble(&read_ok);
-    if (read_ok == false) return;
+    if (read_ok == false)
+      return;
   }
   bool in_origin_grid = true;
   bool in_target_grid = true;
@@ -61,10 +64,13 @@ void doReweighting::operator()(const QVector<QStringRef> &fields, bool &read_ok)
 
 ReweightingThread::ReweightingThread(QObject *parent) : QThread(parent) {}
 
-void ReweightingThread::reweighting(const QStringList &trajectoryFileName, const QString &outputFileName,
+void ReweightingThread::reweighting(const QStringList &trajectoryFileName,
+                                    const QString &outputFileName,
                                     const HistogramScalar<double> &source,
-                                    const std::vector<int> &from, const std::vector<int> &to,
-                                    const std::vector<Axis> &targetAxis, double kbT, bool usePMF) {
+                                    const std::vector<int> &from,
+                                    const std::vector<int> &to,
+                                    const std::vector<Axis> &targetAxis,
+                                    double kbT, bool usePMF) {
   qDebug() << Q_FUNC_INFO;
   QMutexLocker locker(&mutex);
   mTrajectoryFileName = trajectoryFileName;
@@ -80,8 +86,7 @@ void ReweightingThread::reweighting(const QStringList &trajectoryFileName, const
   }
 }
 
-ReweightingThread::~ReweightingThread()
-{
+ReweightingThread::~ReweightingThread() {
   // am I doing the right things?
   qDebug() << Q_FUNC_INFO;
   mutex.lock();
@@ -90,8 +95,7 @@ ReweightingThread::~ReweightingThread()
   quit();
 }
 
-void ReweightingThread::run()
-{
+void ReweightingThread::run() {
   qDebug() << Q_FUNC_INFO;
   qDebug() << Q_FUNC_INFO << ": from columns " << mFromColumn;
   qDebug() << Q_FUNC_INFO << ": to columns " << mToColumn;
@@ -99,10 +103,12 @@ void ReweightingThread::run()
   qDebug() << Q_FUNC_INFO << ": target axis " << mTargetAxis;
   mutex.lock();
   HistogramProbability result(mTargetAxis);
-  doReweighting reweightingObject(mSourceHistogram, result, mFromColumn, mToColumn, mKbT);
+  doReweighting reweightingObject(mSourceHistogram, result, mFromColumn,
+                                  mToColumn, mKbT);
   int numFile = 0;
   const QRegularExpression split_regex("[(),\\s]+");
-  for (auto it = mTrajectoryFileName.begin(); it != mTrajectoryFileName.end(); ++it) {
+  for (auto it = mTrajectoryFileName.begin(); it != mTrajectoryFileName.end();
+       ++it) {
     qDebug() << "Reading file " << (*it);
     QFile trajectoryFile(*it);
     const double fileSize = trajectoryFile.size();
@@ -127,9 +133,11 @@ void ReweightingThread::run()
         }
         tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
         // skip blank lines
-        if (tmpFields.size() <= 0) continue;
+        if (tmpFields.size() <= 0)
+          continue;
         // skip comment lines start with #
-        if (tmpFields[0].startsWith("#")) continue;
+        if (tmpFields[0].startsWith("#"))
+          continue;
         reweightingObject(tmpFields, read_ok);
         if (read_ok == false) {
           emit error("Failed to convert to number!");

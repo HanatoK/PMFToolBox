@@ -23,10 +23,10 @@
 #include "base/namdlogparser.h"
 #include "namdlogtab/tablemodelbinning.h"
 
-#include <QWidget>
-#include <QDialog>
 #include <QCheckBox>
+#include <QDialog>
 #include <QList>
+#include <QWidget>
 
 namespace Ui {
 class NAMDLogTab;
@@ -35,19 +35,20 @@ class NAMDLogTab;
 class selectEnergyTermDialog : public QDialog {
   Q_OBJECT
 public:
-  selectEnergyTermDialog(const QStringList& energyTitle, const QStringList& forceTitle, QWidget *parent = nullptr);
+  selectEnergyTermDialog(const QStringList &energyTitle,
+                         const QStringList &forceTitle,
+                         QWidget *parent = nullptr);
   QStringList selectedEnergyTitle() const;
   QStringList selectedForceTitle() const;
 
 private:
   QStringList mAvailableEnergyTitle;
   QStringList mAvailableForceTitle;
-  QList<QCheckBox*> mEnergyCheckList;
-  QList<QCheckBox*> mForceCheckList;
+  QList<QCheckBox *> mEnergyCheckList;
+  QList<QCheckBox *> mForceCheckList;
 };
 
-class NAMDLogTab : public QWidget
-{
+class NAMDLogTab : public QWidget {
   Q_OBJECT
 
 public:
@@ -79,12 +80,12 @@ private:
   std::vector<HistogramVector<double>> mForceHistogram;
 };
 
-class NAMDLogCLI: public QObject {
+class NAMDLogCLI : public QObject {
   Q_OBJECT
 public:
   explicit NAMDLogCLI(QObject *parent = nullptr);
   void start();
-  bool readJSON(const QString& jsonFilename);
+  bool readJSON(const QString &jsonFilename);
   ~NAMDLogCLI();
 public slots:
   void logReadingProgress(int x);
@@ -94,6 +95,7 @@ public slots:
                    std::vector<HistogramVector<double>> forceData);
 signals:
   void allDone();
+
 private:
   QString mLogFilename;
   QString mOutputPrefix;

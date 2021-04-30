@@ -98,7 +98,8 @@ struct doBinningScalar {
 public:
   doBinningScalar(HistogramScalar<double> &histogram,
                   const std::vector<int> &column);
-  void operator()(const QVector<QStringRef> &fields, double energy, bool& read_ok);
+  void operator()(const QVector<QStringRef> &fields, double energy,
+                  bool &read_ok);
   HistogramScalar<double> &mHistogram;
   const std::vector<int> mColumn;
   std::vector<double> mPosition;
