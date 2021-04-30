@@ -41,6 +41,7 @@ SOURCES += \
 
 HEADERS += \
     aboutdialog/aboutdialog.h \
+    base/common.h \
     base/graph.h \
     base/helper.h \
     base/histogram.h \

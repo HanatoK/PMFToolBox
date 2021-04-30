@@ -23,12 +23,12 @@
 #include <QFile>
 #include <QTextStream>
 
-AboutDialog::AboutDialog(QWidget *parent) :
-  QDialog(parent),
-  ui(new Ui::AboutDialog)
-{
+AboutDialog::AboutDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::AboutDialog) {
   ui->setupUi(this);
-
+  this->setWindowTitle("About " + QApplication::instance()->applicationName());
+  ui->label->setText(QApplication::instance()->applicationName() + " " +
+                     QApplication::instance()->applicationVersion());
   QList<AuthorInfo> authors = authorsInfo();
   for (int i = 0; i < authors.size(); ++i) {
     QLabel *nameLabel = new QLabel;
@@ -55,13 +55,9 @@ AboutDialog::AboutDialog(QWidget *parent) :
   }
 }
 
-AboutDialog::~AboutDialog()
-{
-  delete ui;
-}
+AboutDialog::~AboutDialog() { delete ui; }
 
-QString AboutDialog::getStringFromResource(const QString &res_file) const
-{
+QString AboutDialog::getStringFromResource(const QString &res_file) const {
   // partially swipe from QMMP's code
   QString ret_string;
   QFile file(res_file);
@@ -74,16 +70,15 @@ QString AboutDialog::getStringFromResource(const QString &res_file) const
   return ret_string;
 }
 
-QList<AuthorInfo> AboutDialog::authorsInfo() const
-{
+QList<AuthorInfo> AboutDialog::authorsInfo() const {
   QList<AuthorInfo> result;
   result.push_back(AuthorInfo{"Haochuan Chen", "summersnow9403@gmail.com"});
   return result;
 }
 
-QList<LicenseInfo> AboutDialog::licensesInfo() const
-{
+QList<LicenseInfo> AboutDialog::licensesInfo() const {
   QList<LicenseInfo> result;
-  result.push_back(LicenseInfo{"PMFToolBox", getStringFromResource(":/licenses/LICENSE")});
+  result.push_back(
+      LicenseInfo{"PMFToolBox", getStringFromResource(":/licenses/LICENSE")});
   return result;
 }

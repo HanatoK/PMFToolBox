@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
       , ui(new Ui::MainWindow)
 {
   ui->setupUi(this);
+  this->setWindowTitle(QApplication::instance()->applicationName());
   mReweightingTab = new ReweightingTab(this);
   mProjectPMFTab = new ProjectPMFTab(this);
   mHistoryPMFTab = new HistoryPMFTab(this);

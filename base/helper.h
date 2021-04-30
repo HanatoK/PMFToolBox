@@ -20,11 +20,10 @@
 #ifndef HELPER_H
 #define HELPER_H
 
-//#include <QRegExp>
+#include <QDebug>
 #include <QRegularExpression>
 #include <QString>
 #include <QStringList>
-#include <QDebug>
 #include <cmath>
 #include <deque>
 #include <iostream>
@@ -32,6 +31,8 @@
 #include <queue>
 #include <utility>
 #include <vector>
+
+QString getVersionString();
 
 template <class T>
 typename std::enable_if<!std::numeric_limits<T>::is_integer, bool>::type
@@ -73,7 +74,8 @@ template <typename T> T stringToNumber(const QString &str, bool *ok = nullptr) {
   }
 }
 
-template <typename T> T stringToNumber(const QStringRef &str, bool *ok = nullptr) {
+template <typename T>
+T stringToNumber(const QStringRef &str, bool *ok = nullptr) {
   // check signed integer type
   if constexpr (std::is_same<T, long long int>::value) {
     return str.toLongLong(ok);
@@ -103,8 +105,8 @@ template <typename T> T stringToNumber(const QStringRef &str, bool *ok = nullptr
 }
 
 template <typename T> std::vector<T> splitStringToNumbers(const QString &str) {
-  QVector<QStringRef> tmpFields = str.splitRef(QRegularExpression("[(),\\s]+"),
-                                               Qt::SkipEmptyParts);
+  QVector<QStringRef> tmpFields =
+      str.splitRef(QRegularExpression("[(),\\s]+"), Qt::SkipEmptyParts);
   std::vector<T> result;
   for (auto it = tmpFields.begin(); it != tmpFields.end(); ++it) {
     result.push_back(stringToNumber<T>(*it));
@@ -152,7 +154,7 @@ QString boolToString(bool x);
 double kbT(const double temperature, const QString &unit);
 
 template <typename T, typename Alloc>
-QDebug operator<<(QDebug dbg, const std::deque<T, Alloc>& data) {
+QDebug operator<<(QDebug dbg, const std::deque<T, Alloc> &data) {
   QString str{"("};
   for (auto it = data.begin(); it != data.end(); ++it) {
     str.append(QString::number(*it));

@@ -20,6 +20,7 @@
 #include "base/graph.h"
 #include "base/histogram.h"
 #include "base/namdlogparser.h"
+#include "base/helper.h"
 #include "mainwindow.h"
 #include "test/test.h"
 
@@ -53,7 +54,8 @@ void initTypes() {
 
 int runConsole(int argc, char *argv[]) {
   QCoreApplication a(argc, argv);
-  // TODO
+  a.setApplicationName("PMFToolBox");
+  a.setApplicationVersion(getVersionString());
   QCommandLineParser parser;
   parser.setApplicationDescription(QCoreApplication::translate(
       "main", "A toolbox to analyze and manipulate the output of potential of "
@@ -152,7 +154,8 @@ int runConsole(int argc, char *argv[]) {
 
 int runGui(int argc, char *argv[]) {
   QApplication a(argc, argv);
-
+  a.setApplicationName("PMFToolBox");
+  a.setApplicationVersion(getVersionString());
   MainWindow w;
   w.show();
   return a.exec();

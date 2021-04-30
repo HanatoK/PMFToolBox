@@ -18,8 +18,13 @@
 */
 
 #include "helper.h"
+#include "common.h"
 
 #include <QDebug>
+
+QString getVersionString() {
+  return QString("%1.%2.%3").arg(MAJOR_VERSION).arg(MINOR_VERSION).arg(RELEASE);
+}
 
 QString boolToString(bool x) {
   if (x == true) return "True";

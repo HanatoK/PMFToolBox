@@ -161,7 +161,7 @@ std::vector<double> HistogramBase::reverseAddress(size_t address,
   return pos;
 }
 
-QPair<size_t, bool> HistogramBase::neighbor(const std::vector<double> &position,
+std::pair<size_t, bool> HistogramBase::neighbor(const std::vector<double> &position,
                                             size_t axisIndex,
                                             bool previous) const {
   const double bin_width_i = mAxes[axisIndex].width();
@@ -173,14 +173,14 @@ QPair<size_t, bool> HistogramBase::neighbor(const std::vector<double> &position,
   }
   bool inBoundary;
   const size_t addr_neighbor = address(pos_next, &inBoundary);
-  return QPair(addr_neighbor, inBoundary);
+  return std::make_pair(addr_neighbor, inBoundary);
 }
 
-QPair<size_t, bool> HistogramBase::neighborByAddress(size_t address,
+std::pair<size_t, bool> HistogramBase::neighborByAddress(size_t address,
                                                      size_t axisIndex,
                                                      bool previous) const {
   if (address >= mHistogramSize)
-    return QPair(0, false);
+    return std::make_pair(0, false);
   std::vector<size_t> index(mNdim, 0);
   for (int i = mNdim - 1; i >= 0; --i) {
     index[i] = static_cast<size_t>(
@@ -196,7 +196,7 @@ QPair<size_t, bool> HistogramBase::neighborByAddress(size_t address,
       }
     } else {
       if (index[axisIndex] == 0) {
-        return QPair(0, false);
+        return std::make_pair(0, false);
       } else {
         index[axisIndex] -= 1;
       }
@@ -210,7 +210,7 @@ QPair<size_t, bool> HistogramBase::neighborByAddress(size_t address,
       }
     } else {
       if (index[axisIndex] == mAxes[axisIndex].mBins - 1) {
-        return QPair(0, false);
+        return std::make_pair(0, false);
       } else {
         index[axisIndex] += 1;
       }
@@ -220,12 +220,12 @@ QPair<size_t, bool> HistogramBase::neighborByAddress(size_t address,
   for (size_t i = 0; i < mNdim; ++i) {
     neighbour_address += index[i] * mAccu[i];
   }
-  return QPair(neighbour_address, true);
+  return std::make_pair(neighbour_address, true);
 }
 
-std::vector<QPair<size_t, bool>>
+std::vector<std::pair<size_t, bool>>
 HistogramBase::allNeighbor(const std::vector<double> &position) const {
-  std::vector<QPair<size_t, bool>> results(mNdim * 2);
+  std::vector<std::pair<size_t, bool>> results(mNdim * 2);
   for (size_t i = 0; i < mNdim; ++i) {
     results[i * 2] = neighbor(position, i, true);
     results[i * 2 + 1] = neighbor(position, i, false);
@@ -233,8 +233,8 @@ HistogramBase::allNeighbor(const std::vector<double> &position) const {
   return results;
 }
 
-std::vector<QPair<size_t, bool> > HistogramBase::allNeighborByAddress(size_t address) const {
-  std::vector<QPair<size_t, bool>> results(mNdim * 2);
+std::vector<std::pair<size_t, bool> > HistogramBase::allNeighborByAddress(size_t address) const {
+  std::vector<std::pair<size_t, bool>> results(mNdim * 2);
   for (size_t i = 0; i < mNdim; ++i) {
     results[i * 2] = neighborByAddress(address, i, true);
     results[i * 2 + 1] = neighborByAddress(address, i, false);
@@ -248,7 +248,12 @@ size_t HistogramBase::dimension() const { return mNdim; }
 
 std::vector<Axis> HistogramBase::axes() const { return mAxes; }
 
-std::vector<std::vector<double>> HistogramBase::pointTable() const {
+std::vector<std::vector<double>> HistogramBase::pointTable() {
+  return mPointTable;
+}
+
+const std::vector<std::vector<double> > &HistogramBase::pointTable() const
+{
   return mPointTable;
 }
 
