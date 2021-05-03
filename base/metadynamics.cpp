@@ -38,6 +38,31 @@ const HistogramVector<double> &Metadynamics::gradients() const {
   return mGradients;
 }
 
+void Metadynamics::writePMF(const QString &filename, bool wellTempered,
+                            double biasTemperature, double temperature) const {
+  if (wellTempered) {
+    auto tmpPMF = mPMF;
+    const double factor = (biasTemperature + temperature) / biasTemperature;
+    tmpPMF.applyFunction([=](double x) { return factor * x; });
+    tmpPMF.writeToFile(filename);
+  } else {
+    mPMF.writeToFile(filename);
+  }
+}
+
+void Metadynamics::writeGradients(const QString &filename, bool wellTempered,
+                                  double biasTemperature,
+                                  double temperature) const {
+  if (wellTempered) {
+    auto tmpGradients = mGradients;
+    const double factor = (biasTemperature + temperature) / biasTemperature;
+    tmpGradients.applyFunction([=](double x) { return factor * x; });
+    tmpGradients.writeToFile(filename);
+  } else {
+    mGradients.writeToFile(filename);
+  }
+}
+
 Metadynamics::HillRef::HillRef(const std::vector<double> &centers,
                                const std::vector<double> &sigma,
                                const double &height)
@@ -79,14 +104,14 @@ void Metadynamics::HillRef::calcGradients(
 
 SumHillsThread::SumHillsThread(QObject *parent) : QThread(parent) {}
 
-void SumHillsThread::sumHills(const std::vector<Axis> &ax, const qint64 strides,
-                              const QString &outputPrefix,
-                              const QString &HillsTrajectoryFilename) {
+void SumHillsThread::sumHills(
+    const std::vector<Axis> &ax, const qint64 strides,
+    const QString &HillsTrajectoryFilename) {
   qDebug() << Q_FUNC_INFO;
   QMutexLocker locker(&mutex);
   mMetaD.setupHistogram(ax);
   mHillsTrajectoryFilename = HillsTrajectoryFilename;
-  mOutputPrefix = outputPrefix;
+  //  mOutputPrefix = outputPrefix;
   mStrides = strides;
   if (!isRunning()) {
     start(LowPriority);
@@ -155,8 +180,7 @@ void SumHillsThread::run() {
       const Metadynamics::HillRef h(center, sigma, height);
       mMetaD.projectHill(h);
       if (numStep > 0 && mStrides > 0 && (numStep % mStrides == 0)) {
-        saveFiles(mOutputPrefix + QString::number(numStep) + ".pmf",
-                  mOutputPrefix + QString::number(numStep) + ".grad");
+        emit stridedResult(mMetaD);
       }
     }
   } else {

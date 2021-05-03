@@ -37,6 +37,8 @@ public:
   size_t dimension() const;
   const HistogramScalar<double>& PMF() const;
   const HistogramVector<double>& gradients() const;
+  void writePMF(const QString& filename, bool wellTempered, double biasTemperature, double temperature) const;
+  void writeGradients(const QString& filename, bool wellTempered, double biasTemperature, double temperature) const;
 private:
   HistogramScalar<double> mPMF;
   HistogramVector<double> mGradients;
@@ -47,12 +49,12 @@ class SumHillsThread: public QThread {
 public:
   SumHillsThread(QObject *parent = nullptr);
   void sumHills(const std::vector<Axis>& ax, const qint64 strides,
-                const QString& outputPrefix,
                 const QString& HillsTrajectoryFilename);
   void saveFiles(const QString& pmfFilename, const QString& gradFilename);
   ~SumHillsThread();
 signals:
   void done(Metadynamics result);
+  void stridedResult(Metadynamics result);
   void progress(qint64 percent);
   void error(QString msg);
 protected:
@@ -60,7 +62,7 @@ protected:
 private:
   QMutex mutex;
   QString mHillsTrajectoryFilename;
-  QString mOutputPrefix;
+//  QString mOutputPrefix;
   qint64 mStrides;
   Metadynamics mMetaD;
   static const int refreshPeriod = 5;

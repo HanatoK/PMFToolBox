@@ -32,6 +32,8 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     base/namdlogparser.cpp \
+    metadynamicstab/metadynamicstab.cpp \
+    metadynamicstab/tablemodelaxes.cpp \
     namdlogtab/namdlogtab.cpp \
     namdlogtab/tablemodelbinning.cpp \
     projectpmftab/projectpmftab.cpp \
@@ -58,6 +60,8 @@ HEADERS += \
     historypmftab/historypmftab.h \
     mainwindow.h \
     base/namdlogparser.h \
+    metadynamicstab/metadynamicstab.h \
+    metadynamicstab/tablemodelaxes.h \
     namdlogtab/namdlogtab.h \
     namdlogtab/tablemodelbinning.h \
     projectpmftab/projectpmftab.h \
@@ -71,6 +75,7 @@ FORMS += \
     findpathtab/findpathtab.ui \
     historypmftab/historypmftab.ui \
     mainwindow.ui \
+    metadynamicstab/metadynamicstab.ui \
     namdlogtab/namdlogtab.ui \
     projectpmftab/projectpmftab.ui \
     reweightingtab/reweightingtab.ui
