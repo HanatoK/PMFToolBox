@@ -6,34 +6,40 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>826</width>
-    <height>609</height>
+    <width>824</width>
+    <height>607</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="labelInputPMF">
-     <property name="text">
-      <string>Input PMF</string>
-     </property>
-    </widget>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="lineEditOutput"/>
    </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="lineEditInputPMF">
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2">
-    <widget class="QPushButton" name="pushButtonOpen">
-     <property name="text">
-      <string>Open</string>
-     </property>
-    </widget>
+   <item row="2" column="0" colspan="3">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="labelStart">
+       <property name="text">
+        <string>Start</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEditStart"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelEnd">
+       <property name="text">
+        <string>End</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEditEnd"/>
+     </item>
+    </layout>
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="labelOutput">
@@ -42,8 +48,12 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="lineEditOutput"/>
+   <item row="3" column="2">
+    <widget class="QPushButton" name="pushButtonFind">
+     <property name="text">
+      <string>Find</string>
+     </property>
+    </widget>
    </item>
    <item row="1" column="2">
     <widget class="QPushButton" name="pushButtonSaveTo">
@@ -52,35 +62,14 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QLabel" name="labelAlgorithm">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Algorithm</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="comboBoxAlgorithm"/>
-     </item>
-    </layout>
-   </item>
-   <item row="3" column="2">
-    <widget class="QPushButton" name="pushButtonFind">
-     <property name="text">
-      <string>Find</string>
-     </property>
-    </widget>
-   </item>
    <item row="4" column="0" colspan="3">
     <widget class="QSplitter" name="splitter">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -150,42 +139,46 @@
      </widget>
     </widget>
    </item>
-   <item row="2" column="0" colspan="3">
-    <layout class="QHBoxLayout" name="horizontalLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="labelInputPMF">
+     <property name="text">
+      <string>Input PMF</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QPushButton" name="pushButtonOpen">
+     <property name="text">
+      <string>Open</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QLabel" name="labelStart">
+      <widget class="QLabel" name="labelAlgorithm">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
-        <string>Start</string>
+        <string>Algorithm</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEditStart"/>
-     </item>
-     <item>
-      <widget class="QLabel" name="labelEnd">
-       <property name="text">
-        <string>End</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEditEnd"/>
+      <widget class="QComboBox" name="comboBoxAlgorithm"/>
      </item>
     </layout>
    </item>
-   <item row="5" column="0" colspan="3">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="lineEditInputPMF">
+     <property name="readOnly">
+      <bool>true</bool>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
+    </widget>
    </item>
   </layout>
  </widget>
