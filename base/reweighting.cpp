@@ -111,13 +111,13 @@ void ReweightingThread::run() {
        ++it) {
     qDebug() << "Reading file " << (*it);
     QFile trajectoryFile(*it);
-    const double fileSize = trajectoryFile.size();
     if (trajectoryFile.open(QFile::ReadOnly)) {
+      const double fileSize = trajectoryFile.size();
       QTextStream ifs(&trajectoryFile);
       QString line;
       QVector<QStringRef> tmpFields;
       double readSize = 0;
-      int previousProgress = 0;
+      qint64 previousProgress = 0;
       bool read_ok = true;
       while (!ifs.atEnd()) {
         line.clear();

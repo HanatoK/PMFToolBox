@@ -23,6 +23,7 @@
 #include "base/helper.h"
 #include "mainwindow.h"
 #include "test/test.h"
+#include "base/metadynamics.h"
 
 #include <QApplication>
 #include <QCommandLineOption>
@@ -50,6 +51,7 @@ void initTypes() {
   qRegisterMetaType<std::vector<HistogramVector<double>>>(
       "std::vector<HistogramVector<double>>");
   qRegisterMetaType<PMFPathFinder>("PMFPathFinder");
+  qRegisterMetaType<Metadynamics>("Metadynamics");
 }
 
 int runConsole(int argc, char *argv[]) {

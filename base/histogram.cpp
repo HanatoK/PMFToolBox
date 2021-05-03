@@ -249,10 +249,6 @@ size_t HistogramBase::dimension() const { return mNdim; }
 
 std::vector<Axis> HistogramBase::axes() const { return mAxes; }
 
-std::vector<std::vector<double>> HistogramBase::pointTable() {
-  return mPointTable;
-}
-
 const std::vector<std::vector<double>> &HistogramBase::pointTable() const {
   return mPointTable;
 }
@@ -407,6 +403,20 @@ double Axis::setWidth(double new_width) {
   mBins = std::nearbyintl((mUpperBound - mLowerBound) / new_width);
   mWidth = mBins == 0 ? new_width : (mUpperBound - mLowerBound) / double(mBins);
   return mWidth;
+}
+
+double Axis::dist2(double x, double reference) const {
+  double dist = x - reference;
+  if (!periodic()) {
+    return dist * dist;
+  } else {
+    // wrap the absolute value of dist
+    dist = std::abs(dist);
+    while (dist > 0.5 * period()) {
+      dist -= period();
+    }
+    return dist * dist;
+  }
 }
 
 bool Axis::realPeriodic() const {

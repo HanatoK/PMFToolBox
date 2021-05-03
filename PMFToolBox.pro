@@ -21,6 +21,7 @@ SOURCES += \
     base/helper.cpp \
     base/histogram.cpp \
     base/historyfile.cpp \
+    base/metadynamics.cpp \
     base/pathfinderthread.cpp \
     base/plot.cpp \
     base/reweighting.cpp \
@@ -46,6 +47,7 @@ HEADERS += \
     base/helper.h \
     base/histogram.h \
     base/historyfile.h \
+    base/metadynamics.h \
     base/pathfinderthread.h \
     base/plot.h \
     base/reweighting.h \

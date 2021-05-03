@@ -59,6 +59,7 @@ public:
   double setLowerBound(double newLowerBound);
   double setUpperBound(double newUpperBound);
   double setWidth(double new_width);
+  double dist2(double x, double reference) const;
   bool realPeriodic() const;
   bool periodic() const;
   double period() const;
@@ -117,7 +118,6 @@ public:
   size_t histogramSize() const;
   size_t dimension() const;
   std::vector<Axis> axes() const;
-  std::vector<std::vector<double>> pointTable();
   const std::vector<std::vector<double>>& pointTable() const;
 
 protected:
