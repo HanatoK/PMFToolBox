@@ -108,9 +108,9 @@ bool TableModelAxes::setData(const QModelIndex &index, const QVariant &value,
     }
     case 3: {
       const QString newPbc = value.toString();
-      if (newPbc == "True") {
+      if (newPbc == "true") {
         ax.setPeriodicity(true, ax.lowerBound(), ax.upperBound());
-      } else if (newPbc == "False") {
+      } else if (newPbc == "false") {
         ax.setPeriodicity(false, ax.lowerBound(), ax.upperBound());
       } else {
         return false;
@@ -155,4 +155,13 @@ bool TableModelAxes::removeRows(int position, int rows,
   }
   endRemoveRows();
   return true;
+}
+
+std::vector<Axis> TableModelAxes::targetAxis() const
+{
+  std::vector<Axis> result;
+  for (const auto &i : mAxisList) {
+    result.push_back(i.mAxis);
+  }
+  return result;
 }

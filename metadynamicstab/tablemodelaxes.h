@@ -25,6 +25,7 @@ public:
                   const QModelIndex &index = QModelIndex()) override;
   bool removeRows(int position, int rows,
                   const QModelIndex &index = QModelIndex()) override;
+  std::vector<Axis> targetAxis() const;
 
 private:
   QList<AxisView> mAxisList;

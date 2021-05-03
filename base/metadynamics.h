@@ -54,7 +54,7 @@ public:
   ~SumHillsThread();
 signals:
   void done(Metadynamics result);
-  void stridedResult(Metadynamics result);
+  void stridedResult(qint64 step, Metadynamics result);
   void progress(qint64 percent);
   void error(QString msg);
 protected:

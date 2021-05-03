@@ -180,7 +180,7 @@ void SumHillsThread::run() {
       const Metadynamics::HillRef h(center, sigma, height);
       mMetaD.projectHill(h);
       if (numStep > 0 && mStrides > 0 && (numStep % mStrides == 0)) {
-        emit stridedResult(mMetaD);
+        emit stridedResult(numStep, mMetaD);
       }
     }
   } else {

@@ -294,6 +294,13 @@ Axis::Axis(double lowerBound, double upperBound, size_t bins, bool periodic)
   mPeriodicUpperBound = mUpperBound;
 }
 
+void Axis::setPeriodicity(bool periodic, double periodicLower, double periodicUpper)
+{
+  mPeriodic = periodic;
+  mPeriodicLowerBound = periodicLower;
+  mPeriodicUpperBound = periodicUpper;
+}
+
 double Axis::width() const { return mWidth; }
 
 size_t Axis::bin() const { return mBins; }

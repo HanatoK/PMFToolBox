@@ -33,11 +33,13 @@ MainWindow::MainWindow(QWidget *parent)
   mHistoryPMFTab = new HistoryPMFTab(this);
   mNAMDLogTab = new NAMDLogTab(this);
   mFindPathTab = new FindPathTab(this);
+  mMetadynamicsTab = new MetadynamicsTab(this);
   ui->tabWidget->addTab(mReweightingTab, "Reweighting");
   ui->tabWidget->addTab(mProjectPMFTab, "Project PMF");
   ui->tabWidget->addTab(mHistoryPMFTab, "History PMF");
   ui->tabWidget->addTab(mNAMDLogTab, "NAMD log");
   ui->tabWidget->addTab(mFindPathTab, "Find MFEP");
+  ui->tabWidget->addTab(mMetadynamicsTab, "Metadynamics");
   connect(ui->pushButtonAboutQt, &QPushButton::clicked, this,
           &QApplication::aboutQt);
   connect(ui->pushButtonAbout, &QPushButton::clicked, this,

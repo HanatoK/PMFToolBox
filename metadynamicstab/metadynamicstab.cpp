@@ -12,6 +12,14 @@ MetadynamicsTab::MetadynamicsTab(QWidget *parent) :
   ui->tableViewAxis->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
   connect(ui->pushButtonOpen, &QPushButton::clicked, this, &MetadynamicsTab::loadTrajectory);
   connect(ui->pushButtonSave, &QPushButton::clicked, this, &MetadynamicsTab::saveFile);
+  connect(ui->checkBoxWellTempered, &QCheckBox::toggled, this, &MetadynamicsTab::toggleWellTempered);
+  connect(ui->pushButtonRun, &QPushButton::clicked, this, &MetadynamicsTab::runSumHills);
+  connect(ui->pushButtonAddAxis, &QPushButton::clicked, this, &MetadynamicsTab::addAxis);
+  connect(ui->pushButtonRemoveAxis, &QPushButton::clicked, this, &MetadynamicsTab::removeAxis);
+  connect(&mWorkerThread, &SumHillsThread::stridedResult, this, &MetadynamicsTab::intermediate);
+  connect(&mWorkerThread, &SumHillsThread::done, this, &MetadynamicsTab::done);
+  ui->lineEditDeltaT->setEnabled(ui->checkBoxWellTempered->isChecked());
+  ui->lineEditTemperature->setEnabled(ui->checkBoxWellTempered->isChecked());
 }
 
 MetadynamicsTab::~MetadynamicsTab()
@@ -29,16 +37,79 @@ void MetadynamicsTab::loadTrajectory()
   ui->lineEditInputTrajectory->setText(inputFileName);
 }
 
+void MetadynamicsTab::intermediate(qint64 step, Metadynamics metad)
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  const QString outputPMFFilename = ui->lineEditOutput->text() + "_" + QString::number(step) + ".pmf";
+  const QString outputGradFilename = ui->lineEditOutput->text() + "_" + QString::number(step) + ".grad";
+  if (ui->checkBoxWellTempered->isChecked()) {
+    const double temperature = ui->lineEditTemperature->text().toDouble();
+    const double deltaT = ui->lineEditDeltaT->text().toDouble();
+    metad.writePMF(outputPMFFilename, true, deltaT, temperature);
+    metad.writeGradients(outputGradFilename, true, deltaT, temperature);
+  } else {
+    metad.writePMF(outputPMFFilename, false, 0.0, 1.0);
+    metad.writeGradients(outputGradFilename, false, 0.0, 1.0);
+  }
+}
+
+void MetadynamicsTab::done(Metadynamics metad)
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  const QString outputPMFFilename = ui->lineEditOutput->text() + ".pmf";
+  const QString outputGradFilename = ui->lineEditOutput->text() + ".grad";
+  if (ui->checkBoxWellTempered->isChecked()) {
+    const double temperature = ui->lineEditTemperature->text().toDouble();
+    const double deltaT = ui->lineEditDeltaT->text().toDouble();
+    metad.writePMF(outputPMFFilename, true, deltaT, temperature);
+    metad.writeGradients(outputGradFilename, true, deltaT, temperature);
+  } else {
+    metad.writePMF(outputPMFFilename, false, 0.0, 1.0);
+    metad.writeGradients(outputGradFilename, false, 0.0, 1.0);
+  }
+}
+
 void MetadynamicsTab::saveFile()
 {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  const QString outputFileName = QFileDialog::getSaveFileName(
+  const QString outputFilename = QFileDialog::getSaveFileName(
       this, tr("Save output to"), "", tr("All Files (*)"));
-  ui->lineEditOutput->setText(outputFileName);
+  ui->lineEditOutput->setText(outputFilename);
 }
 
 void MetadynamicsTab::runSumHills()
 {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  // TODO
+  const std::vector<Axis> ax = mTableModel->targetAxis();
+  const qint64 strides = std::nearbyint(ui->doubleSpinBoxStrides->value());
+  const QString& inputFilename = ui->lineEditInputTrajectory->text();
+  if (ax.empty() || inputFilename.size() == 0) {
+    // TODO: handle error
+    return;
+  }
+  mWorkerThread.sumHills(ax, strides, inputFilename);
+}
+
+void MetadynamicsTab::toggleWellTempered(bool enableWellTempered)
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  qDebug() << Q_FUNC_INFO << enableWellTempered;
+  ui->lineEditDeltaT->setEnabled(enableWellTempered);
+  ui->lineEditTemperature->setEnabled(enableWellTempered);
+}
+
+void MetadynamicsTab::addAxis()
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  const QModelIndex &index = ui->tableViewAxis->currentIndex();
+  mTableModel->insertRows(index.row(), 1);
+  emit mTableModel->layoutChanged();
+}
+
+void MetadynamicsTab::removeAxis()
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  const QModelIndex &index = ui->tableViewAxis->currentIndex();
+  mTableModel->removeRows(index.row(), 1);
+  emit mTableModel->layoutChanged();
 }

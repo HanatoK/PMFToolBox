@@ -25,6 +25,7 @@
 #include "historypmftab/historypmftab.h"
 #include "namdlogtab/namdlogtab.h"
 #include "findpathtab/findpathtab.h"
+#include "metadynamicstab/metadynamicstab.h"
 
 #include <QMainWindow>
 
@@ -53,5 +54,6 @@ private:
   HistoryPMFTab *mHistoryPMFTab;
   NAMDLogTab *mNAMDLogTab;
   FindPathTab *mFindPathTab;
+  MetadynamicsTab *mMetadynamicsTab;
 };
 #endif // MAINWINDOW_H
