@@ -104,6 +104,7 @@ int runConsole(int argc, char *argv[]) {
   }
   const QString jsonFile = jsonFilenameList.first();
   // TODO: very redundant, consider a common base class for all CLI objects!
+  // TODO: better error handling!
   QObject* CLIObject = nullptr;
   if (parser.isSet(projectOption)) {
     if (readProjectPMFJson(jsonFile)) {

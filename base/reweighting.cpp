@@ -120,7 +120,6 @@ void ReweightingThread::run() {
       qint64 previousProgress = 0;
       bool read_ok = true;
       while (!ifs.atEnd()) {
-        line.clear();
         ifs.readLineInto(&line);
         readSize += line.size() + 1;
         const int readingProgress = std::nearbyint(readSize / fileSize * 100);

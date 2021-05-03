@@ -87,7 +87,6 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs,
   const QRegularExpression split_regex("\\s+");
   const int maxFileIndex = mHistoryFilename.size() - 1;
   while (!ifs.atEnd()) {
-    line.clear();
     ifs.readLineInto(&line);
     readSize += line.size() + 1;
     const int readingProgress = std::nearbyint(readSize / fileSize * 100);

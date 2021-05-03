@@ -191,7 +191,6 @@ bool HistogramScalar<T>::readFromStream(QTextStream &ifs) {
   size_t dataLines = 0;
   const QRegularExpression split_regex("\\s+");
   while (!ifs.atEnd()) {
-    line.clear();
     ifs.readLineInto(&line);
     tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
     // skip blank lines
@@ -487,7 +486,6 @@ bool HistogramVector<T>::readFromStream(QTextStream &ifs,
   size_t dataLines = 0;
   const QRegularExpression split_regex("\\s+");
   while (!ifs.atEnd()) {
-    line.clear();
     tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
     // skip blank lines
     if (tmpFields.size() == static_cast<int>(mNdim + mMultiplicity)) {
