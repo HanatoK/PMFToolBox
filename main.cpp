@@ -101,6 +101,7 @@ int runConsole(int argc, char *argv[]) {
     return 1;
   }
   const QString jsonFile = jsonFilenameList.first();
+  // TODO: very redundant, consider a common base class for all CLI objects!
   QObject* CLIObject = nullptr;
   if (parser.isSet(projectOption)) {
     if (readProjectPMFJson(jsonFile)) {
@@ -147,6 +148,14 @@ int runConsole(int argc, char *argv[]) {
       qDebug() << "Error occured!";
       a.exit(1);
       return 1;
+    }
+  } else if (parser.isSet(mfepOption)) {
+    CLIObject = new FindPathCLI(&a);
+    auto FindPathCLIObject = dynamic_cast<FindPathCLI*>(CLIObject);
+    if (FindPathCLIObject->readJSON(jsonFile)) {
+      QObject::connect(FindPathCLIObject, &FindPathCLI::allDone,
+                       &a, QCoreApplication::quit);
+      FindPathCLIObject->start();
     }
   }
   return a.exec();

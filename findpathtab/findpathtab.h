@@ -60,4 +60,28 @@ private:
   QMap<QString, Graph::FindPathAlgorithm> mAvailableAlgorithms;
 };
 
+class FindPathCLI: public QObject {
+  Q_OBJECT
+public:
+  explicit FindPathCLI(QObject *parent = nullptr);
+  bool readJSON(const QString &jsonFilename);
+  void start();
+  void saveFile();
+  ~FindPathCLI();
+public slots:
+  void findPathDone(const PMFPathFinder &result);
+signals:
+  void allDone();
+private:
+  QString mInputPMF;
+  QString mOutputPrefix;
+  QString mStart;
+  QString mEnd;
+  int mAlgorithm;
+  std::vector<GridDataPatch> mPatchList;
+  HistogramPMF mPMF;
+  PMFPathFinderThread mPMFPathFinderThread;
+  PMFPathFinder mPMFPathFinder;
+};
+
 #endif // FINDPATHTAB_H

@@ -683,6 +683,8 @@ void PMFPathFinder::writePath(const QString &filename) const {
       out_stream << '\n';
     }
     out_stream.flush();
+  } else {
+    qWarning() << "Failed to open file:" << filename;
   }
 }
 
@@ -707,6 +709,8 @@ void PMFPathFinder::writeVisitedRegion(const QString &filename) const {
     }
     out_stream.flush();
     out_stream.reset();
+  } else {
+    qWarning() << "Failed to open file:" << filename;
   }
 }
 

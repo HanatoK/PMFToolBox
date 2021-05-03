@@ -234,7 +234,7 @@ bool HistogramScalar<T>::readFromFile(const QString &filename) {
     QTextStream stream(&inputFile);
     return readFromStream(stream);
   } else {
-    qDebug() << Q_FUNC_INFO << ": failed to open file!";
+    qWarning() << "Failed to open file:" << filename;
     return false;
   }
 }
@@ -528,7 +528,7 @@ bool HistogramVector<T>::readFromFile(const QString &filename) {
     QTextStream stream(&inputFile);
     return readFromStream(stream);
   } else {
-    qDebug() << Q_FUNC_INFO << ": failed to open file!";
+    qWarning() << "Failed to open file:" << filename;
     return false;
   }
 }

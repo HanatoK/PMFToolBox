@@ -22,6 +22,10 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QJsonArray>
+#include <QJsonParseError>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 FindPathTab::FindPathTab(QWidget *parent)
     : QWidget(parent), ui(new Ui::FindPathTab),
@@ -224,4 +228,79 @@ void FindPathTab::removePatch() {
     mPatchTable->removeRows(row, 1, QModelIndex());
   }
   ui->tableViewPatch->setCurrentIndex(ui->tableViewPatch->currentIndex());
+}
+
+FindPathCLI::FindPathCLI(QObject *parent): QObject(parent)
+{
+  connect(&mPMFPathFinderThread, &PMFPathFinderThread::PathFinderDone, this,
+          &FindPathCLI::findPathDone);
+}
+
+bool FindPathCLI::readJSON(const QString &jsonFilename)
+{
+  qDebug() << "Reading" << jsonFilename;
+  QFile loadFile(jsonFilename);
+  if (!loadFile.open(QIODevice::ReadOnly)) {
+    qWarning() << QString("Could not open json file") + jsonFilename;
+    return false;
+  }
+  const QByteArray jsonData = loadFile.readAll();
+  QJsonParseError jsonParseError;
+  const QJsonDocument loadDoc(
+      QJsonDocument::fromJson(jsonData, &jsonParseError));
+  if (loadDoc.isNull()) {
+    qWarning() << QString("Invalid json file:") + jsonFilename;
+    qWarning() << "Json parse error:" << jsonParseError.errorString();
+    return false;
+  }
+  mInputPMF = loadDoc["Input PMF"].toString();
+  mOutputPrefix = loadDoc["Output"].toString();
+  mStart = loadDoc["Start"].toString();
+  mEnd = loadDoc["End"].toString();
+  mAlgorithm = loadDoc["Algorithm"].toInt();
+  const QJsonArray jsonPatches = loadDoc["Patches"].toArray();
+  for (const auto &a: jsonPatches) {
+    const auto jsonPatch = a.toObject();
+    const QString patchCenter = jsonPatch["Center"].toString();
+    const QString patchLength = jsonPatch["Lengths"].toString();
+    const double patchValue = jsonPatch["Value"].toDouble();
+    mPatchList.push_back(GridDataPatch{splitStringToNumbers<double>(patchCenter),
+                                       splitStringToNumbers<double>(patchLength),
+                                       patchValue});
+  }
+  HistogramScalar<double> inputPMFHistogram;
+  const Graph::FindPathMode mode = Graph::FindPathMode::MFEPMode;
+  if (inputPMFHistogram.readFromFile(mInputPMF)) {
+    // TODO: check if the input is valid!
+    mPMFPathFinder.setup(inputPMFHistogram, mPatchList,
+                         splitStringToNumbers<double>(mStart),
+                         splitStringToNumbers<double>(mEnd),
+                         mode, static_cast<Graph::FindPathAlgorithm>(mAlgorithm));
+    return true;
+  } else {
+    qWarning() << "Failed to read from" << mInputPMF;
+    return false;
+  }
+}
+
+void FindPathCLI::start()
+{
+  mPMFPathFinderThread.findPath(mPMFPathFinder);
+}
+
+FindPathCLI::~FindPathCLI()
+{
+
+}
+
+void FindPathCLI::findPathDone(const PMFPathFinder &result)
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  mPMFPathFinder = result;
+  mPMFPathFinder.writePath(mOutputPrefix + ".path");
+  mPMFPathFinder.writeVisitedRegion(mOutputPrefix + ".region");
+  if (!mPMFPathFinder.patchList().empty()) {
+    mPMFPathFinder.writePatchedPMF(mOutputPrefix + ".patched");
+  }
+  emit allDone();
 }
