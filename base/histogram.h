@@ -59,7 +59,7 @@ public:
   double setLowerBound(double newLowerBound);
   double setUpperBound(double newUpperBound);
   double setWidth(double new_width);
-  double dist2(double x, double reference) const;
+  double dist(double x, double reference) const;
   bool realPeriodic() const;
   bool periodic() const;
   double period() const;

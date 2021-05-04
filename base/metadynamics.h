@@ -27,12 +27,6 @@ public:
     const std::vector<double>& mCentersRef;
     const std::vector<double>& mSigmasRef;
     const double& mHeightRef;
-    void calcEnergy(const std::vector<double>& position,
-                    const std::vector<Axis>& axes,
-                    double* energyPtr = nullptr) const;
-    void calcGradient(const std::vector<double>& position,
-                      const std::vector<Axis>& axes,
-                      std::vector<double>* gradientsPtr = nullptr) const;
     void calcEnergyAndGradient(const std::vector<double>& position,
                                const std::vector<Axis>& axes,
                                double* energyPtr = nullptr,

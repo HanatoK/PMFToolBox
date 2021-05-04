@@ -246,7 +246,7 @@ size_t HistogramBase::histogramSize() const { return mHistogramSize; }
 
 size_t HistogramBase::dimension() const { return mNdim; }
 
-const std::vector<Axis>& HistogramBase::axes() const { return mAxes; }
+const std::vector<Axis> &HistogramBase::axes() const { return mAxes; }
 
 const std::vector<std::vector<double>> &HistogramBase::pointTable() const {
   return mPointTable;
@@ -294,8 +294,8 @@ Axis::Axis(double lowerBound, double upperBound, size_t bins, bool periodic)
   mPeriodicUpperBound = mUpperBound;
 }
 
-void Axis::setPeriodicity(bool periodic, double periodicLower, double periodicUpper)
-{
+void Axis::setPeriodicity(bool periodic, double periodicLower,
+                          double periodicUpper) {
   mPeriodic = periodic;
   mPeriodicLowerBound = periodicLower;
   mPeriodicUpperBound = periodicUpper;
@@ -411,17 +411,24 @@ double Axis::setWidth(double new_width) {
   return mWidth;
 }
 
-double Axis::dist2(double x, double reference) const {
-  double dist = x - reference;
+double Axis::dist(double x, double reference) const {
   if (!periodic()) {
-    return dist * dist;
+    return x - reference;
   } else {
-    // wrap the absolute value of dist
-    dist = std::abs(dist);
-    while (dist > 0.5 * period()) {
-      dist -= period();
+    x = wrap(x);
+    reference = wrap(reference);
+    const double dist = x - reference;
+    if (std::abs(dist) > (period() * 0.5)) {
+      if (reference > x) {
+        return (dist + period());
+      } else if (reference < x) {
+        return (dist - period());
+      } else {
+        return dist;
+      }
+    } else {
+      return dist;
     }
-    return dist * dist;
   }
 }
 

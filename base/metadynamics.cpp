@@ -28,11 +28,10 @@ void Metadynamics::projectHill(const Metadynamics::HillRef &h) {
     for (size_t j = 0; j < mPMF.dimension(); ++j) {
       pos[j] = pointTable[j][i];
     }
-    h.calcEnergy(pos, mPMF.axes(), &energy);
+    h.calcEnergyAndGradient(pos, mPMF.axes(), &energy, &gradients);
     const size_t addr = mPMF.address(pos);
     mPMF[addr] += -1.0 * energy;
     // mGradients shares the same axes
-    h.calcGradient(pos, mPMF.axes(), &gradients);
     for (size_t j = 0; j < mPMF.dimension(); ++j) {
       mGradients[addr * mPMF.dimension() + j] += -1.0 * gradients[j];
     }
@@ -118,40 +117,6 @@ Metadynamics::HillRef::HillRef(const std::vector<double> &centers,
                                const double &height)
     : mCentersRef(centers), mSigmasRef(sigma), mHeightRef(height) {}
 
-void Metadynamics::HillRef::calcEnergy(const std::vector<double> &position,
-                                       const std::vector<Axis> &axes,
-                                       double *energyPtr) const {
-  if (energyPtr) {
-    *energyPtr = 0.0;
-  } else {
-    return;
-  }
-  for (size_t i = 0; i < position.size(); ++i) {
-    const double dist2 = axes[i].dist2(position[i], mCentersRef[i]);
-    const double sigma2 = mSigmasRef[i] * mSigmasRef[i];
-    *energyPtr += dist2 / (2.0 * sigma2);
-  }
-  *energyPtr = mHeightRef * std::exp(-1.0 * (*energyPtr));
-}
-
-void Metadynamics::HillRef::calcGradient(
-    const std::vector<double> &position, const std::vector<Axis> &axes,
-    std::vector<double> *gradientsPtr) const {
-  if (gradientsPtr) {
-    gradientsPtr->assign(position.size(), 0.0);
-  } else {
-    return;
-  }
-  double energy = 0.0;
-  calcEnergy(position, axes, &energy);
-  for (size_t i = 0; i < position.size(); ++i) {
-    const double dist2_grad =
-        2.0 * std::sqrt(axes[i].dist2(position[i], mCentersRef[i]));
-    const double factor = -1.0 * energy / (2.0 * mSigmasRef[i] * mSigmasRef[i]);
-    (*gradientsPtr)[i] = dist2_grad * factor;
-  }
-}
-
 void Metadynamics::HillRef::calcEnergyAndGradient(
     const std::vector<double> &position, const std::vector<Axis> &axes,
     double *energyPtr, std::vector<double> *gradientsPtr) const {
@@ -166,10 +131,11 @@ void Metadynamics::HillRef::calcEnergyAndGradient(
     return;
   }
   for (size_t i = 0; i < position.size(); ++i) {
-    const double dist2 = axes[i].dist2(position[i], mCentersRef[i]);
+    const double dist = axes[i].dist(position[i], mCentersRef[i]);
+    const double dist2 = dist * dist;
     const double sigma2 = mSigmasRef[i] * mSigmasRef[i];
     *energyPtr += dist2 / (2.0 * sigma2);
-    (*gradientsPtr)[i] = -1.0 * std::sqrt(dist2) / sigma2;
+    (*gradientsPtr)[i] = -1.0 * dist / sigma2;
   }
   *energyPtr = mHeightRef * std::exp(-1.0 * (*energyPtr));
   for (size_t i = 0; i < position.size(); ++i) {

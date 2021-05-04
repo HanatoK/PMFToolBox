@@ -42,7 +42,8 @@ void MetadynamicsTab::loadTrajectory() {
   ui->lineEditInputTrajectory->setText(inputFileName);
 }
 
-void MetadynamicsTab::intermediate(qint64 step, HistogramScalar<double> PMF, HistogramVector<double> gradients) {
+void MetadynamicsTab::intermediate(qint64 step, HistogramScalar<double> PMF,
+                                   HistogramVector<double> gradients) {
   qDebug() << "Calling" << Q_FUNC_INFO;
   const QString outputPMFFilename =
       ui->lineEditOutput->text() + "_" + QString::number(step) + ".pmf";
@@ -52,14 +53,17 @@ void MetadynamicsTab::intermediate(qint64 step, HistogramScalar<double> PMF, His
     const double temperature = ui->lineEditTemperature->text().toDouble();
     const double deltaT = ui->lineEditDeltaT->text().toDouble();
     Metadynamics::writePMF(PMF, outputPMFFilename, true, deltaT, temperature);
-    Metadynamics::writeGradients(gradients, outputGradFilename, true, deltaT, temperature);
+    Metadynamics::writeGradients(gradients, outputGradFilename, true, deltaT,
+                                 temperature);
   } else {
     Metadynamics::writePMF(PMF, outputPMFFilename, false, 0.0, 1.0);
-    Metadynamics::writeGradients(gradients, outputGradFilename, false, 0.0, 1.0);
+    Metadynamics::writeGradients(gradients, outputGradFilename, false, 0.0,
+                                 1.0);
   }
 }
 
-void MetadynamicsTab::done(HistogramScalar<double> PMF, HistogramVector<double> gradients) {
+void MetadynamicsTab::done(HistogramScalar<double> PMF,
+                           HistogramVector<double> gradients) {
   qDebug() << "Calling" << Q_FUNC_INFO;
   const QString outputPMFFilename = ui->lineEditOutput->text() + ".pmf";
   const QString outputGradFilename = ui->lineEditOutput->text() + ".grad";
@@ -67,10 +71,12 @@ void MetadynamicsTab::done(HistogramScalar<double> PMF, HistogramVector<double> 
     const double temperature = ui->lineEditTemperature->text().toDouble();
     const double deltaT = ui->lineEditDeltaT->text().toDouble();
     Metadynamics::writePMF(PMF, outputPMFFilename, true, deltaT, temperature);
-    Metadynamics::writeGradients(gradients, outputGradFilename, true, deltaT, temperature);
+    Metadynamics::writeGradients(gradients, outputGradFilename, true, deltaT,
+                                 temperature);
   } else {
     Metadynamics::writePMF(PMF, outputPMFFilename, false, 0.0, 1.0);
-    Metadynamics::writeGradients(gradients, outputGradFilename, false, 0.0, 1.0);
+    Metadynamics::writeGradients(gradients, outputGradFilename, false, 0.0,
+                                 1.0);
   }
   ui->pushButtonRun->setEnabled(true);
   ui->pushButtonRun->setText(tr("Run"));
