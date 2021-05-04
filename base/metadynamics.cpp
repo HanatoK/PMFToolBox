@@ -3,14 +3,14 @@
 #include <QElapsedTimer>
 
 Metadynamics::Metadynamics(size_t numThreads):
-  mThreads(numThreads), mConds(numThreads), mMutexs(numThreads),
+  mThreads(numThreads), mCondVars(numThreads), mMutexes(numThreads),
   mTaskStates(numThreads, 0), mFirstTime(true), mShutdown(false) {
 //  mThreads.resize(numThreads);
   mNumBlocks = 0;
 }
 
 Metadynamics::Metadynamics(const std::vector<Axis> &ax, size_t numThreads):
-  mThreads(numThreads), mConds(numThreads), mMutexs(numThreads),
+  mThreads(numThreads), mCondVars(numThreads), mMutexes(numThreads),
   mTaskStates(numThreads, 0), mFirstTime(true), mShutdown(false) {
 //  mThreads.resize(numThreads);
   setupHistogram(ax);
@@ -20,11 +20,11 @@ Metadynamics::~Metadynamics()
 {
   std::cout << "Calling Metadynamics::~Metadynamics()\n";
   mShutdown = true;
-  for (size_t i = 0; i < mConds.size(); ++i) {
-    std::unique_lock<std::mutex> lk(mMutexs[i]);
+  for (size_t i = 0; i < mCondVars.size(); ++i) {
+    std::unique_lock<std::mutex> lk(mMutexes[i]);
     lk.unlock();
     mTaskStates[i] = 0;
-    mConds[i].notify_one();
+    mCondVars[i].notify_one();
   }
   for (size_t i = 0; i < mThreads.size(); ++i) {
     if (mThreads[i].joinable()) mThreads[i].join();
@@ -61,15 +61,15 @@ void Metadynamics::launchThreads(const Metadynamics::HillRef &h) {
   for (size_t i = 0; i < mThreads.size(); ++i) {
     mTaskStates[i] = 0;
     if (mFirstTime) mThreads[i] = std::thread(&Metadynamics::projectHillParallelWorker, this, i, std::cref(h));
-    if (!mFirstTime) mConds[i].notify_one();
+    if (!mFirstTime) mCondVars[i].notify_one();
   }
   if (mFirstTime) mFirstTime = false;
 }
 
 void Metadynamics::projectHillParallel() {
   for (size_t i = 0; i < mThreads.size(); ++i) {
-    std::unique_lock<std::mutex> lk(mMutexs[i]);
-    mConds[i].wait(lk, [this, i](){return mTaskStates[i] == 1;});
+    std::unique_lock<std::mutex> lk(mMutexes[i]);
+    mCondVars[i].wait(lk, [this, i](){return mTaskStates[i] == 1;});
   }
 }
 
@@ -110,7 +110,7 @@ void Metadynamics::writeGradients(const HistogramVector<double> gradients,
 void Metadynamics::projectHillParallelWorker(size_t threadIndex,
                                              const HillRef &h) {
   while (mTaskStates[threadIndex] == 0 && !mShutdown) {
-    std::unique_lock<std::mutex> lk(mMutexs[threadIndex]);
+    std::unique_lock<std::mutex> lk(mMutexes[threadIndex]);
     const std::vector<std::vector<double>> &pointTable = mPMF.pointTable();
     std::vector<double> pos(mPMF.dimension(), 0.0);
     std::vector<double> gradients(mPMF.dimension(), 0.0);
@@ -132,8 +132,8 @@ void Metadynamics::projectHillParallelWorker(size_t threadIndex,
       }
     }
     mTaskStates[threadIndex] = 1;
-    mConds[threadIndex].notify_one();
-    mConds[threadIndex].wait(lk, [this, threadIndex](){return mTaskStates[threadIndex] == 0;});
+    mCondVars[threadIndex].notify_one();
+    mCondVars[threadIndex].wait(lk, [this, threadIndex](){return mTaskStates[threadIndex] == 0;});
   }
 }
 

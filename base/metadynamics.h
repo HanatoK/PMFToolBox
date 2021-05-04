@@ -47,8 +47,8 @@ public:
 private:
   void projectHillParallelWorker(size_t threadIndex, const HillRef &h);
   std::vector<std::thread> mThreads;
-  std::vector<std::condition_variable> mConds;
-  std::vector<std::mutex> mMutexs;
+  std::vector<std::condition_variable> mCondVars;
+  std::vector<std::mutex> mMutexes;
   std::vector<int> mTaskStates;
   bool mFirstTime;
   bool mShutdown;
