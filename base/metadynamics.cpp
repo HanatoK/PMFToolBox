@@ -21,7 +21,7 @@ void Metadynamics::projectHill(const Metadynamics::HillRef &h) {
     }
     h.calcEnergy(pos, mPMF.axes(), &energy);
     const size_t addr = mPMF.address(pos);
-    pos[addr] += -1.0 * energy;
+    mPMF[addr] += -1.0 * energy;
     // mGradients shares the same axes
     h.calcGradients(pos, mPMF.axes(), &gradients);
     for (size_t j = 0; j < mPMF.dimension(); ++j) {
@@ -133,6 +133,7 @@ void SumHillsThread::run() {
   mutex.lock();
   QFile trajectoryFile(mHillsTrajectoryFilename);
   const QRegularExpression split_regex("[(),\\s]+");
+  qDebug() << "Reading file:" << mHillsTrajectoryFilename;
   if (trajectoryFile.open(QFile::ReadOnly)) {
     const double fileSize = trajectoryFile.size();
     QTextStream ifs(&trajectoryFile);

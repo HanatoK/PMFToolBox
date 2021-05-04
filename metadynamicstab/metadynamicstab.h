@@ -26,6 +26,7 @@ public slots:
   void toggleWellTempered(bool enableWellTempered);
   void addAxis();
   void removeAxis();
+  void progress(qint64 percent);
 private:
   Ui::MetadynamicsTab *ui;
   SumHillsThread mWorkerThread;
