@@ -8,8 +8,8 @@
 #include <tuple>
 #include <thread>
 #include <vector>
-#include <QFuture>
-#include <QtConcurrent/QtConcurrent>
+#include <condition_variable>
+#include <mutex>
 #include <QObject>
 #include <QThread>
 #include <QMutex>
@@ -34,6 +34,7 @@ public:
   };
   Metadynamics(size_t numThreads = std::thread::hardware_concurrency());
   Metadynamics(const std::vector<Axis>& ax, size_t numThreads = std::thread::hardware_concurrency());
+  ~Metadynamics();
   void setupHistogram(const std::vector<Axis>& ax);
   void projectHill(const HillRef& h);
   void launchThreads(const HillRef& h);
@@ -45,8 +46,12 @@ public:
   static void writeGradients(const HistogramVector<double> gradients, const QString& filename, bool wellTempered, double biasTemperature, double temperature);
 private:
   void projectHillParallelWorker(size_t threadIndex, const HillRef &h);
-//  std::vector<std::thread> mThreads;
-  QVector<QFuture<void>> mThreads;
+  std::vector<std::thread> mThreads;
+  std::vector<std::condition_variable> mConds;
+  std::vector<std::mutex> mMutexs;
+  std::vector<int> mTaskStates;
+  bool mFirstTime;
+  bool mShutdown;
   size_t mNumBlocks;
   HistogramScalar<double> mPMF;
   HistogramVector<double> mGradients;

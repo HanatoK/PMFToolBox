@@ -2,14 +2,33 @@
 
 #include <QElapsedTimer>
 
-Metadynamics::Metadynamics(size_t numThreads) {
-  mThreads.resize(numThreads);
+Metadynamics::Metadynamics(size_t numThreads):
+  mThreads(numThreads), mConds(numThreads), mMutexs(numThreads),
+  mTaskStates(numThreads, 0), mFirstTime(true), mShutdown(false) {
+//  mThreads.resize(numThreads);
   mNumBlocks = 0;
 }
 
-Metadynamics::Metadynamics(const std::vector<Axis> &ax, size_t numThreads) {
-  mThreads.resize(numThreads);
+Metadynamics::Metadynamics(const std::vector<Axis> &ax, size_t numThreads):
+  mThreads(numThreads), mConds(numThreads), mMutexs(numThreads),
+  mTaskStates(numThreads, 0), mFirstTime(true), mShutdown(false) {
+//  mThreads.resize(numThreads);
   setupHistogram(ax);
+}
+
+Metadynamics::~Metadynamics()
+{
+  std::cout << "Calling Metadynamics::~Metadynamics()\n";
+  mShutdown = true;
+  for (size_t i = 0; i < mConds.size(); ++i) {
+    std::unique_lock<std::mutex> lk(mMutexs[i]);
+    lk.unlock();
+    mTaskStates[i] = 0;
+    mConds[i].notify_one();
+  }
+  for (size_t i = 0; i < mThreads.size(); ++i) {
+    if (mThreads[i].joinable()) mThreads[i].join();
+  }
 }
 
 void Metadynamics::setupHistogram(const std::vector<Axis> &ax) {
@@ -39,18 +58,18 @@ void Metadynamics::projectHill(const Metadynamics::HillRef &h) {
 }
 
 void Metadynamics::launchThreads(const Metadynamics::HillRef &h) {
-  for (int i = 0; i < mThreads.size(); ++i) {
-    //    mThreads[i] = std::thread(&Metadynamics::projectHillParallelWorker,
-    //    this, i, std::cref(h));
-    mThreads[i] = QtConcurrent::run(
-        this, &Metadynamics::projectHillParallelWorker, i, std::cref(h));
+  for (size_t i = 0; i < mThreads.size(); ++i) {
+    mTaskStates[i] = 0;
+    if (mFirstTime) mThreads[i] = std::thread(&Metadynamics::projectHillParallelWorker, this, i, std::cref(h));
+    if (!mFirstTime) mConds[i].notify_one();
   }
+  if (mFirstTime) mFirstTime = false;
 }
 
 void Metadynamics::projectHillParallel() {
-  for (int i = 0; i < mThreads.size(); ++i) {
-    //    mThreads[i].join();
-    mThreads[i].waitForFinished();
+  for (size_t i = 0; i < mThreads.size(); ++i) {
+    std::unique_lock<std::mutex> lk(mMutexs[i]);
+    mConds[i].wait(lk, [this, i](){return mTaskStates[i] == 1;});
   }
 }
 
@@ -90,25 +109,31 @@ void Metadynamics::writeGradients(const HistogramVector<double> gradients,
 
 void Metadynamics::projectHillParallelWorker(size_t threadIndex,
                                              const HillRef &h) {
-  const std::vector<std::vector<double>> &pointTable = mPMF.pointTable();
-  std::vector<double> pos(mPMF.dimension(), 0.0);
-  std::vector<double> gradients(mPMF.dimension(), 0.0);
-  double energy = 0.0;
-  const size_t stride = mThreads.size();
-  for (size_t blockIndex = 0; blockIndex < mNumBlocks; ++blockIndex) {
-    const size_t i = blockIndex * stride + threadIndex;
-    if (i < mPMF.histogramSize()) {
-      for (size_t j = 0; j < mPMF.dimension(); ++j) {
-        pos[j] = pointTable[j][i];
-      }
-      h.calcEnergyAndGradient(pos, mPMF.axes(), &energy, &gradients);
-      const size_t addr = mPMF.address(pos);
-      mPMF[addr] += -1.0 * energy;
-      // mGradients shares the same axes
-      for (size_t j = 0; j < mPMF.dimension(); ++j) {
-        mGradients[addr * mPMF.dimension() + j] += -1.0 * gradients[j];
+  while (mTaskStates[threadIndex] == 0 && !mShutdown) {
+    std::unique_lock<std::mutex> lk(mMutexs[threadIndex]);
+    const std::vector<std::vector<double>> &pointTable = mPMF.pointTable();
+    std::vector<double> pos(mPMF.dimension(), 0.0);
+    std::vector<double> gradients(mPMF.dimension(), 0.0);
+    double energy = 0.0;
+    const size_t stride = mThreads.size();
+    for (size_t blockIndex = 0; blockIndex < mNumBlocks; ++blockIndex) {
+      const size_t i = blockIndex * stride + threadIndex;
+      if (i < mPMF.histogramSize()) {
+        for (size_t j = 0; j < mPMF.dimension(); ++j) {
+          pos[j] = pointTable[j][i];
+        }
+        h.calcEnergyAndGradient(pos, mPMF.axes(), &energy, &gradients);
+        const size_t addr = mPMF.address(pos);
+        mPMF[addr] += -1.0 * energy;
+        // mGradients shares the same axes
+        for (size_t j = 0; j < mPMF.dimension(); ++j) {
+          mGradients[addr * mPMF.dimension() + j] += -1.0 * gradients[j];
+        }
       }
     }
+    mTaskStates[threadIndex] = 1;
+    mConds[threadIndex].notify_one();
+    mConds[threadIndex].wait(lk, [this, threadIndex](){return mTaskStates[threadIndex] == 0;});
   }
 }
 
