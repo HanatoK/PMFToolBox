@@ -34,7 +34,7 @@ void Metadynamics::projectHill(const Metadynamics::HillRef &h) {
     // mGradients shares the same axes
     h.calcGradient(pos, mPMF.axes(), &gradients);
     for (size_t j = 0; j < mPMF.dimension(); ++j) {
-      mGradients[addr + j] += -1.0 * gradients[j];
+      mGradients[addr * mPMF.dimension() + j] += -1.0 * gradients[j];
     }
   }
 }
@@ -107,7 +107,7 @@ void Metadynamics::projectHillParallelWorker(size_t threadIndex,
       mPMF[addr] += -1.0 * energy;
       // mGradients shares the same axes
       for (size_t j = 0; j < mPMF.dimension(); ++j) {
-        mGradients[addr + j] += -1.0 * gradients[j];
+        mGradients[addr * mPMF.dimension() + j] += -1.0 * gradients[j];
       }
     }
   }
