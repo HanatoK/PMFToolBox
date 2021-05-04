@@ -20,8 +20,8 @@ public:
 public slots:
   void loadTrajectory();
   void saveFile();
-  void intermediate(qint64 step, Metadynamics metad);
-  void done(Metadynamics metad);
+  void intermediate(qint64 step, HistogramScalar<double> PMF, HistogramVector<double> gradients);
+  void done(HistogramScalar<double> PMF, HistogramVector<double> gradients);
   void runSumHills();
   void toggleWellTempered(bool enableWellTempered);
   void addAxis();

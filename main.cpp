@@ -45,13 +45,15 @@ void initTypes() {
   qRegisterMetaType<HistogramPMF>("HistogramPMF");
   qRegisterMetaType<HistogramProbability>("HistogramProbability");
   qRegisterMetaType<HistogramPMFHistory>("HistogramPMFHistory");
+  qRegisterMetaType<HistogramScalar<double>>("HistogramScalar<double>");
+  qRegisterMetaType<HistogramVector<double>>("HistogramVector<double>");
   qRegisterMetaType<NAMDLog>("NAMDLog");
   qRegisterMetaType<std::vector<HistogramScalar<double>>>(
       "std::vector<HistogramScalar<double>>");
   qRegisterMetaType<std::vector<HistogramVector<double>>>(
       "std::vector<HistogramVector<double>>");
   qRegisterMetaType<PMFPathFinder>("PMFPathFinder");
-  qRegisterMetaType<Metadynamics>("Metadynamics");
+//  qRegisterMetaType<Metadynamics>("Metadynamics");
 }
 
 int runConsole(int argc, char *argv[]) {

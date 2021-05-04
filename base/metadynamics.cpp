@@ -1,12 +1,21 @@
 #include "metadynamics.h"
 
-Metadynamics::Metadynamics() {}
+#include <QElapsedTimer>
 
-Metadynamics::Metadynamics(const std::vector<Axis> &ax) { setupHistogram(ax); }
+Metadynamics::Metadynamics(size_t numThreads) {
+    mThreads.resize(numThreads);
+    mNumBlocks = 0;
+}
+
+Metadynamics::Metadynamics(const std::vector<Axis> &ax, size_t numThreads) {
+    mThreads.resize(numThreads);
+  setupHistogram(ax);
+}
 
 void Metadynamics::setupHistogram(const std::vector<Axis> &ax) {
   mPMF = HistogramScalar<double>(ax);
   mGradients = HistogramVector<double>(ax, ax.size());
+  mNumBlocks = mPMF.histogramSize() / mThreads.size() + 1;
 }
 
 void Metadynamics::projectHill(const Metadynamics::HillRef &h) {
@@ -30,6 +39,21 @@ void Metadynamics::projectHill(const Metadynamics::HillRef &h) {
   }
 }
 
+ void Metadynamics::createThreads(const Metadynamics::HillRef &h)
+{
+  for (size_t i = 0; i < mThreads.size(); ++i) {
+    mThreads[i] = std::thread(&Metadynamics::projectHillParallelWorker, this,
+    i, std::cref(h));
+  }
+}
+
+ void Metadynamics::projectHillParallel()
+{
+  for (size_t i = 0; i < mThreads.size(); ++i) {
+    mThreads[i].join();
+  }
+}
+
 size_t Metadynamics::dimension() const { return mPMF.dimension(); }
 
 const HistogramScalar<double> &Metadynamics::PMF() const { return mPMF; }
@@ -38,28 +62,54 @@ const HistogramVector<double> &Metadynamics::gradients() const {
   return mGradients;
 }
 
-void Metadynamics::writePMF(const QString &filename, bool wellTempered,
-                            double biasTemperature, double temperature) const {
+void Metadynamics::writePMF(const HistogramScalar<double> &PMF,
+                            const QString &filename, bool wellTempered,
+                            double biasTemperature, double temperature) {
   if (wellTempered) {
-    auto tmpPMF = mPMF;
+    auto tmpPMF = PMF;
     const double factor = (biasTemperature + temperature) / biasTemperature;
     tmpPMF.applyFunction([=](double x) { return factor * x; });
     tmpPMF.writeToFile(filename);
   } else {
-    mPMF.writeToFile(filename);
+    PMF.writeToFile(filename);
   }
 }
 
-void Metadynamics::writeGradients(const QString &filename, bool wellTempered,
-                                  double biasTemperature,
-                                  double temperature) const {
+void Metadynamics::writeGradients(const HistogramVector<double> gradients,
+                                  const QString &filename, bool wellTempered,
+                                  double biasTemperature, double temperature) {
   if (wellTempered) {
-    auto tmpGradients = mGradients;
+    auto tmpGradients = gradients;
     const double factor = (biasTemperature + temperature) / biasTemperature;
     tmpGradients.applyFunction([=](double x) { return factor * x; });
     tmpGradients.writeToFile(filename);
   } else {
-    mGradients.writeToFile(filename);
+    gradients.writeToFile(filename);
+  }
+}
+
+void Metadynamics::projectHillParallelWorker(size_t threadIndex,
+                                             const HillRef &h) {
+  const std::vector<std::vector<double>> &pointTable = mPMF.pointTable();
+  std::vector<double> pos(mPMF.dimension(), 0.0);
+  std::vector<double> gradients(mPMF.dimension(), 0.0);
+  double energy = 0.0;
+  const size_t stride = mThreads.size();
+  for (size_t blockIndex = 0; blockIndex < mNumBlocks; ++blockIndex) {
+    const size_t i = blockIndex * stride + threadIndex;
+    if (i < mPMF.histogramSize()) {
+      for (size_t j = 0; j < mPMF.dimension(); ++j) {
+        pos[j] = pointTable[j][i];
+      }
+      h.calcEnergy(pos, mPMF.axes(), &energy);
+      const size_t addr = mPMF.address(pos);
+      mPMF[addr] += -1.0 * energy;
+      // mGradients shares the same axes
+      h.calcGradients(pos, mPMF.axes(), &gradients);
+      for (size_t j = 0; j < mPMF.dimension(); ++j) {
+        mGradients[addr + j] += -1.0 * gradients[j];
+      }
+    }
   }
 }
 
@@ -81,7 +131,7 @@ void Metadynamics::HillRef::calcEnergy(const std::vector<double> &position,
     const double sigma2 = mSigmasRef[i] * mSigmasRef[i];
     *energyPtr += dist2 / (2.0 * sigma2);
   }
-  *energyPtr = mHeightRef * std::exp(*energyPtr);
+  *energyPtr = mHeightRef * std::exp(-1.0 * (*energyPtr));
 }
 
 void Metadynamics::HillRef::calcGradients(
@@ -104,9 +154,8 @@ void Metadynamics::HillRef::calcGradients(
 
 SumHillsThread::SumHillsThread(QObject *parent) : QThread(parent) {}
 
-void SumHillsThread::sumHills(
-    const std::vector<Axis> &ax, const qint64 strides,
-    const QString &HillsTrajectoryFilename) {
+void SumHillsThread::sumHills(const std::vector<Axis> &ax, const qint64 strides,
+                              const QString &HillsTrajectoryFilename) {
   qDebug() << Q_FUNC_INFO;
   QMutexLocker locker(&mutex);
   mMetaD.setupHistogram(ax);
@@ -134,6 +183,8 @@ void SumHillsThread::run() {
   QFile trajectoryFile(mHillsTrajectoryFilename);
   const QRegularExpression split_regex("[(),\\s]+");
   qDebug() << "Reading file:" << mHillsTrajectoryFilename;
+  QElapsedTimer timer;
+  timer.start();
   if (trajectoryFile.open(QFile::ReadOnly)) {
     const double fileSize = trajectoryFile.size();
     QTextStream ifs(&trajectoryFile);
@@ -145,6 +196,7 @@ void SumHillsThread::run() {
     std::vector<double> center(mMetaD.dimension(), 0.0);
     std::vector<double> sigma(mMetaD.dimension(), 0.0);
     double height = 0.0;
+    const Metadynamics::HillRef h(center, sigma, height);
     while (!ifs.atEnd()) {
       // do we need to clear the line?
       ifs.readLineInto(&line);
@@ -178,15 +230,17 @@ void SumHillsThread::run() {
       if (!read_ok) {
         emit error(QString("Failed to read line:") + line);
       }
-      const Metadynamics::HillRef h(center, sigma, height);
-      mMetaD.projectHill(h);
+      mMetaD.createThreads(h);
+      mMetaD.projectHillParallel();
       if (numStep > 0 && mStrides > 0 && (numStep % mStrides == 0)) {
-        emit stridedResult(numStep, mMetaD);
+        emit stridedResult(numStep, mMetaD.PMF(), mMetaD.gradients());
       }
     }
   } else {
     emit error(QString("Cannot open file") + mHillsTrajectoryFilename);
   }
-  emit done(mMetaD);
+  qDebug() << "The summation of metadynamics hills takes" << timer.elapsed()
+           << "ms.";
+  emit done(mMetaD.PMF(), mMetaD.gradients());
   mutex.unlock();
 }

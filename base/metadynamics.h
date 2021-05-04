@@ -6,6 +6,8 @@
 #include "base/histogram.h"
 
 #include <tuple>
+#include <thread>
+#include <vector>
 #include <QObject>
 #include <QThread>
 #include <QMutex>
@@ -30,16 +32,21 @@ public:
                        const std::vector<Axis>& axes,
                        std::vector<double>* gradientsPtr = nullptr) const;
   };
-  Metadynamics();
-  Metadynamics(const std::vector<Axis>& ax);
+  Metadynamics(size_t numThreads = std::thread::hardware_concurrency());
+  Metadynamics(const std::vector<Axis>& ax, size_t numThreads = std::thread::hardware_concurrency());
   void setupHistogram(const std::vector<Axis>& ax);
   void projectHill(const HillRef& h);
+  void createThreads(const HillRef& h);
+  void projectHillParallel();
   size_t dimension() const;
   const HistogramScalar<double>& PMF() const;
   const HistogramVector<double>& gradients() const;
-  void writePMF(const QString& filename, bool wellTempered, double biasTemperature, double temperature) const;
-  void writeGradients(const QString& filename, bool wellTempered, double biasTemperature, double temperature) const;
+  static void writePMF(const HistogramScalar<double>& PMF, const QString& filename, bool wellTempered, double biasTemperature, double temperature);
+  static void writeGradients(const HistogramVector<double> gradients, const QString& filename, bool wellTempered, double biasTemperature, double temperature);
 private:
+  void projectHillParallelWorker(size_t threadIndex, const HillRef &h);
+  std::vector<std::thread> mThreads;
+  size_t mNumBlocks;
   HistogramScalar<double> mPMF;
   HistogramVector<double> mGradients;
 };
@@ -53,8 +60,8 @@ public:
   void saveFiles(const QString& pmfFilename, const QString& gradFilename);
   ~SumHillsThread();
 signals:
-  void done(Metadynamics result);
-  void stridedResult(qint64 step, Metadynamics result);
+  void done(HistogramScalar<double> PMFresult, HistogramVector<double> GradientsResult);
+  void stridedResult(qint64 step, HistogramScalar<double> PMFresult, HistogramVector<double> GradientsResult);
   void progress(qint64 percent);
   void error(QString msg);
 protected:
@@ -67,7 +74,5 @@ private:
   Metadynamics mMetaD;
   static const int refreshPeriod = 5;
 };
-
-Q_DECLARE_METATYPE(Metadynamics);
 
 #endif // METADYNAMICS_H
