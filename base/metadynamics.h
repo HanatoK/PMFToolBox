@@ -8,6 +8,8 @@
 #include <tuple>
 #include <thread>
 #include <vector>
+#include <QFuture>
+#include <QtConcurrent/QtConcurrent>
 #include <QObject>
 #include <QThread>
 #include <QMutex>
@@ -28,15 +30,19 @@ public:
     void calcEnergy(const std::vector<double>& position,
                     const std::vector<Axis>& axes,
                     double* energyPtr = nullptr) const;
-    void calcGradients(const std::vector<double>& position,
-                       const std::vector<Axis>& axes,
-                       std::vector<double>* gradientsPtr = nullptr) const;
+    void calcGradient(const std::vector<double>& position,
+                      const std::vector<Axis>& axes,
+                      std::vector<double>* gradientsPtr = nullptr) const;
+    void calcEnergyAndGradient(const std::vector<double>& position,
+                               const std::vector<Axis>& axes,
+                               double* energyPtr = nullptr,
+                               std::vector<double>* gradientsPtr = nullptr) const;
   };
   Metadynamics(size_t numThreads = std::thread::hardware_concurrency());
   Metadynamics(const std::vector<Axis>& ax, size_t numThreads = std::thread::hardware_concurrency());
   void setupHistogram(const std::vector<Axis>& ax);
   void projectHill(const HillRef& h);
-  void createThreads(const HillRef& h);
+  void launchThreads(const HillRef& h);
   void projectHillParallel();
   size_t dimension() const;
   const HistogramScalar<double>& PMF() const;
@@ -45,7 +51,8 @@ public:
   static void writeGradients(const HistogramVector<double> gradients, const QString& filename, bool wellTempered, double biasTemperature, double temperature);
 private:
   void projectHillParallelWorker(size_t threadIndex, const HillRef &h);
-  std::vector<std::thread> mThreads;
+//  std::vector<std::thread> mThreads;
+  QVector<QFuture<void>> mThreads;
   size_t mNumBlocks;
   HistogramScalar<double> mPMF;
   HistogramVector<double> mGradients;

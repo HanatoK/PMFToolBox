@@ -117,7 +117,7 @@ public:
   allNeighborByAddress(size_t address) const;
   size_t histogramSize() const;
   size_t dimension() const;
-  std::vector<Axis> axes() const;
+  const std::vector<Axis> &axes() const;
   const std::vector<std::vector<double>>& pointTable() const;
 
 protected:

@@ -3,12 +3,12 @@
 #include <QElapsedTimer>
 
 Metadynamics::Metadynamics(size_t numThreads) {
-    mThreads.resize(numThreads);
-    mNumBlocks = 0;
+  mThreads.resize(numThreads);
+  mNumBlocks = 0;
 }
 
 Metadynamics::Metadynamics(const std::vector<Axis> &ax, size_t numThreads) {
-    mThreads.resize(numThreads);
+  mThreads.resize(numThreads);
   setupHistogram(ax);
 }
 
@@ -32,25 +32,26 @@ void Metadynamics::projectHill(const Metadynamics::HillRef &h) {
     const size_t addr = mPMF.address(pos);
     mPMF[addr] += -1.0 * energy;
     // mGradients shares the same axes
-    h.calcGradients(pos, mPMF.axes(), &gradients);
+    h.calcGradient(pos, mPMF.axes(), &gradients);
     for (size_t j = 0; j < mPMF.dimension(); ++j) {
       mGradients[addr + j] += -1.0 * gradients[j];
     }
   }
 }
 
- void Metadynamics::createThreads(const Metadynamics::HillRef &h)
-{
-  for (size_t i = 0; i < mThreads.size(); ++i) {
-    mThreads[i] = std::thread(&Metadynamics::projectHillParallelWorker, this,
-    i, std::cref(h));
+void Metadynamics::launchThreads(const Metadynamics::HillRef &h) {
+  for (int i = 0; i < mThreads.size(); ++i) {
+    //    mThreads[i] = std::thread(&Metadynamics::projectHillParallelWorker,
+    //    this, i, std::cref(h));
+    mThreads[i] = QtConcurrent::run(
+        this, &Metadynamics::projectHillParallelWorker, i, std::cref(h));
   }
 }
 
- void Metadynamics::projectHillParallel()
-{
-  for (size_t i = 0; i < mThreads.size(); ++i) {
-    mThreads[i].join();
+void Metadynamics::projectHillParallel() {
+  for (int i = 0; i < mThreads.size(); ++i) {
+    //    mThreads[i].join();
+    mThreads[i].waitForFinished();
   }
 }
 
@@ -101,11 +102,10 @@ void Metadynamics::projectHillParallelWorker(size_t threadIndex,
       for (size_t j = 0; j < mPMF.dimension(); ++j) {
         pos[j] = pointTable[j][i];
       }
-      h.calcEnergy(pos, mPMF.axes(), &energy);
+      h.calcEnergyAndGradient(pos, mPMF.axes(), &energy, &gradients);
       const size_t addr = mPMF.address(pos);
       mPMF[addr] += -1.0 * energy;
       // mGradients shares the same axes
-      h.calcGradients(pos, mPMF.axes(), &gradients);
       for (size_t j = 0; j < mPMF.dimension(); ++j) {
         mGradients[addr + j] += -1.0 * gradients[j];
       }
@@ -134,7 +134,7 @@ void Metadynamics::HillRef::calcEnergy(const std::vector<double> &position,
   *energyPtr = mHeightRef * std::exp(-1.0 * (*energyPtr));
 }
 
-void Metadynamics::HillRef::calcGradients(
+void Metadynamics::HillRef::calcGradient(
     const std::vector<double> &position, const std::vector<Axis> &axes,
     std::vector<double> *gradientsPtr) const {
   if (gradientsPtr) {
@@ -149,6 +149,31 @@ void Metadynamics::HillRef::calcGradients(
         2.0 * std::sqrt(axes[i].dist2(position[i], mCentersRef[i]));
     const double factor = -1.0 * energy / (2.0 * mSigmasRef[i] * mSigmasRef[i]);
     (*gradientsPtr)[i] = dist2_grad * factor;
+  }
+}
+
+void Metadynamics::HillRef::calcEnergyAndGradient(
+    const std::vector<double> &position, const std::vector<Axis> &axes,
+    double *energyPtr, std::vector<double> *gradientsPtr) const {
+  if (energyPtr) {
+    *energyPtr = 0.0;
+  } else {
+    return;
+  }
+  if (gradientsPtr) {
+    gradientsPtr->assign(position.size(), 0.0);
+  } else {
+    return;
+  }
+  for (size_t i = 0; i < position.size(); ++i) {
+    const double dist2 = axes[i].dist2(position[i], mCentersRef[i]);
+    const double sigma2 = mSigmasRef[i] * mSigmasRef[i];
+    *energyPtr += dist2 / (2.0 * sigma2);
+    (*gradientsPtr)[i] = -1.0 * std::sqrt(dist2) / sigma2;
+  }
+  *energyPtr = mHeightRef * std::exp(-1.0 * (*energyPtr));
+  for (size_t i = 0; i < position.size(); ++i) {
+    (*gradientsPtr)[i] *= *energyPtr;
   }
 }
 
@@ -230,7 +255,7 @@ void SumHillsThread::run() {
       if (!read_ok) {
         emit error(QString("Failed to read line:") + line);
       }
-      mMetaD.createThreads(h);
+      mMetaD.launchThreads(h);
       mMetaD.projectHillParallel();
       if (numStep > 0 && mStrides > 0 && (numStep % mStrides == 0)) {
         emit stridedResult(numStep, mMetaD.PMF(), mMetaD.gradients());

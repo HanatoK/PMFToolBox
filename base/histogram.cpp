@@ -246,7 +246,7 @@ size_t HistogramBase::histogramSize() const { return mHistogramSize; }
 
 size_t HistogramBase::dimension() const { return mNdim; }
 
-std::vector<Axis> HistogramBase::axes() const { return mAxes; }
+const std::vector<Axis>& HistogramBase::axes() const { return mAxes; }
 
 const std::vector<std::vector<double>> &HistogramBase::pointTable() const {
   return mPointTable;
