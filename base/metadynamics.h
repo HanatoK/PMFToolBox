@@ -63,7 +63,6 @@ public:
   SumHillsThread(QObject *parent = nullptr);
   void sumHills(const std::vector<Axis>& ax, const qint64 strides,
                 const QString& HillsTrajectoryFilename);
-  void saveFiles(const QString& pmfFilename, const QString& gradFilename);
   ~SumHillsThread();
 signals:
   void done(HistogramScalar<double> PMFresult, HistogramVector<double> GradientsResult);
@@ -77,7 +76,7 @@ private:
   QString mHillsTrajectoryFilename;
 //  QString mOutputPrefix;
   qint64 mStrides;
-  Metadynamics mMetaD;
+  Metadynamics* mMetaD;
   static const int refreshPeriod = 5;
 };
 

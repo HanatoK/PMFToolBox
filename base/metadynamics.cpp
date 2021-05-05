@@ -168,13 +168,14 @@ void Metadynamics::HillRef::calcEnergyAndGradient(
   }
 }
 
-SumHillsThread::SumHillsThread(QObject *parent) : QThread(parent) {}
+SumHillsThread::SumHillsThread(QObject *parent) : QThread(parent), mMetaD(nullptr) {}
 
 void SumHillsThread::sumHills(const std::vector<Axis> &ax, const qint64 strides,
                               const QString &HillsTrajectoryFilename) {
   qDebug() << Q_FUNC_INFO;
   QMutexLocker locker(&mutex);
-  mMetaD.setupHistogram(ax);
+  if (mMetaD != nullptr) delete mMetaD;
+  mMetaD = new Metadynamics(ax);
   mHillsTrajectoryFilename = HillsTrajectoryFilename;
   //  mOutputPrefix = outputPrefix;
   mStrides = strides;
@@ -183,15 +184,9 @@ void SumHillsThread::sumHills(const std::vector<Axis> &ax, const qint64 strides,
   }
 }
 
-void SumHillsThread::saveFiles(const QString &pmfFilename,
-                               const QString &gradFilename) {
-  const auto &pmf = mMetaD.PMF();
-  const auto &grad = mMetaD.gradients();
-  pmf.writeToFile(pmfFilename);
-  grad.writeToFile(gradFilename);
+SumHillsThread::~SumHillsThread() {
+  if (mMetaD != nullptr) delete mMetaD;
 }
-
-SumHillsThread::~SumHillsThread() {}
 
 void SumHillsThread::run() {
   qDebug() << Q_FUNC_INFO;
@@ -209,8 +204,8 @@ void SumHillsThread::run() {
     double readSize = 0;
     qint64 previousProgress = 0;
     bool read_ok = true;
-    std::vector<double> center(mMetaD.dimension(), 0.0);
-    std::vector<double> sigma(mMetaD.dimension(), 0.0);
+    std::vector<double> center(mMetaD->dimension(), 0.0);
+    std::vector<double> sigma(mMetaD->dimension(), 0.0);
     double height = 0.0;
     const Metadynamics::HillRef h(center, sigma, height);
     while (!ifs.atEnd()) {
@@ -235,21 +230,21 @@ void SumHillsThread::run() {
       // a metadynamics trajectory has 2N+2 columns, where N is the number of
       // CVs
       read_ok = read_ok && (tmpFields.size() ==
-                            static_cast<int>(2 * mMetaD.dimension()) + 2);
+                            static_cast<int>(2 * mMetaD->dimension()) + 2);
       const qint64 numStep = tmpFields[0].toLongLong(&read_ok);
-      for (size_t i = 0; i < mMetaD.dimension(); ++i) {
+      for (size_t i = 0; i < mMetaD->dimension(); ++i) {
         center[i] = tmpFields[i + 1].toDouble(&read_ok);
         sigma[i] =
-            0.5 * tmpFields[mMetaD.dimension() + i + 1].toDouble(&read_ok);
+            0.5 * tmpFields[mMetaD->dimension() + i + 1].toDouble(&read_ok);
       }
-      height = tmpFields[2 * mMetaD.dimension() + 1].toDouble(&read_ok);
+      height = tmpFields[2 * mMetaD->dimension() + 1].toDouble(&read_ok);
       if (!read_ok) {
         emit error(QString("Failed to read line:") + line);
       }
-      mMetaD.launchThreads(h);
-      mMetaD.projectHillParallel();
+      mMetaD->launchThreads(h);
+      mMetaD->projectHillParallel();
       if (numStep > 0 && mStrides > 0 && (numStep % mStrides == 0)) {
-        emit stridedResult(numStep, mMetaD.PMF(), mMetaD.gradients());
+        emit stridedResult(numStep, mMetaD->PMF(), mMetaD->gradients());
       }
     }
   } else {
@@ -257,6 +252,6 @@ void SumHillsThread::run() {
   }
   qDebug() << "The summation of metadynamics hills takes" << timer.elapsed()
            << "ms.";
-  emit done(mMetaD.PMF(), mMetaD.gradients());
+  emit done(mMetaD->PMF(), mMetaD->gradients());
   mutex.unlock();
 }
