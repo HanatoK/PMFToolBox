@@ -5,7 +5,8 @@
 #include "base/helper.h"
 #include "base/histogram.h"
 
-#define SUM_HILLS_USE_QT_CONCURRENT
+//#define SUM_HILLS_USE_QT_CONCURRENT
+#define SUM_HILLS_USE_STD_THREAD
 
 #ifdef SUM_HILLS_USE_STD_THREAD
 #include <tuple>

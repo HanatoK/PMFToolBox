@@ -2,6 +2,9 @@
 #include "ui_metadynamicstab.h"
 
 #include <QFileDialog>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 MetadynamicsTab::MetadynamicsTab(QWidget *parent)
     : QWidget(parent), ui(new Ui::MetadynamicsTab),

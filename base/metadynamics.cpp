@@ -48,8 +48,8 @@ Metadynamics::~Metadynamics()
   mShutdown = true;
   for (size_t i = 0; i < mCondVars.size(); ++i) {
     std::unique_lock<std::mutex> lk(mMutexes[i]);
-    lk.unlock();
     mTaskStates[i] = 0;
+    lk.unlock();
     mCondVars[i].notify_one();
   }
   for (size_t i = 0; i < mThreads.size(); ++i) {
@@ -76,7 +76,9 @@ void Metadynamics::setupHistogram(const std::vector<Axis> &ax) {
 void Metadynamics::launchThreads(const Metadynamics::HillRef &h) {
 #ifdef SUM_HILLS_USE_STD_THREAD
   for (size_t i = 0; i < mThreads.size(); ++i) {
+    std::unique_lock<std::mutex> lk(mMutexes[i]);
     mTaskStates[i] = 0;
+    lk.unlock();
     if (mFirstTime) mThreads[i] = std::thread(&Metadynamics::projectHillParallelWorker, this, i, std::cref(h));
     if (!mFirstTime) mCondVars[i].notify_one();
   }
