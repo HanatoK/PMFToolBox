@@ -1,24 +1,50 @@
 #include "metadynamics.h"
 
 #include <QElapsedTimer>
+#include <QDebug>
 
 Metadynamics::Metadynamics(size_t numThreads):
+#ifdef SUM_HILLS_USE_STD_THREAD
   mThreads(numThreads), mCondVars(numThreads), mMutexes(numThreads),
-  mTaskStates(numThreads, 0), mFirstTime(true), mShutdown(false) {
+  mTaskStates(numThreads, 0), mFirstTime(true), mShutdown(false)
+#endif
+#ifdef SUM_HILLS_USE_QT_CONCURRENT
+  mThreads(numThreads)
+#endif
+{
 //  mThreads.resize(numThreads);
   mNumBlocks = 0;
+#ifdef SUM_HILLS_USE_STD_THREAD
+  std::cout << "Will use " << numThreads << " thread(s) to sum hills.\n";
+#endif
+#ifdef SUM_HILLS_USE_QT_CONCURRENT
+  qDebug() << "Will use" << numThreads << "thread(s) to sum hills.";
+#endif
 }
 
 Metadynamics::Metadynamics(const std::vector<Axis> &ax, size_t numThreads):
+#ifdef SUM_HILLS_USE_STD_THREAD
   mThreads(numThreads), mCondVars(numThreads), mMutexes(numThreads),
-  mTaskStates(numThreads, 0), mFirstTime(true), mShutdown(false) {
+  mTaskStates(numThreads, 0), mFirstTime(true), mShutdown(false)
+#endif
+#ifdef SUM_HILLS_USE_QT_CONCURRENT
+  mThreads(numThreads)
+#endif
+{
 //  mThreads.resize(numThreads);
   setupHistogram(ax);
+#ifdef SUM_HILLS_USE_STD_THREAD
+  std::cout << "Will use " << numThreads << " thread(s) to sum hills.\n";
+#endif
+#ifdef SUM_HILLS_USE_QT_CONCURRENT
+  qDebug() << "Will use" << numThreads << "thread(s) to sum hills.";
+#endif
 }
 
 Metadynamics::~Metadynamics()
 {
   std::cout << "Calling Metadynamics::~Metadynamics()\n";
+#ifdef SUM_HILLS_USE_STD_THREAD
   mShutdown = true;
   for (size_t i = 0; i < mCondVars.size(); ++i) {
     std::unique_lock<std::mutex> lk(mMutexes[i]);
@@ -29,6 +55,7 @@ Metadynamics::~Metadynamics()
   for (size_t i = 0; i < mThreads.size(); ++i) {
     if (mThreads[i].joinable()) mThreads[i].join();
   }
+#endif
 }
 
 void Metadynamics::setupHistogram(const std::vector<Axis> &ax) {
@@ -47,19 +74,33 @@ void Metadynamics::setupHistogram(const std::vector<Axis> &ax) {
 }
 
 void Metadynamics::launchThreads(const Metadynamics::HillRef &h) {
+#ifdef SUM_HILLS_USE_STD_THREAD
   for (size_t i = 0; i < mThreads.size(); ++i) {
     mTaskStates[i] = 0;
     if (mFirstTime) mThreads[i] = std::thread(&Metadynamics::projectHillParallelWorker, this, i, std::cref(h));
     if (!mFirstTime) mCondVars[i].notify_one();
   }
   if (mFirstTime) mFirstTime = false;
+#endif
+#ifdef SUM_HILLS_USE_QT_CONCURRENT
+  for (int i = 0; i < mThreads.size(); ++i) {
+    mThreads[i] = QtConcurrent::run(this, &Metadynamics::projectHillParallelWorker, i, std::cref(h));
+  }
+#endif
 }
 
 void Metadynamics::projectHillParallel() {
+#ifdef SUM_HILLS_USE_STD_THREAD
   for (size_t i = 0; i < mThreads.size(); ++i) {
     std::unique_lock<std::mutex> lk(mMutexes[i]);
     mCondVars[i].wait(lk, [this, i](){return mTaskStates[i] == 1;});
   }
+#endif
+#ifdef SUM_HILLS_USE_QT_CONCURRENT
+  for (int i = 0; i < mThreads.size(); ++i) {
+    mThreads[i].waitForFinished();
+  }
+#endif
 }
 
 size_t Metadynamics::dimension() const { return mPMF.dimension(); }
@@ -98,8 +139,10 @@ void Metadynamics::writeGradients(const HistogramVector<double> gradients,
 
 void Metadynamics::projectHillParallelWorker(size_t threadIndex,
                                              const HillRef &h) {
+#ifdef SUM_HILLS_USE_STD_THREAD
   while (mTaskStates[threadIndex] == 0 && !mShutdown) {
     std::unique_lock<std::mutex> lk(mMutexes[threadIndex]);
+#endif
     std::vector<double> gradients(mPMF.dimension(), 0.0);
     double energy = 0.0;
     const size_t stride = mThreads.size();
@@ -115,10 +158,12 @@ void Metadynamics::projectHillParallelWorker(size_t threadIndex,
         }
       }
     }
+#ifdef SUM_HILLS_USE_STD_THREAD
     mTaskStates[threadIndex] = 1;
     mCondVars[threadIndex].notify_one();
     mCondVars[threadIndex].wait(lk, [this, threadIndex](){return mTaskStates[threadIndex] == 0;});
   }
+#endif
 }
 
 Metadynamics::HillRef::HillRef(const std::vector<double> &centers,

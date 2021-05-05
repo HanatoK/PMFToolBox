@@ -5,16 +5,25 @@
 #include "base/helper.h"
 #include "base/histogram.h"
 
+#define SUM_HILLS_USE_QT_CONCURRENT
+
+#ifdef SUM_HILLS_USE_STD_THREAD
 #include <tuple>
 #include <thread>
-#include <vector>
 #include <condition_variable>
 #include <mutex>
+#endif
+#ifdef SUM_HILLS_USE_QT_CONCURRENT
+#include <QFuture>
+#include <QtConcurrent/QtConcurrent>
+#endif
+#include <vector>
 #include <QObject>
 #include <QThread>
 #include <QMutex>
 #include <QList>
 #include <QString>
+
 
 class Metadynamics
 {
@@ -32,8 +41,14 @@ public:
                                double* energyPtr = nullptr,
                                std::vector<double>* gradientsPtr = nullptr) const;
   };
+#ifdef SUM_HILLS_USE_QT_CONCURRENT
+  Metadynamics(size_t numThreads = QThread::idealThreadCount() - 1);
+  Metadynamics(const std::vector<Axis>& ax, size_t numThreads = QThread::idealThreadCount() - 1);
+#endif
+#ifdef SUM_HILLS_USE_STD_THREAD
   Metadynamics(size_t numThreads = std::thread::hardware_concurrency() - 1);
   Metadynamics(const std::vector<Axis>& ax, size_t numThreads = std::thread::hardware_concurrency() - 1);
+#endif
   ~Metadynamics();
   void setupHistogram(const std::vector<Axis>& ax);
   void launchThreads(const HillRef& h);
@@ -45,12 +60,17 @@ public:
   static void writeGradients(const HistogramVector<double> gradients, const QString& filename, bool wellTempered, double biasTemperature, double temperature);
 private:
   void projectHillParallelWorker(size_t threadIndex, const HillRef &h);
+#ifdef SUM_HILLS_USE_STD_THREAD
   std::vector<std::thread> mThreads;
   std::vector<std::condition_variable> mCondVars;
   std::vector<std::mutex> mMutexes;
   std::vector<int> mTaskStates;
   bool mFirstTime;
   bool mShutdown;
+#endif
+#ifdef SUM_HILLS_USE_QT_CONCURRENT
+  QVector<QFuture<void>> mThreads;
+#endif
   size_t mNumBlocks;
   HistogramScalar<double> mPMF;
   HistogramVector<double> mGradients;
