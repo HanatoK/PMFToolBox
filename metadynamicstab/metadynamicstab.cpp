@@ -124,6 +124,108 @@ void MetadynamicsTab::removeAxis() {
 }
 
 void MetadynamicsTab::progress(qint64 percent) {
-  qDebug() << "Progress:" << percent << "%";
   ui->pushButtonRun->setText(QString("%1 %").arg(percent));
+}
+
+MetadynamicsCLI::MetadynamicsCLI(QObject *parent): QObject(parent)
+{
+  connect(&mWorkerThread, &SumHillsThread::progress, this, &MetadynamicsCLI::progress);
+  connect(&mWorkerThread, &SumHillsThread::done, this, &MetadynamicsCLI::done);
+  connect(&mWorkerThread, &SumHillsThread::stridedResult, this, &MetadynamicsCLI::intermediate);
+  connect(&mWorkerThread, &SumHillsThread::error, this, &MetadynamicsCLI::error);
+}
+
+bool MetadynamicsCLI::readJSON(const QString &jsonFilename)
+{
+  qDebug() << "Reading" << jsonFilename;
+  QFile loadFile(jsonFilename);
+  if (!loadFile.open(QIODevice::ReadOnly)) {
+    qWarning() << QString("Could not open json file") + jsonFilename;
+    return false;
+  }
+  QByteArray jsonData = loadFile.readAll();
+  QJsonParseError jsonParseError;
+  const QJsonDocument loadDoc(
+      QJsonDocument::fromJson(jsonData, &jsonParseError));
+  if (loadDoc.isNull()) {
+    qWarning() << QString("Invalid json file:") + jsonFilename;
+    qWarning() << "Json parse error:" << jsonParseError.errorString();
+    return false;
+  }
+  //TODO
+  mTrajectoryFilename = loadDoc["Trajectory"].toString();
+  mOutputPrefix = loadDoc["Output"].toString();
+  const QJsonArray jsonAxes = loadDoc["Axes"].toArray();
+  for (int i = 0; i < jsonAxes.size(); ++i) {
+    const auto jsonAxis = jsonAxes[i].toObject();
+    const double lowerBound = jsonAxis["Lower bound"].toDouble();
+    const double upperBound = jsonAxis["Upper bound"].toDouble();
+    const double width = jsonAxis["Width"].toDouble();
+    const size_t bins = std::nearbyint((upperBound - lowerBound) / width);
+    const bool periodic = jsonAxis["Periodic"].toBool();
+    mAxes.push_back(Axis(lowerBound, upperBound, bins, periodic));
+  }
+  mIsWellTempered = loadDoc["Well tempered"].toBool(false);
+  if (mIsWellTempered) {
+    mDeltaT = loadDoc["Bias temperature"].toDouble();
+    mTemperature = loadDoc["Temperature"].toDouble();
+  }
+  mStride = loadDoc["Stride"].toInt();
+  return true;
+}
+
+void MetadynamicsCLI::start()
+{
+  mWorkerThread.sumHills(mAxes, mStride, mTrajectoryFilename);
+}
+
+MetadynamicsCLI::~MetadynamicsCLI()
+{
+
+}
+
+void MetadynamicsCLI::progress(int percent)
+{
+  qInfo() << "Metadynamics sum hills: " << percent << "%";
+}
+
+void MetadynamicsCLI::error(QString msg)
+{
+  qWarning() << msg;
+  emit allDone();
+}
+
+void MetadynamicsCLI::intermediate(qint64 step, HistogramScalar<double> PMF, HistogramVector<double> gradients)
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  const QString outputPMFFilename =
+      mOutputPrefix + "_" + QString::number(step) + ".pmf";
+  const QString outputGradFilename =
+      mOutputPrefix + "_" + QString::number(step) + ".grad";
+  if (mIsWellTempered) {
+    Metadynamics::writePMF(PMF, outputPMFFilename, true, mDeltaT, mTemperature);
+    Metadynamics::writeGradients(gradients, outputGradFilename, true, mDeltaT,
+                                 mTemperature);
+  } else {
+    Metadynamics::writePMF(PMF, outputPMFFilename, false, 0.0, 1.0);
+    Metadynamics::writeGradients(gradients, outputGradFilename, false, 0.0,
+                                 1.0);
+  }
+}
+
+void MetadynamicsCLI::done(HistogramScalar<double> PMF, HistogramVector<double> gradients)
+{
+  qDebug() << "Calling" << Q_FUNC_INFO;
+  const QString outputPMFFilename = mOutputPrefix + ".pmf";
+  const QString outputGradFilename = mOutputPrefix + ".grad";
+  if (mIsWellTempered) {
+    Metadynamics::writePMF(PMF, outputPMFFilename, true, mDeltaT, mTemperature);
+    Metadynamics::writeGradients(gradients, outputGradFilename, true, mDeltaT,
+                                 mTemperature);
+  } else {
+    Metadynamics::writePMF(PMF, outputPMFFilename, false, 0.0, 1.0);
+    Metadynamics::writeGradients(gradients, outputGradFilename, false, 0.0,
+                                 1.0);
+  }
+  emit allDone();
 }

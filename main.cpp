@@ -18,12 +18,12 @@
 */
 
 #include "base/graph.h"
-#include "base/histogram.h"
-#include "base/namdlogparser.h"
 #include "base/helper.h"
+#include "base/histogram.h"
+#include "base/metadynamics.h"
+#include "base/namdlogparser.h"
 #include "mainwindow.h"
 #include "test/test.h"
-#include "base/metadynamics.h"
 
 #include <QApplication>
 #include <QCommandLineOption>
@@ -53,7 +53,7 @@ void initTypes() {
   qRegisterMetaType<std::vector<HistogramVector<double>>>(
       "std::vector<HistogramVector<double>>");
   qRegisterMetaType<PMFPathFinder>("PMFPathFinder");
-//  qRegisterMetaType<Metadynamics>("Metadynamics");
+  //  qRegisterMetaType<Metadynamics>("Metadynamics");
 }
 
 int runConsole(int argc, char *argv[]) {
@@ -84,11 +84,16 @@ int runConsole(int argc, char *argv[]) {
   const QCommandLineOption mfepOption(
       "mfep", QCoreApplication::translate(
                   "main", "find the MFEP in a multidimensional PMF."));
+  const QCommandLineOption sumhillsOption(
+      "sumhills",
+      QCoreApplication::translate(
+          "main", "sum hills from a colvars metadynamics trajectory."));
   parser.addOption(projectOption);
   parser.addOption(reweightOption);
   parser.addOption(historyOption);
   parser.addOption(namdlogOption);
   parser.addOption(mfepOption);
+  parser.addOption(sumhillsOption);
   parser.addPositionalArgument("jsonfile", "the json configuration file");
 
   QStringList args;
@@ -107,7 +112,7 @@ int runConsole(int argc, char *argv[]) {
   const QString jsonFile = jsonFilenameList.first();
   // TODO: very redundant, consider a common base class for all CLI objects!
   // TODO: better error handling!
-  QObject* CLIObject = nullptr;
+  QObject *CLIObject = nullptr;
   if (parser.isSet(projectOption)) {
     if (readProjectPMFJson(jsonFile)) {
       qDebug() << "Operation succeeded.";
@@ -120,10 +125,10 @@ int runConsole(int argc, char *argv[]) {
     }
   } else if (parser.isSet(reweightOption)) {
     CLIObject = new ReweightingCLI(&a);
-    auto reweightingCLIObject = dynamic_cast<ReweightingCLI*>(CLIObject);
+    auto reweightingCLIObject = dynamic_cast<ReweightingCLI *>(CLIObject);
     if (reweightingCLIObject->readJSON(jsonFile)) {
-      QObject::connect(reweightingCLIObject, &ReweightingCLI::allDone,
-                       &a, QCoreApplication::quit);
+      QObject::connect(reweightingCLIObject, &ReweightingCLI::allDone, &a,
+                       QCoreApplication::quit);
       reweightingCLIObject->start();
     } else {
       qDebug() << "Error occured!";
@@ -132,10 +137,10 @@ int runConsole(int argc, char *argv[]) {
     }
   } else if (parser.isSet(historyOption)) {
     CLIObject = new HistoryCLI(&a);
-    auto historyCLIObject = dynamic_cast<HistoryCLI*>(CLIObject);
+    auto historyCLIObject = dynamic_cast<HistoryCLI *>(CLIObject);
     if (historyCLIObject->readJSON(jsonFile)) {
-      QObject::connect(historyCLIObject, &HistoryCLI::allDone,
-                       &a, QCoreApplication::quit);
+      QObject::connect(historyCLIObject, &HistoryCLI::allDone, &a,
+                       QCoreApplication::quit);
       historyCLIObject->start();
     } else {
       qDebug() << "Error occured!";
@@ -144,10 +149,10 @@ int runConsole(int argc, char *argv[]) {
     }
   } else if (parser.isSet(namdlogOption)) {
     CLIObject = new NAMDLogCLI(&a);
-    auto NAMDLogCLIObject = dynamic_cast<NAMDLogCLI*>(CLIObject);
+    auto NAMDLogCLIObject = dynamic_cast<NAMDLogCLI *>(CLIObject);
     if (NAMDLogCLIObject->readJSON(jsonFile)) {
-      QObject::connect(NAMDLogCLIObject, &NAMDLogCLI::allDone,
-                       &a, QCoreApplication::quit);
+      QObject::connect(NAMDLogCLIObject, &NAMDLogCLI::allDone, &a,
+                       QCoreApplication::quit);
       NAMDLogCLIObject->start();
     } else {
       qDebug() << "Error occured!";
@@ -156,11 +161,18 @@ int runConsole(int argc, char *argv[]) {
     }
   } else if (parser.isSet(mfepOption)) {
     CLIObject = new FindPathCLI(&a);
-    auto FindPathCLIObject = dynamic_cast<FindPathCLI*>(CLIObject);
+    auto FindPathCLIObject = dynamic_cast<FindPathCLI *>(CLIObject);
     if (FindPathCLIObject->readJSON(jsonFile)) {
-      QObject::connect(FindPathCLIObject, &FindPathCLI::allDone,
-                       &a, QCoreApplication::quit);
+      QObject::connect(FindPathCLIObject, &FindPathCLI::allDone, &a,
+                       QCoreApplication::quit);
       FindPathCLIObject->start();
+    }
+  } else if (parser.isSet(sumhillsOption)) {
+    CLIObject = new MetadynamicsCLI(&a);
+    auto MetadynamicsCLIObject = dynamic_cast<MetadynamicsCLI*>(CLIObject);
+    if (MetadynamicsCLIObject->readJSON(jsonFile)) {
+      QObject::connect(MetadynamicsCLIObject, &MetadynamicsCLI::allDone, &a, QCoreApplication::quit);
+      MetadynamicsCLIObject->start();
     }
   }
   return a.exec();
