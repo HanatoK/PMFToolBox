@@ -32,11 +32,10 @@ public:
                                double* energyPtr = nullptr,
                                std::vector<double>* gradientsPtr = nullptr) const;
   };
-  Metadynamics(size_t numThreads = std::thread::hardware_concurrency());
-  Metadynamics(const std::vector<Axis>& ax, size_t numThreads = std::thread::hardware_concurrency());
+  Metadynamics(size_t numThreads = std::thread::hardware_concurrency() - 1);
+  Metadynamics(const std::vector<Axis>& ax, size_t numThreads = std::thread::hardware_concurrency() - 1);
   ~Metadynamics();
   void setupHistogram(const std::vector<Axis>& ax);
-  void projectHill(const HillRef& h);
   void launchThreads(const HillRef& h);
   void projectHillParallel();
   size_t dimension() const;
@@ -55,6 +54,8 @@ private:
   size_t mNumBlocks;
   HistogramScalar<double> mPMF;
   HistogramVector<double> mGradients;
+  std::vector<std::vector<double>> mPointMap;
+  std::vector<size_t> mAddressMap;
 };
 
 class SumHillsThread: public QThread {

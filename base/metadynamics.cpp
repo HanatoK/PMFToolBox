@@ -35,25 +35,14 @@ void Metadynamics::setupHistogram(const std::vector<Axis> &ax) {
   mPMF = HistogramScalar<double>(ax);
   mGradients = HistogramVector<double>(ax, ax.size());
   mNumBlocks = mPMF.histogramSize() / mThreads.size() + 1;
-}
-
-void Metadynamics::projectHill(const Metadynamics::HillRef &h) {
-  const std::vector<std::vector<double>> &pointTable = mPMF.pointTable();
-  std::vector<double> pos(mPMF.dimension(), 0.0);
-  std::vector<double> gradients(mPMF.dimension(), 0.0);
-  double energy = 0.0;
-  // very time-consuming, we need to parallelize this!
+  mPointMap.assign(mPMF.histogramSize(), std::vector<double>(mPMF.dimension(), 0));
+  mAddressMap.assign(mPMF.histogramSize(), 0);
+  const std::vector<std::vector<double>>& tmpPointTable = mPMF.pointTable();
   for (size_t i = 0; i < mPMF.histogramSize(); ++i) {
     for (size_t j = 0; j < mPMF.dimension(); ++j) {
-      pos[j] = pointTable[j][i];
+      mPointMap[i][j] = tmpPointTable[j][i];
     }
-    h.calcEnergyAndGradient(pos, mPMF.axes(), &energy, &gradients);
-    const size_t addr = mPMF.address(pos);
-    mPMF[addr] += -1.0 * energy;
-    // mGradients shares the same axes
-    for (size_t j = 0; j < mPMF.dimension(); ++j) {
-      mGradients[addr * mPMF.dimension() + j] += -1.0 * gradients[j];
-    }
+    mAddressMap[i] = mPMF.address(mPointMap[i]);
   }
 }
 
@@ -111,19 +100,14 @@ void Metadynamics::projectHillParallelWorker(size_t threadIndex,
                                              const HillRef &h) {
   while (mTaskStates[threadIndex] == 0 && !mShutdown) {
     std::unique_lock<std::mutex> lk(mMutexes[threadIndex]);
-    const std::vector<std::vector<double>> &pointTable = mPMF.pointTable();
-    std::vector<double> pos(mPMF.dimension(), 0.0);
     std::vector<double> gradients(mPMF.dimension(), 0.0);
     double energy = 0.0;
     const size_t stride = mThreads.size();
     for (size_t blockIndex = 0; blockIndex < mNumBlocks; ++blockIndex) {
       const size_t i = blockIndex * stride + threadIndex;
       if (i < mPMF.histogramSize()) {
-        for (size_t j = 0; j < mPMF.dimension(); ++j) {
-          pos[j] = pointTable[j][i];
-        }
-        h.calcEnergyAndGradient(pos, mPMF.axes(), &energy, &gradients);
-        const size_t addr = mPMF.address(pos);
+        h.calcEnergyAndGradient(mPointMap[i], mPMF.axes(), &energy, &gradients);
+        const size_t& addr = mAddressMap[i];
         mPMF[addr] += -1.0 * energy;
         // mGradients shares the same axes
         for (size_t j = 0; j < mPMF.dimension(); ++j) {
