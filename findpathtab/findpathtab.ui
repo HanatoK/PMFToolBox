@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>824</width>
-    <height>607</height>
+    <width>822</width>
+    <height>651</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEditStart"/>
+      <widget class="QLineEdit" name="lineEditStart">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The starting point of the path. Space- or comma-separated numbers, for example, &amp;quot;-70 60 70&amp;quot;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="labelEnd">
@@ -37,7 +41,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEditEnd"/>
+      <widget class="QLineEdit" name="lineEditEnd">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The ending point of the path. Space- or comma-separated numbers, for example, &amp;quot;60 -70 60&amp;quot;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -50,6 +58,9 @@
    </item>
    <item row="3" column="2">
     <widget class="QPushButton" name="pushButtonFind">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start to find the path&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="text">
       <string>Find</string>
      </property>
@@ -57,6 +68,9 @@
    </item>
    <item row="1" column="2">
     <widget class="QPushButton" name="pushButtonSaveTo">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the output file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="text">
       <string>Save To</string>
      </property>
@@ -83,12 +97,18 @@
            <height>400</height>
           </size>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Patches to the origin PMF&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
         </widget>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
           <widget class="QPushButton" name="pushButtonAddPatch">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a patch to the origin PMF&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>Add patch</string>
            </property>
@@ -96,6 +116,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="pushButtonRemovePatch">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Remove selected patch&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>Remove patch</string>
            </property>
@@ -121,6 +144,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
           <widget class="QPushButton" name="pushButtonPathOnPMF">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Plot the found MFEP on top of the PMF. &lt;span style=&quot; font-weight:600;&quot;&gt;Currently only 2D PMF is supported.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>Path on PMF</string>
            </property>
@@ -128,6 +154,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="pushButtonEnergyAlongPath">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Plot the free energy along the path&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>Energy along path</string>
            </property>
@@ -148,6 +177,9 @@
    </item>
    <item row="0" column="2">
     <widget class="QPushButton" name="pushButtonOpen">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open a PMF file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="text">
       <string>Open</string>
      </property>
@@ -169,7 +201,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="comboBoxAlgorithm"/>
+      <widget class="QComboBox" name="comboBoxAlgorithm">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the path finding algorithm&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
