@@ -31,16 +31,18 @@ class Metadynamics
 public:
   class HillRef {
   public:
-    HillRef(const std::vector<double>& center,
-            const std::vector<double>& sigma,
-            const double& height);
-    const std::vector<double>& mCentersRef;
-    const std::vector<double>& mSigmasRef;
-    const double& mHeightRef;
-    void calcEnergyAndGradient(const std::vector<double>& position,
-                               const std::vector<Axis>& axes,
-                               double* energyPtr = nullptr,
-                               std::vector<double>* gradientsPtr = nullptr) const;
+    HillRef(const std::vector<std::vector<double>>& centers,
+            const std::vector<std::vector<double>>& sigmas,
+            const std::vector<double>& heights,
+            const qint64 &actualBufferedLines);
+    const std::vector<std::vector<double>>& mCentersRef;
+    const std::vector<std::vector<double>>& mSigmasRef;
+    const std::vector<double>& mHeightsRef;
+    const qint64& mActuallBufferedLines;
+    void calcEnergyAndGradient(
+      const qint64 index, const std::vector<double>& position,
+      const std::vector<Axis>& axes, double* energyPtr = nullptr,
+      std::vector<double>* gradientsPtr = nullptr) const;
   };
 #ifdef SUM_HILLS_USE_QT_CONCURRENT
   Metadynamics(size_t numThreads = QThread::idealThreadCount() - 1);
@@ -99,6 +101,7 @@ private:
 //  QString mOutputPrefix;
   qint64 mStrides;
   Metadynamics* mMetaD;
+  static const qint64 mLineBufferSize = 20000;
   static const int refreshPeriod = 5;
 };
 

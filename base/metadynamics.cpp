@@ -2,6 +2,7 @@
 
 #include <QElapsedTimer>
 #include <QDebug>
+#include <numeric>
 
 Metadynamics::Metadynamics(size_t numThreads):
 #ifdef SUM_HILLS_USE_STD_THREAD
@@ -148,15 +149,18 @@ void Metadynamics::projectHillParallelWorker(size_t threadIndex,
     std::vector<double> gradients(mPMF.dimension(), 0.0);
     double energy = 0.0;
     const size_t stride = mThreads.size();
-    for (size_t blockIndex = 0; blockIndex < mNumBlocks; ++blockIndex) {
-      const size_t i = blockIndex * stride + threadIndex;
-      if (i < mPMF.histogramSize()) {
-        h.calcEnergyAndGradient(mPointMap[i], mPMF.axes(), &energy, &gradients);
-        const size_t& addr = mAddressMap[i];
-        mPMF[addr] += -1.0 * energy;
-        // mGradients shares the same axes
-        for (size_t j = 0; j < mPMF.dimension(); ++j) {
-          mGradients[addr * mPMF.dimension() + j] += -1.0 * gradients[j];
+    const size_t lineBufferSize = h.mActuallBufferedLines;
+    for (size_t bufferIndex = 0; bufferIndex < lineBufferSize; ++bufferIndex) {
+      for (size_t blockIndex = 0; blockIndex < mNumBlocks; ++blockIndex) {
+        const size_t i = blockIndex * stride + threadIndex;
+        if (i < mPMF.histogramSize()) {
+          h.calcEnergyAndGradient(bufferIndex, mPointMap[i], mPMF.axes(), &energy, &gradients);
+          const size_t& addr = mAddressMap[i];
+          mPMF[addr] += -1.0 * energy;
+          // mGradients shares the same axes
+          for (size_t j = 0; j < mPMF.dimension(); ++j) {
+            mGradients[addr * mPMF.dimension() + j] += -1.0 * gradients[j];
+          }
         }
       }
     }
@@ -168,14 +172,15 @@ void Metadynamics::projectHillParallelWorker(size_t threadIndex,
 #endif
 }
 
-Metadynamics::HillRef::HillRef(const std::vector<double> &centers,
-                               const std::vector<double> &sigma,
-                               const double &height)
-    : mCentersRef(centers), mSigmasRef(sigma), mHeightRef(height) {}
+Metadynamics::HillRef::HillRef(const std::vector<std::vector<double>>& centers,
+  const std::vector<std::vector<double>>& sigmas,
+  const std::vector<double>& heights, const qint64& actualBufferedLines)
+    : mCentersRef(centers), mSigmasRef(sigmas), mHeightsRef(heights),
+      mActuallBufferedLines(actualBufferedLines) {}
 
-void Metadynamics::HillRef::calcEnergyAndGradient(
-    const std::vector<double> &position, const std::vector<Axis> &axes,
-    double *energyPtr, std::vector<double> *gradientsPtr) const {
+void Metadynamics::HillRef::calcEnergyAndGradient(const qint64 index,
+  const std::vector<double> &position, const std::vector<Axis> &axes,
+  double *energyPtr, std::vector<double> *gradientsPtr) const {
   if (energyPtr) {
     *energyPtr = 0.0;
   } else {
@@ -187,13 +192,13 @@ void Metadynamics::HillRef::calcEnergyAndGradient(
     return;
   }
   for (size_t i = 0; i < position.size(); ++i) {
-    const double dist = axes[i].dist(position[i], mCentersRef[i]);
+    const double dist = axes[i].dist(position[i], mCentersRef[index][i]);
     const double dist2 = dist * dist;
-    const double sigma2 = mSigmasRef[i] * mSigmasRef[i];
+    const double sigma2 = mSigmasRef[index][i] * mSigmasRef[index][i];
     *energyPtr += dist2 / (2.0 * sigma2);
     (*gradientsPtr)[i] = -1.0 * dist / sigma2;
   }
-  *energyPtr = mHeightRef * std::exp(-1.0 * (*energyPtr));
+  *energyPtr = mHeightsRef[index] * std::exp(-1.0 * (*energyPtr));
   for (size_t i = 0; i < position.size(); ++i) {
     (*gradientsPtr)[i] *= *energyPtr;
   }
@@ -235,42 +240,58 @@ void SumHillsThread::run() {
     double readSize = 0;
     qint64 previousProgress = 0;
     bool read_ok = true;
-    std::vector<double> center(mMetaD->dimension(), 0.0);
-    std::vector<double> sigma(mMetaD->dimension(), 0.0);
-    double height = 0.0;
-    const Metadynamics::HillRef h(center, sigma, height);
+    // use buffered reading
+    qint64 lineBufferSize = mLineBufferSize;
+    qint64 actualBufferedLine = 0;
+    if (mStrides > 0) {
+      // currently buffered reading is incompatible with strides
+      lineBufferSize = 1;
+    }
+    std::vector<std::vector<double>> centers(
+      lineBufferSize, std::vector<double>(mMetaD->dimension(), 0.0));
+    std::vector<std::vector<double>> sigmas(
+      lineBufferSize, std::vector<double>(mMetaD->dimension(), 0.0));
+    std::vector<double> heights(lineBufferSize, 0.0);
+    const Metadynamics::HillRef h(centers, sigmas, heights, actualBufferedLine);
     while (!ifs.atEnd()) {
-      // do we need to clear the line?
-      ifs.readLineInto(&line);
-      readSize += line.size() + 1;
-      const int readingProgress = std::nearbyint(readSize / fileSize * 100);
-      if (readingProgress % refreshPeriod == 0 || readingProgress == 100) {
-        if (previousProgress != readingProgress) {
-          previousProgress = readingProgress;
-          qDebug() << Q_FUNC_INFO << "reading " << readingProgress << "%";
-          emit progress(readingProgress);
+      qint64 numStep = 0;
+      actualBufferedLine = 0;
+      for (qint64 bufferIndex = 0; bufferIndex < lineBufferSize; ++bufferIndex) {
+        if (!ifs.readLineInto(&line)) {
+          // reach EOF, break the loop
+          break;
         }
-      }
-      tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
-      // skip blank lines
-      if (tmpFields.size() <= 0)
-        continue;
-      // skip comment lines start with #
-      if (tmpFields[0].startsWith("#"))
-        continue;
-      // a metadynamics trajectory has 2N+2 columns, where N is the number of
-      // CVs
-      read_ok = read_ok && (tmpFields.size() ==
-                            static_cast<int>(2 * mMetaD->dimension()) + 2);
-      const qint64 numStep = tmpFields[0].toLongLong(&read_ok);
-      for (size_t i = 0; i < mMetaD->dimension(); ++i) {
-        center[i] = tmpFields[i + 1].toDouble(&read_ok);
-        sigma[i] =
+        ++actualBufferedLine;
+        readSize += line.size() + 1;
+        const int readingProgress = std::nearbyint(readSize / fileSize * 100);
+        if (readingProgress % refreshPeriod == 0 || readingProgress == 100) {
+          if (previousProgress != readingProgress) {
+            previousProgress = readingProgress;
+            qDebug() << Q_FUNC_INFO << "reading " << readingProgress << "%";
+            emit progress(readingProgress);
+          }
+        }
+        tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
+        // skip blank lines
+        if (tmpFields.size() <= 0)
+          continue;
+        // skip comment lines start with #
+        if (tmpFields[0].startsWith("#"))
+          continue;
+        // a metadynamics trajectory has 2N+2 columns, where N is the number of
+        // CVs
+        read_ok = read_ok && (tmpFields.size() ==
+                              static_cast<int>(2 * mMetaD->dimension()) + 2);
+        numStep = tmpFields[0].toLongLong(&read_ok);
+        for (size_t i = 0; i < mMetaD->dimension(); ++i) {
+          centers[bufferIndex][i] = tmpFields[i + 1].toDouble(&read_ok);
+          sigmas[bufferIndex][i] =
             0.5 * tmpFields[mMetaD->dimension() + i + 1].toDouble(&read_ok);
-      }
-      height = tmpFields[2 * mMetaD->dimension() + 1].toDouble(&read_ok);
-      if (!read_ok) {
-        emit error(QString("Failed to read line:") + line);
+        }
+        heights[bufferIndex] = tmpFields[2 * mMetaD->dimension() + 1].toDouble(&read_ok);
+        if (!read_ok) {
+          emit error(QString("Failed to read line:") + line);
+        }
       }
       mMetaD->launchThreads(h);
       mMetaD->projectHillParallel();
