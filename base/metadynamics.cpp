@@ -198,7 +198,13 @@ void Metadynamics::HillRef::calcEnergyAndGradient(const qint64 index,
     *energyPtr += dist2 / (2.0 * sigma2);
     (*gradientsPtr)[i] = -1.0 * dist / sigma2;
   }
-  *energyPtr = mHeightsRef[index] * std::exp(-1.0 * (*energyPtr));
+  // magic number: reduce some expensive std::exp calculation
+  // TODO: this can be further simplified by using a neighbor list
+  if (*energyPtr < 100) {
+    *energyPtr = mHeightsRef[index] * std::exp(-1.0 * (*energyPtr));
+  } else {
+    *energyPtr = 0;
+  }
   for (size_t i = 0; i < position.size(); ++i) {
     (*gradientsPtr)[i] *= *energyPtr;
   }
@@ -267,7 +273,6 @@ void SumHillsThread::run() {
         if (readingProgress % refreshPeriod == 0 || readingProgress == 100) {
           if (previousProgress != readingProgress) {
             previousProgress = readingProgress;
-            qDebug() << Q_FUNC_INFO << "reading " << readingProgress << "%";
             emit progress(readingProgress);
           }
         }
