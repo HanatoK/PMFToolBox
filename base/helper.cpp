@@ -37,17 +37,9 @@ double kbT(const double temperature, const QString &unit) {
   qDebug() << "Calling" << Q_FUNC_INFO;
   double factor = 1.0;
   if (unit.compare("kcal/mol", Qt::CaseInsensitive) == 0) {
-#ifdef SI2019
-    factor = 0.001985875;
-#else
-    factor = 0.0019872041;
-#endif
+    factor = 0.001987204258641;
   } else if (unit.compare("kj/mol", Qt::CaseInsensitive) == 0) {
-#ifdef SI2019
-    factor = 0.008314463;
-#else
-    factor = 0.0083144621;
-#endif
+    factor = 0.008314462618153;
   } else {
     qDebug() << Q_FUNC_INFO << ": undefined unit factor, use " << factor;
   }
