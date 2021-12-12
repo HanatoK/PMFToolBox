@@ -135,9 +135,10 @@ int runConsole(int argc, char *argv[]) {
   } else if (parser.isSet(pathPMFOption)) {
     CLI = new PathPMFInPMFCLI(&a);
   }
-  if (CLI->readJSON(jsonFile)) {
+  if (CLI != nullptr && CLI->readJSON(jsonFile)) {
     QObject::connect(CLI, &CLIObject::allDone, &a, QCoreApplication::quit);
     CLI->start();
+    return 0;
   } else {
     qDebug() << "Error occured!";
     a.exit(1);

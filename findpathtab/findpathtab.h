@@ -87,8 +87,8 @@ class PathPMFInPMFCLI: public CLIObject {
   Q_OBJECT
 public:
   explicit PathPMFInPMFCLI(QObject *parent = nullptr);
-  bool readJSON(const QString &jsonFilename);
-  void start();
+  virtual bool readJSON(const QString &jsonFilename) override;
+  virtual void start() override;
   ~PathPMFInPMFCLI();
 private:
   QString mInputPMF;

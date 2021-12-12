@@ -104,6 +104,7 @@ bool HistogramBase::isInGrid(const std::vector<double> &position) const {
   while (it_ax != mAxes.cend()) {
     if (!(it_ax->inBoundary(*it_val)))
       return false;
+    ++it_ax;
   }
   return true;
 }

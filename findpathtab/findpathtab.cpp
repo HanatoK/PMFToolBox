@@ -306,6 +306,7 @@ bool PathPMFInPMFCLI::readJSON(const QString& jsonFilename)
   mInputPMF = mLoadDoc["Input PMF"].toString();
   mInputPathFile = mLoadDoc["Input Path File"].toString();
   mOutput = mLoadDoc["Output"].toString();
+  return true;
 }
 
 void PathPMFInPMFCLI::start()
@@ -318,6 +319,7 @@ void PathPMFInPMFCLI::start()
         outputFile.open(QFile::WriteOnly)) {
       QTextStream ifs(&pathFile);
       QTextStream ofs(&outputFile);
+      ofs.setRealNumberNotation(QTextStream::FixedNotation);
       QString line;
       std::vector<double> pos(inputPMFHistogram.dimension(), 0);
       const QRegularExpression split_regex("\\s+");
@@ -349,6 +351,7 @@ void PathPMFInPMFCLI::start()
   } else {
     qWarning() << "Failed to read from" << mInputPMF;
   }
+  emit allDone();
 }
 
 PathPMFInPMFCLI::~PathPMFInPMFCLI()
