@@ -21,6 +21,7 @@
 #define REWEIGHTINGTAB_H
 
 #include "base/reweighting.h"
+#include "base/cliobject.h"
 #include "reweightingtab/listmodelfilelist.h"
 #include "reweightingtab/tablemodelreweightingaxis.h"
 
@@ -59,19 +60,17 @@ private:
   HistogramPMF mPMF;
 };
 
-class ReweightingCLI : public QObject {
+class ReweightingCLI : public CLIObject {
   Q_OBJECT
 public:
   explicit ReweightingCLI(QObject *parent = nullptr);
-  bool readJSON(const QString &jsonFilename);
-  void start();
+  virtual bool readJSON(const QString &jsonFilename) override;
+  virtual void start() override;
   ~ReweightingCLI();
 public slots:
   void reweightingProgress(int fileRead, int percent);
   void reweightingError(QString msg);
   void reweightingDone();
-signals:
-  void allDone();
 
 private:
   QStringList mFileList;

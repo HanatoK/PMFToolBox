@@ -130,7 +130,7 @@ void MetadynamicsTab::progress(qint64 percent) {
   ui->pushButtonRun->setText(QString("%1 %").arg(percent));
 }
 
-MetadynamicsCLI::MetadynamicsCLI(QObject *parent): QObject(parent)
+MetadynamicsCLI::MetadynamicsCLI(QObject *parent): CLIObject(parent)
 {
   connect(&mWorkerThread, &SumHillsThread::progress, this, &MetadynamicsCLI::progress);
   connect(&mWorkerThread, &SumHillsThread::done, this, &MetadynamicsCLI::done);
@@ -140,25 +140,12 @@ MetadynamicsCLI::MetadynamicsCLI(QObject *parent): QObject(parent)
 
 bool MetadynamicsCLI::readJSON(const QString &jsonFilename)
 {
-  qDebug() << "Reading" << jsonFilename;
-  QFile loadFile(jsonFilename);
-  if (!loadFile.open(QIODevice::ReadOnly)) {
-    qWarning() << QString("Could not open json file") + jsonFilename;
+  if (!CLIObject::readJSON(jsonFilename)) {
     return false;
   }
-  QByteArray jsonData = loadFile.readAll();
-  QJsonParseError jsonParseError;
-  const QJsonDocument loadDoc(
-      QJsonDocument::fromJson(jsonData, &jsonParseError));
-  if (loadDoc.isNull()) {
-    qWarning() << QString("Invalid json file:") + jsonFilename;
-    qWarning() << "Json parse error:" << jsonParseError.errorString();
-    return false;
-  }
-  //TODO
-  mTrajectoryFilename = loadDoc["Trajectory"].toString();
-  mOutputPrefix = loadDoc["Output"].toString();
-  const QJsonArray jsonAxes = loadDoc["Axes"].toArray();
+  mTrajectoryFilename = mLoadDoc["Trajectory"].toString();
+  mOutputPrefix = mLoadDoc["Output"].toString();
+  const QJsonArray jsonAxes = mLoadDoc["Axes"].toArray();
   for (int i = 0; i < jsonAxes.size(); ++i) {
     const auto jsonAxis = jsonAxes[i].toObject();
     const double lowerBound = jsonAxis["Lower bound"].toDouble();
@@ -168,12 +155,12 @@ bool MetadynamicsCLI::readJSON(const QString &jsonFilename)
     const bool periodic = jsonAxis["Periodic"].toBool();
     mAxes.push_back(Axis(lowerBound, upperBound, bins, periodic));
   }
-  mIsWellTempered = loadDoc["Well tempered"].toBool(false);
+  mIsWellTempered = mLoadDoc["Well tempered"].toBool(false);
   if (mIsWellTempered) {
-    mDeltaT = loadDoc["Bias temperature"].toDouble();
-    mTemperature = loadDoc["Temperature"].toDouble();
+    mDeltaT = mLoadDoc["Bias temperature"].toDouble();
+    mTemperature = mLoadDoc["Temperature"].toDouble();
   }
-  mStride = loadDoc["Stride"].toInt();
+  mStride = mLoadDoc["Stride"].toInt();
   return true;
 }
 

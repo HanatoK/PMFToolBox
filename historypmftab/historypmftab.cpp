@@ -228,7 +228,7 @@ void HistoryPMFTab::splitDone(const HistogramPMFHistory &hist) {
   ui->pushButtonSplit->setText(tr("Split"));
 }
 
-HistoryCLI::HistoryCLI(QObject *parent) : QObject(parent) {
+HistoryCLI::HistoryCLI(QObject *parent) : CLIObject(parent) {
   qDebug() << "Calling" << Q_FUNC_INFO;
   connect(&mReaderThread, &HistoryReaderThread::progress, this,
           &HistoryCLI::progress);
@@ -238,26 +238,14 @@ HistoryCLI::HistoryCLI(QObject *parent) : QObject(parent) {
 }
 
 bool HistoryCLI::readJSON(const QString &jsonFilename) {
-  qDebug() << "Reading" << jsonFilename;
-  QFile loadFile(jsonFilename);
-  if (!loadFile.open(QIODevice::ReadOnly)) {
-    qWarning() << QString("Could not open json file") + jsonFilename;
+  if (!CLIObject::readJSON(jsonFilename)) {
     return false;
   }
-  const QByteArray jsonData = loadFile.readAll();
-  QJsonParseError jsonParseError;
-  const QJsonDocument loadDoc(
-      QJsonDocument::fromJson(jsonData, &jsonParseError));
-  if (loadDoc.isNull()) {
-    qWarning() << QString("Invalid json file:") + jsonFilename;
-    qWarning() << "Json parse error:" << jsonParseError.errorString();
-    return false;
-  }
-  const QString referenceFilename = loadDoc["Reference"].toString();
-  mOutputPrefix = loadDoc["Output"].toString();
-  const QJsonArray jsonHistoryFiles = loadDoc["History PMF Files"].toArray();
-  mDoSplitting = loadDoc["Split"].toBool();
-  mDoComputingRMSD = loadDoc["RMSD"].toBool();
+  const QString referenceFilename = mLoadDoc["Reference"].toString();
+  mOutputPrefix = mLoadDoc["Output"].toString();
+  const QJsonArray jsonHistoryFiles = mLoadDoc["History PMF Files"].toArray();
+  mDoSplitting = mLoadDoc["Split"].toBool();
+  mDoComputingRMSD = mLoadDoc["RMSD"].toBool();
   for (const auto &i : jsonHistoryFiles) {
     mHistoryFilename.append(i.toString());
   }

@@ -18,6 +18,7 @@
 */
 
 #include "base/graph.h"
+#include "base/cliobject.h"
 #include "base/helper.h"
 #include "base/histogram.h"
 #include "base/metadynamics.h"
@@ -88,19 +89,17 @@ int runConsole(int argc, char *argv[]) {
       "sumhills",
       QCoreApplication::translate(
           "main", "sum hills from a colvars metadynamics trajectory."));
+  const QCommandLineOption pathPMFOption("pathpmf", QCoreApplication::translate("main", "find the PMF along a path in a multi-dimensional PMF"));
   parser.addOption(projectOption);
   parser.addOption(reweightOption);
   parser.addOption(historyOption);
   parser.addOption(namdlogOption);
   parser.addOption(mfepOption);
   parser.addOption(sumhillsOption);
+  parser.addOption(pathPMFOption);
   parser.addPositionalArgument("jsonfile", "the json configuration file");
 
-  QStringList args;
-  for (int i = 0; i < argc; ++i) {
-    args << QString::fromLocal8Bit(argv[i]);
-  }
-  // TODO
+  QStringList args(argv, argv + argc);
   parser.process(a);
   qDebug() << args;
   const QStringList jsonFilenameList = parser.positionalArguments();
@@ -110,10 +109,10 @@ int runConsole(int argc, char *argv[]) {
     return 1;
   }
   const QString jsonFile = jsonFilenameList.first();
-  // TODO: very redundant, consider a common base class for all CLI objects!
   // TODO: better error handling!
-  QObject *CLIObject = nullptr;
+  CLIObject *CLI = nullptr;
   if (parser.isSet(projectOption)) {
+    // TODO: use CLIObject to unify the interface
     if (readProjectPMFJson(jsonFile)) {
       qDebug() << "Operation succeeded.";
       a.quit();
@@ -124,56 +123,25 @@ int runConsole(int argc, char *argv[]) {
       return 1;
     }
   } else if (parser.isSet(reweightOption)) {
-    CLIObject = new ReweightingCLI(&a);
-    auto reweightingCLIObject = dynamic_cast<ReweightingCLI *>(CLIObject);
-    if (reweightingCLIObject->readJSON(jsonFile)) {
-      QObject::connect(reweightingCLIObject, &ReweightingCLI::allDone, &a,
-                       QCoreApplication::quit);
-      reweightingCLIObject->start();
-    } else {
-      qDebug() << "Error occured!";
-      a.exit(1);
-      return 1;
-    }
+    CLI = new ReweightingCLI(&a);
   } else if (parser.isSet(historyOption)) {
-    CLIObject = new HistoryCLI(&a);
-    auto historyCLIObject = dynamic_cast<HistoryCLI *>(CLIObject);
-    if (historyCLIObject->readJSON(jsonFile)) {
-      QObject::connect(historyCLIObject, &HistoryCLI::allDone, &a,
-                       QCoreApplication::quit);
-      historyCLIObject->start();
-    } else {
-      qDebug() << "Error occured!";
-      a.exit(1);
-      return 1;
-    }
+    CLI = new HistoryCLI(&a);
   } else if (parser.isSet(namdlogOption)) {
-    CLIObject = new NAMDLogCLI(&a);
-    auto NAMDLogCLIObject = dynamic_cast<NAMDLogCLI *>(CLIObject);
-    if (NAMDLogCLIObject->readJSON(jsonFile)) {
-      QObject::connect(NAMDLogCLIObject, &NAMDLogCLI::allDone, &a,
-                       QCoreApplication::quit);
-      NAMDLogCLIObject->start();
-    } else {
-      qDebug() << "Error occured!";
-      a.exit(1);
-      return 1;
-    }
+    CLI = new NAMDLogCLI(&a);
   } else if (parser.isSet(mfepOption)) {
-    CLIObject = new FindPathCLI(&a);
-    auto FindPathCLIObject = dynamic_cast<FindPathCLI *>(CLIObject);
-    if (FindPathCLIObject->readJSON(jsonFile)) {
-      QObject::connect(FindPathCLIObject, &FindPathCLI::allDone, &a,
-                       QCoreApplication::quit);
-      FindPathCLIObject->start();
-    }
+    CLI = new FindPathCLI(&a);
   } else if (parser.isSet(sumhillsOption)) {
-    CLIObject = new MetadynamicsCLI(&a);
-    auto MetadynamicsCLIObject = dynamic_cast<MetadynamicsCLI*>(CLIObject);
-    if (MetadynamicsCLIObject->readJSON(jsonFile)) {
-      QObject::connect(MetadynamicsCLIObject, &MetadynamicsCLI::allDone, &a, QCoreApplication::quit);
-      MetadynamicsCLIObject->start();
-    }
+    CLI = new MetadynamicsCLI(&a);
+  } else if (parser.isSet(pathPMFOption)) {
+    CLI = new PathPMFInPMFCLI(&a);
+  }
+  if (CLI->readJSON(jsonFile)) {
+    QObject::connect(CLI, &CLIObject::allDone, &a, QCoreApplication::quit);
+    CLI->start();
+  } else {
+    qDebug() << "Error occured!";
+    a.exit(1);
+    return 1;
   }
   return a.exec();
 }

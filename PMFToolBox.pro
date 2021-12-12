@@ -17,6 +17,7 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs depr
 
 SOURCES += \
     aboutdialog/aboutdialog.cpp \
+    base/cliobject.cpp \
     base/graph.cpp \
     base/helper.cpp \
     base/histogram.cpp \
@@ -44,6 +45,7 @@ SOURCES += \
 
 HEADERS += \
     aboutdialog/aboutdialog.h \
+    base/cliobject.h \
     base/common.h \
     base/graph.h \
     base/helper.h \

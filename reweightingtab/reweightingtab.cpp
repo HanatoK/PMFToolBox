@@ -215,7 +215,7 @@ void ReweightingTab::help() {
   // TODO
 }
 
-ReweightingCLI::ReweightingCLI(QObject *parent) : QObject(parent) {
+ReweightingCLI::ReweightingCLI(QObject *parent) : CLIObject(parent) {
   connect(&mWorkerThread, &ReweightingThread::error, this,
           &ReweightingCLI::reweightingError);
   connect(&mWorkerThread, &ReweightingThread::progress, this,
@@ -240,30 +240,18 @@ void ReweightingCLI::reweightingDone() {
 }
 
 bool ReweightingCLI::readJSON(const QString &jsonFilename) {
-  qDebug() << "Reading" << jsonFilename;
-  QFile loadFile(jsonFilename);
-  if (!loadFile.open(QIODevice::ReadOnly)) {
-    qWarning() << QString("Could not open json file") + jsonFilename;
+  if (!CLIObject::readJSON(jsonFilename)) {
     return false;
   }
-  QByteArray jsonData = loadFile.readAll();
-  QJsonParseError jsonParseError;
-  const QJsonDocument loadDoc(
-      QJsonDocument::fromJson(jsonData, &jsonParseError));
-  if (loadDoc.isNull()) {
-    qWarning() << QString("Invalid json file:") + jsonFilename;
-    qWarning() << "Json parse error:" << jsonParseError.errorString();
-    return false;
-  }
-  const QString inputFilename = loadDoc["Input"].toString();
-  mOutputFilename = loadDoc["Output"].toString();
-  const QJsonArray jsonFromColumns = loadDoc["From columns"].toArray();
-  const QJsonArray jsonTocolumns = loadDoc["To columns"].toArray();
-  const QString unit = loadDoc["Unit"].toString();
-  const double temperature = loadDoc["Temperature"].toDouble();
-  mConvertToPMF = loadDoc["Convert to PMF"].toBool();
-  const QJsonArray jsonTrajectories = loadDoc["Trajectories"].toArray();
-  const QJsonArray jsonReweightingAxes = loadDoc["Reweighting Axes"].toArray();
+  const QString inputFilename = mLoadDoc["Input"].toString();
+  mOutputFilename = mLoadDoc["Output"].toString();
+  const QJsonArray jsonFromColumns = mLoadDoc["From columns"].toArray();
+  const QJsonArray jsonTocolumns = mLoadDoc["To columns"].toArray();
+  const QString unit = mLoadDoc["Unit"].toString();
+  const double temperature = mLoadDoc["Temperature"].toDouble();
+  mConvertToPMF = mLoadDoc["Convert to PMF"].toBool();
+  const QJsonArray jsonTrajectories = mLoadDoc["Trajectories"].toArray();
+  const QJsonArray jsonReweightingAxes = mLoadDoc["Reweighting Axes"].toArray();
   for (const auto &i : jsonTrajectories) {
     mFileList.push_back(i.toString());
   }

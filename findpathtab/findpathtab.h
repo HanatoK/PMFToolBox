@@ -21,6 +21,7 @@
 #define FINDPATHTAB_H
 
 #include "base/pathfinderthread.h"
+#include "base/cliobject.h"
 #include "findpathtab/addpatchdialog.h"
 #include "findpathtab/patchtablemodel.h"
 
@@ -60,18 +61,16 @@ private:
   QMap<QString, Graph::FindPathAlgorithm> mAvailableAlgorithms;
 };
 
-class FindPathCLI: public QObject {
+class FindPathCLI: public CLIObject {
   Q_OBJECT
 public:
   explicit FindPathCLI(QObject *parent = nullptr);
-  bool readJSON(const QString &jsonFilename);
-  void start();
+  virtual bool readJSON(const QString &jsonFilename) override;
+  virtual void start() override;
   void saveFile();
   ~FindPathCLI();
 public slots:
   void findPathDone(const PMFPathFinder &result);
-signals:
-  void allDone();
 private:
   QString mInputPMF;
   QString mOutputPrefix;
@@ -82,6 +81,19 @@ private:
   HistogramPMF mPMF;
   PMFPathFinderThread mPMFPathFinderThread;
   PMFPathFinder mPMFPathFinder;
+};
+
+class PathPMFInPMFCLI: public CLIObject {
+  Q_OBJECT
+public:
+  explicit PathPMFInPMFCLI(QObject *parent = nullptr);
+  bool readJSON(const QString &jsonFilename);
+  void start();
+  ~PathPMFInPMFCLI();
+private:
+  QString mInputPMF;
+  QString mInputPathFile;
+  QString mOutput;
 };
 
 #endif // FINDPATHTAB_H

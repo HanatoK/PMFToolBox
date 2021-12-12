@@ -21,6 +21,7 @@
 #define NAMDLOGTAB_H
 
 #include "base/namdlogparser.h"
+#include "base/cliobject.h"
 #include "namdlogtab/tablemodelbinning.h"
 
 #include <QCheckBox>
@@ -80,12 +81,12 @@ private:
   std::vector<HistogramVector<double>> mForceHistogram;
 };
 
-class NAMDLogCLI : public QObject {
+class NAMDLogCLI : public CLIObject {
   Q_OBJECT
 public:
   explicit NAMDLogCLI(QObject *parent = nullptr);
-  void start();
-  bool readJSON(const QString &jsonFilename);
+  virtual void start() override;
+  virtual bool readJSON(const QString &jsonFilename) override;
   ~NAMDLogCLI();
 public slots:
   void logReadingProgress(int x);
@@ -93,8 +94,6 @@ public slots:
   void binningProgress(QString status, int x);
   void binningDone(std::vector<HistogramScalar<double>> energyData,
                    std::vector<HistogramVector<double>> forceData);
-signals:
-  void allDone();
 
 private:
   QString mLogFilename;

@@ -21,7 +21,8 @@
 #define HISTORYPMFTAB_H
 
 #include "base/historyfile.h"
-// Need to change the directory of this header
+#include "base/cliobject.h"
+// TODO: Need to change the directory of this header
 #include "reweightingtab/listmodelfilelist.h"
 
 #include <QWidget>
@@ -59,12 +60,12 @@ private:
   HistogramPMFHistory mPMFHistory;
 };
 
-class HistoryCLI : public QObject {
+class HistoryCLI : public CLIObject {
   Q_OBJECT
 public:
   explicit HistoryCLI(QObject *parent = nullptr);
-  bool readJSON(const QString &jsonFilename);
-  void start();
+  virtual bool readJSON(const QString &jsonFilename) override;
+  virtual void start() override;
   void writeRMSDToFile(const std::vector<double> &rmsd,
                        const QString &filename);
   ~HistoryCLI();
@@ -72,9 +73,6 @@ public slots:
   void progress(int fileRead, int percent);
   void done(const HistogramPMFHistory &hist);
   void error(QString msg);
-signals:
-  void allDone();
-
 private:
   bool mDoSplitting;
   bool mDoComputingRMSD;

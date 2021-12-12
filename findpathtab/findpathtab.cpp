@@ -230,7 +230,7 @@ void FindPathTab::removePatch() {
   ui->tableViewPatch->setCurrentIndex(ui->tableViewPatch->currentIndex());
 }
 
-FindPathCLI::FindPathCLI(QObject *parent): QObject(parent)
+FindPathCLI::FindPathCLI(QObject *parent): CLIObject(parent)
 {
   connect(&mPMFPathFinderThread, &PMFPathFinderThread::PathFinderDone, this,
           &FindPathCLI::findPathDone);
@@ -238,27 +238,15 @@ FindPathCLI::FindPathCLI(QObject *parent): QObject(parent)
 
 bool FindPathCLI::readJSON(const QString &jsonFilename)
 {
-  qDebug() << "Reading" << jsonFilename;
-  QFile loadFile(jsonFilename);
-  if (!loadFile.open(QIODevice::ReadOnly)) {
-    qWarning() << QString("Could not open json file") + jsonFilename;
+  if (!CLIObject::readJSON(jsonFilename)) {
     return false;
   }
-  const QByteArray jsonData = loadFile.readAll();
-  QJsonParseError jsonParseError;
-  const QJsonDocument loadDoc(
-      QJsonDocument::fromJson(jsonData, &jsonParseError));
-  if (loadDoc.isNull()) {
-    qWarning() << QString("Invalid json file:") + jsonFilename;
-    qWarning() << "Json parse error:" << jsonParseError.errorString();
-    return false;
-  }
-  mInputPMF = loadDoc["Input PMF"].toString();
-  mOutputPrefix = loadDoc["Output"].toString();
-  mStart = loadDoc["Start"].toString();
-  mEnd = loadDoc["End"].toString();
-  mAlgorithm = loadDoc["Algorithm"].toInt();
-  const QJsonArray jsonPatches = loadDoc["Patches"].toArray();
+  mInputPMF = mLoadDoc["Input PMF"].toString();
+  mOutputPrefix = mLoadDoc["Output"].toString();
+  mStart = mLoadDoc["Start"].toString();
+  mEnd = mLoadDoc["End"].toString();
+  mAlgorithm = mLoadDoc["Algorithm"].toInt();
+  const QJsonArray jsonPatches = mLoadDoc["Patches"].toArray();
   for (const auto &a: jsonPatches) {
     const auto jsonPatch = a.toObject();
     const QString patchCenter = jsonPatch["Center"].toString();
@@ -303,4 +291,67 @@ void FindPathCLI::findPathDone(const PMFPathFinder &result)
     mPMFPathFinder.writePatchedPMF(mOutputPrefix + ".patched");
   }
   emit allDone();
+}
+
+PathPMFInPMFCLI::PathPMFInPMFCLI(QObject* parent): CLIObject(parent)
+{
+
+}
+
+bool PathPMFInPMFCLI::readJSON(const QString& jsonFilename)
+{
+  if (!CLIObject::readJSON(jsonFilename)) {
+    return false;
+  }
+  mInputPMF = mLoadDoc["Input PMF"].toString();
+  mInputPathFile = mLoadDoc["Input Path File"].toString();
+  mOutput = mLoadDoc["Output"].toString();
+}
+
+void PathPMFInPMFCLI::start()
+{
+  HistogramScalar<double> inputPMFHistogram;
+  if (inputPMFHistogram.readFromFile(mInputPMF)) {
+    QFile pathFile(mInputPathFile);
+    QFile outputFile(mOutput);
+    if (pathFile.open(QFile::ReadOnly) &&
+        outputFile.open(QFile::WriteOnly)) {
+      QTextStream ifs(&pathFile);
+      QTextStream ofs(&outputFile);
+      QString line;
+      std::vector<double> pos(inputPMFHistogram.dimension(), 0);
+      const QRegularExpression split_regex("\\s+");
+      QVector<QStringRef> tmpFields;
+      while (!ifs.atEnd()) {
+        ifs.readLineInto(&line);
+        tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
+        if (tmpFields[0].startsWith("#")) continue;
+        else {
+          if (tmpFields.size() == static_cast<int>(pos.size())) {
+            for (size_t i = 0; i < pos.size(); ++i) {
+              pos[i] = tmpFields[i].toDouble();
+              ofs << qSetFieldWidth(OUTPUT_WIDTH);
+              ofs.setRealNumberPrecision(OUTPUT_POSITION_PRECISION);
+              ofs << pos[i];
+              ofs << qSetFieldWidth(0) << ' ';
+            }
+            if (inputPMFHistogram.isInGrid(pos)) {
+              // find the position in PMF
+              const double pmf_val = inputPMFHistogram(pos);
+              ofs.setRealNumberPrecision(OUTPUT_PRECISION);
+              ofs << qSetFieldWidth(OUTPUT_WIDTH) << pmf_val << qSetFieldWidth(0);
+            }
+            ofs << "\n";
+          }
+        }
+      }
+    }
+  } else {
+    qWarning() << "Failed to read from" << mInputPMF;
+  }
+}
+
+PathPMFInPMFCLI::~PathPMFInPMFCLI()
+{
+
 }

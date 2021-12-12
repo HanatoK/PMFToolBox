@@ -240,7 +240,7 @@ QStringList selectEnergyTermDialog::selectedForceTitle() const {
   return selected;
 }
 
-NAMDLogCLI::NAMDLogCLI(QObject *parent) : QObject(parent) {
+NAMDLogCLI::NAMDLogCLI(QObject *parent) : CLIObject(parent) {
   connect(&mLogReaderThread, &NAMDLogReaderThread::progress, this,
           &NAMDLogCLI::logReadingProgress);
   connect(&mLogReaderThread, &NAMDLogReaderThread::done, this,
@@ -254,27 +254,15 @@ NAMDLogCLI::NAMDLogCLI(QObject *parent) : QObject(parent) {
 void NAMDLogCLI::start() { mLogReaderThread.invokeThread(mLogFilename); }
 
 bool NAMDLogCLI::readJSON(const QString &jsonFilename) {
-  qDebug() << "Reading" << jsonFilename;
-  QFile loadFile(jsonFilename);
-  if (!loadFile.open(QIODevice::ReadOnly)) {
-    qWarning() << QString("Could not open json file") + jsonFilename;
+  if (!CLIObject::readJSON(jsonFilename)) {
     return false;
   }
-  const QByteArray jsonData = loadFile.readAll();
-  QJsonParseError jsonParseError;
-  const QJsonDocument loadDoc(
-      QJsonDocument::fromJson(jsonData, &jsonParseError));
-  if (loadDoc.isNull()) {
-    qWarning() << QString("Invalid json file:") + jsonFilename;
-    qWarning() << "Json parse error:" << jsonParseError.errorString();
-    return false;
-  }
-  mLogFilename = loadDoc["NAMD log"].toString();
-  mTrajectoryFilename = loadDoc["Trajectory"].toString();
-  mOutputPrefix = loadDoc["Output"].toString();
-  const QJsonArray jsonEnergies = loadDoc["Energies"].toArray();
-  const QJsonArray jsonForces = loadDoc["Forces"].toArray();
-  const QJsonArray jsonAxes = loadDoc["Axes"].toArray();
+  mLogFilename = mLoadDoc["NAMD log"].toString();
+  mTrajectoryFilename = mLoadDoc["Trajectory"].toString();
+  mOutputPrefix = mLoadDoc["Output"].toString();
+  const QJsonArray jsonEnergies = mLoadDoc["Energies"].toArray();
+  const QJsonArray jsonForces = mLoadDoc["Forces"].toArray();
+  const QJsonArray jsonAxes = mLoadDoc["Axes"].toArray();
   for (const auto &i : jsonEnergies) {
     mSelectedEnergyTitle.append(i.toString());
   }
