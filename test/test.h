@@ -21,10 +21,12 @@
 #define TEST_H
 
 #include "base/graph.h"
+#include "base/histogram.h"
 
 void testGraph();
 void testDijkstra();
 void testSPFA();
 void testSPFA2();
+void testDivergence(const QString& input_filename, const QString& output_filename);
 
 #endif // TEST_H

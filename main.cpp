@@ -160,7 +160,8 @@ int main(int argc, char *argv[]) {
 
   initTypes();
   //  runTests();
-
+//  testDivergence("/home/hanatok/HDD/Docs/playground/PMFToolBox_test/test_divergence/trialanine_fes+1o.abf1.czar.grad",
+//                 "/home/hanatok/HDD/Docs/playground/PMFToolBox_test/test_divergence/test.div");
   if (argc > 1) {
     return runConsole(argc, argv);
   } else {

@@ -436,7 +436,7 @@ public:
   virtual bool readFromFile(const QString &filename);
   virtual bool writeToStream(QTextStream &ofs) const override;
   virtual bool writeToFile(const QString &filename) const;
-  virtual std::vector<T> operator()(const std::vector<T> &);
+  virtual std::vector<T> operator()(const std::vector<T> &) const;
   T &operator[](int);
   const T &operator[](int) const;
   virtual void applyFunction(std::function<T(T)> f);
@@ -486,6 +486,7 @@ bool HistogramVector<T>::readFromStream(QTextStream &ifs,
   size_t dataLines = 0;
   const QRegularExpression split_regex("\\s+");
   while (!ifs.atEnd()) {
+    ifs.readLineInto(&line);
     tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
     // skip blank lines
     if (tmpFields.size() == static_cast<int>(mNdim + mMultiplicity)) {
@@ -574,7 +575,7 @@ bool HistogramVector<T>::writeToFile(const QString &filename) const {
 }
 
 template <typename T>
-std::vector<T> HistogramVector<T>::operator()(const std::vector<T> &pos) {
+std::vector<T> HistogramVector<T>::operator()(const std::vector<T> &pos) const {
   bool inBoundary = true;
   const size_t addr = address(pos, &inBoundary);
   if (inBoundary) {
@@ -700,6 +701,16 @@ private:
   Graph::FindPathAlgorithm mAlgorithm;
   Graph::FindPathMode mMode;
   Graph::FindPathResult mResult;
+};
+
+class HistogramGradient: public HistogramVector<double> {
+public:
+  HistogramGradient();
+  HistogramGradient(const std::vector<Axis> &ax, const size_t mult);
+  virtual ~HistogramGradient();
+  HistogramScalar<double> divergence() const;
+protected:
+  double divergence(const std::vector<double>& pos) const;
 };
 
 Q_DECLARE_METATYPE(HistogramPMF);

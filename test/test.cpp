@@ -88,3 +88,13 @@ void testSPFA2() {
   graph.printGraph(std::cout);
   graph.SPFA(0, 9, Graph::FindPathMode::MFEPMode).dump();
 }
+
+void testDivergence(const QString& input_filename, const QString& output_filename) {
+  qDebug() << "========== Start testDivergence ==========";
+  qDebug() << "Start reading file:" << input_filename;
+  HistogramGradient hist_grad;
+  hist_grad.readFromFile(input_filename);
+  qDebug() << "Start calculating and writing divergence to" << output_filename;
+  hist_grad.divergence().writeToFile(output_filename);
+  qDebug() << "========== End of testDivergence ==========";
+}
