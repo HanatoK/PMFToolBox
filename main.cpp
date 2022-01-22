@@ -162,6 +162,9 @@ int main(int argc, char *argv[]) {
   //  runTests();
 //  testDivergence("/home/hanatok/HDD/Docs/playground/PMFToolBox_test/test_divergence/trialanine_fes+1o.abf1.czar.grad",
 //                 "/home/hanatok/HDD/Docs/playground/PMFToolBox_test/test_divergence/test.div");
+//  testIntegrate("/home/hanatok/HDD/Docs/playground/PMFToolBox_test/test_divergence/trialanine_fes+1o.abf1.czar.grad",
+//                "/home/hanatok/HDD/Docs/playground/PMFToolBox_test/test_divergence/test.dat");
+  testIntegrate("/home/hanatok/HDD/Docs/PDE/test.grad", "/home/hanatok/HDD/Docs/PDE/test_new/test3.dat");
   if (argc > 1) {
     return runConsole(argc, argv);
   } else {
