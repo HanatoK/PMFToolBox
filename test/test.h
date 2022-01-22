@@ -22,11 +22,13 @@
 
 #include "base/graph.h"
 #include "base/histogram.h"
+#include "base/integrate_gradients.h"
 
 void testGraph();
 void testDijkstra();
 void testSPFA();
 void testSPFA2();
 void testDivergence(const QString& input_filename, const QString& output_filename);
+void testIntegrate(const QString& input_filename, const QString& output_filename);
 
 #endif // TEST_H

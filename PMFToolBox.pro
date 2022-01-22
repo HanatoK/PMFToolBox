@@ -4,6 +4,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++2a qwt
 
+# use armadillo
+LIBS += -larmadillo
+
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
@@ -22,6 +25,7 @@ SOURCES += \
     base/helper.cpp \
     base/histogram.cpp \
     base/historyfile.cpp \
+    base/integrate_gradients.cpp \
     base/metadynamics.cpp \
     base/pathfinderthread.cpp \
     base/plot.cpp \
@@ -51,6 +55,7 @@ HEADERS += \
     base/helper.h \
     base/histogram.h \
     base/historyfile.h \
+    base/integrate_gradients.h \
     base/metadynamics.h \
     base/pathfinderthread.h \
     base/plot.h \

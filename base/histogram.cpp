@@ -140,6 +140,15 @@ size_t HistogramBase::address(const std::vector<double> &position,
   return addr;
 }
 
+size_t HistogramBase::address(const std::vector<size_t>& idx) const
+{
+  size_t addr = 0;
+  for (size_t i = 0; i < mNdim; ++i) {
+    addr += mAccu[i] * idx[i];
+  }
+  return addr;
+}
+
 std::vector<double> HistogramBase::reverseAddress(size_t address,
                                                   bool *inBoundary) const {
   std::vector<double> pos(mNdim, 0);
@@ -243,6 +252,44 @@ HistogramBase::allNeighborByAddress(size_t address) const {
   return results;
 }
 
+std::pair<size_t, bool> HistogramBase::neighborByIndex(std::vector<size_t> index, size_t axisIndex, bool previous) const
+{
+  if (previous == true) { // find previous neighbour
+    if (mAxes[axisIndex].periodic()) {
+      if (index[axisIndex] == 0) {
+        index[axisIndex] = mAxes[axisIndex].mBins - 1;
+      } else {
+        index[axisIndex] -= 1;
+      }
+    } else {
+      if (index[axisIndex] == 0) {
+        return std::make_pair(0, false);
+      } else {
+        index[axisIndex] -= 1;
+      }
+    }
+  } else { // find next neighbour
+    if (mAxes[axisIndex].periodic()) {
+      if (index[axisIndex] == mAxes[axisIndex].mBins - 1) {
+        index[axisIndex] = 0;
+      } else {
+        index[axisIndex] += 1;
+      }
+    } else {
+      if (index[axisIndex] == mAxes[axisIndex].mBins - 1) {
+        return std::make_pair(0, false);
+      } else {
+        index[axisIndex] += 1;
+      }
+    }
+  }
+  size_t neighbour_address = 0;
+  for (size_t i = 0; i < mNdim; ++i) {
+    neighbour_address += index[i] * mAccu[i];
+  }
+  return std::make_pair(neighbour_address, true);
+}
+
 size_t HistogramBase::histogramSize() const { return mHistogramSize; }
 
 size_t HistogramBase::dimension() const { return mNdim; }
@@ -255,23 +302,23 @@ const std::vector<std::vector<double>> &HistogramBase::pointTable() const {
 
 void HistogramBase::fillTable() {
   qDebug() << "Calling" << Q_FUNC_INFO;
-  std::vector<std::vector<double>> middlePoint(mNdim);
+  std::vector<std::vector<double>> middlePoints(mNdim);
   for (size_t i = 0; i < mNdim; ++i) {
-    middlePoint[i] = mAxes[i].getMiddlePoints();
+    middlePoints[i] = mAxes[i].getMiddlePoints();
   }
-  mPointTable = std::vector(mNdim, std::vector<double>(mHistogramSize, 0.0));
+  mPointTable = std::vector<std::vector<double>>(mNdim, std::vector<double>(mHistogramSize, 0.0));
   for (size_t i = 0; i < mNdim; ++i) {
     size_t repeatAll = 1, repeatOne = 1;
     for (size_t j = i + 1; j < mNdim; ++j) {
-      repeatOne *= middlePoint[j].size();
+      repeatOne *= middlePoints[j].size();
     }
     for (size_t j = 0; j < i; ++j) {
-      repeatAll *= middlePoint[j].size();
+      repeatAll *= middlePoints[j].size();
     }
-    const size_t in_i_sz = middlePoint[i].size();
+    const size_t in_i_sz = middlePoints[i].size();
     for (size_t l = 0; l < in_i_sz; ++l) {
       std::fill_n(mPointTable[i].begin() + l * repeatOne, repeatOne,
-                  middlePoint[i][l]);
+                  middlePoints[i][l]);
     }
     for (size_t k = 0; k < repeatAll - 1; ++k) {
       std::copy_n(mPointTable[i].begin(), repeatOne * in_i_sz,
@@ -378,6 +425,16 @@ std::vector<double> Axis::getMiddlePoints() const {
   for (auto &i : result) {
     tmp += mWidth;
     i = tmp;
+  }
+  return result;
+}
+
+std::vector<double> Axis::getBoundaryPoints() const
+{
+  std::vector<double> result(mBins + 1);
+  result[0] = mLowerBound;
+  for (size_t i = 1; i < mBins + 1; ++i) {
+    result[i] = result[i-1] + mWidth;
   }
   return result;
 }
@@ -845,98 +902,4 @@ std::vector<GridDataPatch> PMFPathFinder::patchList() const {
 
 void PMFPathFinder::setPatchList(const std::vector<GridDataPatch> &patchList) {
   mPatchList = patchList;
-}
-
-HistogramGradient::HistogramGradient(): HistogramVector<double>()
-{
-
-}
-
-HistogramGradient::HistogramGradient(const std::vector<Axis>& ax, const size_t mult):
-  HistogramVector<double>(ax, mult)
-{
-  if (ax.size() != mult) {
-    throw std::runtime_error("The multiplicity does not match the number of axis.");
-  }
-}
-
-HistogramGradient::~HistogramGradient()
-{
-
-}
-
-HistogramScalar<double> HistogramGradient::divergence() const
-{
-  HistogramScalar<double> result(mAxes);
-  // TODO: this is inefficient
-  std::vector<double> pos(mNdim);
-  for (size_t i = 0; i < mHistogramSize; ++i) {
-    for (size_t j = 0; j < mNdim; ++j) {
-      pos[j] = mPointTable[j][i];
-    }
-    const double div = divergence(pos);
-    const size_t addr = address(pos);
-    result[addr] = div;
-  }
-  return result;
-}
-
-double HistogramGradient::divergence(const std::vector<double>& pos) const
-{
-  std::vector<double> grad_deriv(mNdim, 0.0);
-  if (!isInGrid(pos)) {
-    return 0.0;
-  }
-  const size_t force_addr = address(pos) * mNdim;
-  std::vector<double> grad = this->operator()(pos);
-  for (size_t i = 0; i < mNdim; ++i) {
-    const double binWidth = mAxes[i].width();
-    std::vector<double> first = pos;
-    std::vector<double> last = pos;
-    first[i] = mAxes[i].lowerBound() + binWidth * 0.5;
-    last[i] = mAxes[i].upperBound() - binWidth * 0.5;
-    const size_t force_addr_first = address(first) * mNdim;
-    const size_t force_addr_last = address(last) * mNdim;
-    if (force_addr == force_addr_first) {
-      std::vector<double> next(pos);
-      next[i] += binWidth;
-      const std::vector<double> grad_next = this->operator()(next);
-      if (mAxes[i].realPeriodic() == true) {
-        const std::vector<double> grad_prev = this->operator()(last);
-        grad_deriv[i] = (grad_next[i] - grad_prev[i]) / (2.0 * binWidth);
-      } else {
-        std::vector<double> next_2(next);
-        next_2[i] += binWidth;
-        const std::vector<double> grad_next_2 = this->operator()(next_2);
-        grad_deriv[i] =
-          (grad_next_2[i] * -1.0 + grad_next[i] * 4.0 - grad[i] * 3.0) /
-          (2.0 * binWidth);
-      }
-    } else if (force_addr == force_addr_last) {
-      std::vector<double> prev(pos);
-      prev[i] -= binWidth;
-      const std::vector<double> grad_prev = this->operator()(prev);
-      if (mAxes[i].realPeriodic() == true) {
-        const std::vector<double> grad_next = this->operator()(first);
-        grad_deriv[i] = (grad_next[i] - grad_prev[i]) / (2.0 * binWidth);
-      } else {
-        std::vector<double> prev_2(prev);
-        prev_2[i] -= binWidth;
-        const std::vector<double> grad_prev = this->operator()(prev);
-        const std::vector<double> grad_prev_2 = this->operator()(prev_2);
-        grad_deriv[i] =
-          (grad[i] * 3.0 - grad_prev[i] * 4.0 + grad_prev_2[i] * 1.0) /
-          (2.0 * binWidth);
-      }
-    } else {
-      std::vector<double> prev(pos);
-      prev[i] -= binWidth;
-      std::vector<double> next(pos);
-      next[i] += binWidth;
-      const std::vector<double> grad_next = this->operator()(next);
-      const std::vector<double> grad_prev = this->operator()(prev);
-      grad_deriv[i] = (grad_next[i] - grad_prev[i]) / (2.0 * binWidth);
-    }
-  }
-  return std::accumulate(begin(grad_deriv), end(grad_deriv), 0.0);;
 }

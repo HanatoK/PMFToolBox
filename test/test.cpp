@@ -98,3 +98,15 @@ void testDivergence(const QString& input_filename, const QString& output_filenam
   hist_grad.divergence().writeToFile(output_filename);
   qDebug() << "========== End of testDivergence ==========";
 }
+
+void testIntegrate(const QString& input_filename, const QString& output_filename)
+{
+  qDebug() << "========== Start testIntegrate ==========";
+  qDebug() << "Start reading file:" << input_filename;
+  HistogramGradient hist_grad;
+  hist_grad.readFromFile(input_filename);
+  qDebug() << "Start calculating and writing potential to" << output_filename;
+  hist_grad.buildFiniteDifferenceMatrix();
+  hist_grad.potentialHistogram().writeToFile(output_filename);
+  qDebug() << "========== End of testIntegrate ==========";
+}

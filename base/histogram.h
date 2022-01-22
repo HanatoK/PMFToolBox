@@ -54,6 +54,7 @@ public:
   double wrap(double x) const;
   QString infoHeader() const;
   std::vector<double> getMiddlePoints() const;
+  std::vector<double> getBoundaryPoints() const;
   double lowerBound() const;
   double upperBound() const;
   double setLowerBound(double newLowerBound);
@@ -103,6 +104,7 @@ public:
                                     bool *inBoundary = nullptr) const;
   virtual size_t address(const std::vector<double> &position,
                          bool *inBoundary = nullptr) const;
+  virtual size_t address(const std::vector<size_t> &idx) const;
   std::vector<double> reverseAddress(size_t address,
                                      bool *inBoundary = nullptr) const;
   virtual std::pair<size_t, bool> neighbor(const std::vector<double> &position,
@@ -115,6 +117,9 @@ public:
   allNeighbor(const std::vector<double> &position) const;
   virtual std::vector<std::pair<size_t, bool>>
   allNeighborByAddress(size_t address) const;
+  virtual std::pair<size_t, bool>
+  neighborByIndex(std::vector<size_t> indexes,
+                  size_t axisIndex, bool previous = false) const;
   size_t histogramSize() const;
   size_t dimension() const;
   const std::vector<Axis> &axes() const;
@@ -701,16 +706,6 @@ private:
   Graph::FindPathAlgorithm mAlgorithm;
   Graph::FindPathMode mMode;
   Graph::FindPathResult mResult;
-};
-
-class HistogramGradient: public HistogramVector<double> {
-public:
-  HistogramGradient();
-  HistogramGradient(const std::vector<Axis> &ax, const size_t mult);
-  virtual ~HistogramGradient();
-  HistogramScalar<double> divergence() const;
-protected:
-  double divergence(const std::vector<double>& pos) const;
 };
 
 Q_DECLARE_METATYPE(HistogramPMF);
