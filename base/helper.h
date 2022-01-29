@@ -75,7 +75,7 @@ template <typename T> T stringToNumber(const QString &str, bool *ok = nullptr) {
 }
 
 template <typename T>
-T stringToNumber(const QStringRef &str, bool *ok = nullptr) {
+T stringToNumber(const QStringView &str, bool *ok = nullptr) {
   // check signed integer type
   if constexpr (std::is_same<T, long long int>::value) {
     return str.toLongLong(ok);
@@ -105,8 +105,9 @@ T stringToNumber(const QStringRef &str, bool *ok = nullptr) {
 }
 
 template <typename T> std::vector<T> splitStringToNumbers(const QString &str) {
-  QVector<QStringRef> tmpFields =
-      str.splitRef(QRegularExpression("[(),\\s]+"), Qt::SkipEmptyParts);
+  const auto split_regex = QRegularExpression("[(),\\s]+");
+  QStringView str_view(str);
+  QList<QStringView> tmpFields = str_view.split(split_regex, Qt::SkipEmptyParts);
   std::vector<T> result;
   for (auto it = tmpFields.begin(); it != tmpFields.end(); ++it) {
     result.push_back(stringToNumber<T>(*it));

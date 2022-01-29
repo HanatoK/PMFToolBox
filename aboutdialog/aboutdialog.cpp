@@ -63,7 +63,7 @@ QString AboutDialog::getStringFromResource(const QString &res_file) const {
   QFile file(res_file);
   if (file.open(QIODevice::ReadOnly)) {
     QTextStream ts(&file);
-    ts.setCodec("UTF-8");
+//    ts.setCodec("UTF-8");
     ret_string = ts.readAll();
     file.close();
   }

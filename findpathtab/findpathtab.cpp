@@ -323,11 +323,12 @@ void PathPMFInPMFCLI::start()
       QString line;
       std::vector<double> pos(inputPMFHistogram.dimension(), 0);
       const QRegularExpression split_regex("\\s+");
-      QVector<QStringRef> tmpFields;
+      QList<QStringView> tmpFields;
       while (!ifs.atEnd()) {
         ifs.readLineInto(&line);
-        tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
-        if (tmpFields[0].startsWith("#")) continue;
+        QStringView line_view(line);
+        tmpFields = line_view.split(split_regex, Qt::SkipEmptyParts);
+        if (tmpFields[0].startsWith(QChar('#'))) continue;
         else {
           if (tmpFields.size() == static_cast<int>(pos.size())) {
             for (size_t i = 0; i < pos.size(); ++i) {

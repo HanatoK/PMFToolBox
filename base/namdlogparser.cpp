@@ -52,8 +52,9 @@ void NAMDLog::readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread,
     if (firsttime) {
       if (line.startsWith("ETITLE:")) {
         firsttime = false;
+        QStringView line_view(line);
         const auto titles =
-            line.splitRef(split_title_regex, Qt::SkipEmptyParts);
+            line_view.split(split_title_regex, Qt::SkipEmptyParts);
         for (auto it = titles.begin(); it != titles.end(); ++it) {
           const auto key = it->toString();
           const auto keyFound = mEnergyData.find(key);
@@ -65,20 +66,22 @@ void NAMDLog::readFromStream(QTextStream &ifs, NAMDLogReaderThread *thread,
       }
     }
     if (line.startsWith("ENERGY:")) {
-      const auto fields = line.splitRef(split_energy_regex, Qt::SkipEmptyParts);
+      QStringView line_view(line);
+      const auto fields = line_view.split(split_energy_regex, Qt::SkipEmptyParts);
       for (int i = 0; i < mEnergyTitle.size(); ++i) {
         mEnergyData[mEnergyTitle[i]].push_back(fields[i].toDouble());
       }
     }
     if (line.startsWith("PAIR INTERACTION:")) {
-      const auto fields = line.splitRef(split_pair_regex, Qt::SkipEmptyParts);
+      QStringView line_view(line);
+      const auto fields = line_view.split(split_pair_regex, Qt::SkipEmptyParts);
       int pos_vdw_force = -1;
       int pos_elect_force = -1;
       for (int i = 0; i < fields.size(); ++i) {
-        if (fields[i] == "VDW_FORCE:") {
+        if (fields[i].compare(QLatin1String("VDW_FORCE:")) == 0) {
           pos_vdw_force = i;
         }
-        if (fields[i] == "ELECT_FORCE:") {
+        if (fields[i].compare(QLatin1String("ELECT_FORCE:")) == 0) {
           pos_elect_force = i;
         }
       }
@@ -195,7 +198,7 @@ doBinningScalar::doBinningScalar(HistogramScalar<double> &histogram,
     : mHistogram(histogram), mColumn(column),
       mPosition(mHistogram.dimension(), 0.0) {}
 
-void doBinningScalar::operator()(const QVector<QStringRef> &fields,
+void doBinningScalar::operator()(const QList<QStringView>& fields,
                                  double energy, bool &read_ok) {
   // get the position of current point from trajectory
   for (size_t i = 0; i < mPosition.size(); ++i) {
@@ -262,7 +265,7 @@ void BinNAMDLogThread::run() {
   QFile trajFile(mTrajectoryFileName);
   if (trajFile.open(QIODevice::ReadOnly)) {
     QTextStream ifs_traj(&trajFile);
-    QVector<QStringRef> tmpFields;
+    QList<QStringView> tmpFields;
     size_t lineNumber = 0;
     QString line;
     double readSize = 0;
@@ -280,12 +283,13 @@ void BinNAMDLogThread::run() {
           emit progress("Reading trajectory file", readingProgress);
         }
       }
-      tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
+      QStringView line_view(line);
+      tmpFields = line_view.split(split_regex, Qt::SkipEmptyParts);
       // skip blank lines
       if (tmpFields.size() <= 0)
         continue;
       // skip comment lines start with #
-      if (tmpFields[0].startsWith("#"))
+      if (tmpFields[0].startsWith(QChar('#')))
         continue;
       for (int i = 0; i < mEnergyTitle.size(); ++i) {
         if (lineNumber < mLog.size()) {
@@ -375,7 +379,7 @@ doBinningVector::doBinningVector(HistogramVector<double> &histogram,
     : mHistogram(histogram), mColumn(column),
       mPosition(mHistogram.dimension(), 0.0) {}
 
-void doBinningVector::operator()(const QVector<QStringRef> &fields,
+void doBinningVector::operator()(const QList<QStringView> &fields,
                                  const std::vector<double> &data,
                                  bool &read_ok) {
   // get the position of current point from trajectory

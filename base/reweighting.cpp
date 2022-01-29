@@ -38,7 +38,7 @@ void doReweighting::operator()(const std::vector<double> &fields) {
   }
 }
 
-void doReweighting::operator()(const QVector<QStringRef> &fields,
+void doReweighting::operator()(const QList<QStringView> &fields,
                                bool &read_ok) {
   for (size_t i = 0; i < posOrigin.size(); ++i) {
     posOrigin[i] = fields[originPositionIndex[i]].toDouble(&read_ok);
@@ -115,7 +115,7 @@ void ReweightingThread::run() {
       const double fileSize = trajectoryFile.size();
       QTextStream ifs(&trajectoryFile);
       QString line;
-      QVector<QStringRef> tmpFields;
+      QList<QStringView> tmpFields;
       double readSize = 0;
       qint64 previousProgress = 0;
       bool read_ok = true;
@@ -130,12 +130,13 @@ void ReweightingThread::run() {
             emit progress(numFile, readingProgress);
           }
         }
-        tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
+        QStringView line_view(line);
+        tmpFields = line_view.split(split_regex, Qt::SkipEmptyParts);
         // skip blank lines
         if (tmpFields.size() <= 0)
           continue;
         // skip comment lines start with #
-        if (tmpFields[0].startsWith("#"))
+        if (tmpFields[0].startsWith(QChar('#')))
           continue;
         reweightingObject(tmpFields, read_ok);
         if (read_ok == false) {
