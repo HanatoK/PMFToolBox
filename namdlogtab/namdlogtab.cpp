@@ -270,10 +270,10 @@ bool NAMDLogCLI::readJSON(const QString &jsonFilename) {
     mSelectedForceTitle.append(i.toString());
   }
   for (const auto &i : jsonAxes) {
-    mColumns.push_back(i["Column"].toInt());
-    const double lower_bound = i["Lower bound"].toDouble();
-    const double upper_bound = i["Upper bound"].toDouble();
-    const double width = i["Width"].toDouble();
+    mColumns.push_back(i[QLatin1String("Column")].toInt());
+    const double lower_bound = i[QStringLiteral("Lower bound")].toDouble();
+    const double upper_bound = i[QStringLiteral("Upper bound")].toDouble();
+    const double width = i[QStringLiteral("Width")].toDouble();
     const size_t bins = std::nearbyint((upper_bound - lower_bound) / width);
     mAxes.push_back(Axis(lower_bound, upper_bound, bins));
   }

@@ -242,7 +242,7 @@ void SumHillsThread::run() {
     const double fileSize = trajectoryFile.size();
     QTextStream ifs(&trajectoryFile);
     QString line;
-    QVector<QStringRef> tmpFields;
+    QList<QStringView> tmpFields;
     double readSize = 0;
     qint64 previousProgress = 0;
     bool read_ok = true;
@@ -276,12 +276,13 @@ void SumHillsThread::run() {
             emit progress(readingProgress);
           }
         }
-        tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
+        QStringView line_view(line);
+        tmpFields = line_view.split(split_regex, Qt::SkipEmptyParts);
         // skip blank lines
         if (tmpFields.size() <= 0)
           continue;
         // skip comment lines start with #
-        if (tmpFields[0].startsWith("#"))
+        if (tmpFields[0].startsWith(QChar('#')))
           continue;
         // a metadynamics trajectory has 2N+2 columns, where N is the number of
         // CVs

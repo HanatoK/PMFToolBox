@@ -80,7 +80,7 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs,
   QString line;
   std::vector<double> pos(PMFHistory.dimension(), 0);
   std::vector<double> pmfData(PMFHistory.histogramSize(), 0);
-  QVector<QStringRef> tmpFields;
+  QList<QStringView> tmpFields;
   bool firsttime = true;
   double readSize = 0;
   int previousProgress = 0;
@@ -100,11 +100,12 @@ bool HistoryReaderThread::readFromStream(QTextStream &ifs,
         emit progress(qMin(maxFileIndex, fileIndex), readingProgress);
       }
     }
-    tmpFields = line.splitRef(split_regex, Qt::SkipEmptyParts);
+    QStringView line_view(line);
+    tmpFields = line_view.split(split_regex, Qt::SkipEmptyParts);
     if (tmpFields.size() == 0)
       continue;
     // header lines
-    if (tmpFields[0].startsWith("#")) {
+    if (tmpFields[0].startsWith(QChar('#'))) {
       if (tmpFields.size() == 2 && !firsttime) {
         PMFHistory.appendHistogram(pmfData);
         continue;
