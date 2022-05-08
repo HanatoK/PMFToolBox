@@ -107,6 +107,7 @@ bool HistogramBase::isInGrid(const std::vector<double> &position) const {
     if (!(it_ax->inBoundary(*it_val)))
       return false;
     ++it_ax;
+    ++it_val;
   }
   return true;
 }
