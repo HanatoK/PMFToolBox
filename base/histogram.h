@@ -251,7 +251,7 @@ bool HistogramScalar<T>::writeToStream(QTextStream &ofs) const {
   if (!file_opened)
     return file_opened;
   std::vector<double> pos(mNdim, 0);
-  ofs.setRealNumberNotation(QTextStream::FixedNotation);
+  ofs.setRealNumberNotation(QTextStream::ScientificNotation);
   for (size_t i = 0; i < mHistogramSize; ++i) {
     for (size_t j = 0; j < mNdim; ++j) {
       pos[j] = mPointTable[j][i];
@@ -546,7 +546,7 @@ bool HistogramVector<T>::writeToStream(QTextStream &ofs) const {
   if (!file_opened)
     return file_opened;
   std::vector<double> pos(mNdim, 0);
-  ofs.setRealNumberNotation(QTextStream::FixedNotation);
+  ofs.setRealNumberNotation(QTextStream::ScientificNotation);
   for (size_t i = 0; i < mHistogramSize; ++i) {
     ofs.setRealNumberPrecision(OUTPUT_POSITION_PRECISION);
     for (size_t j = 0; j < mNdim; ++j) {

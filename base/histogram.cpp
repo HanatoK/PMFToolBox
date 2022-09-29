@@ -657,7 +657,7 @@ void HistogramPMFHistory::splitToFile(const QString &prefix) const {
       std::vector<double> pos(mNdim, 0);
       QTextStream ofs(&outputFile);
       HistogramBase::writeToStream(ofs);
-      ofs.setRealNumberNotation(QTextStream::FixedNotation);
+      ofs.setRealNumberNotation(QTextStream::ScientificNotation);
       for (size_t j = 0; j < mHistogramSize; ++j) {
         for (size_t k = 0; k < mNdim; ++k) {
           pos[k] = mPointTable[k][j];
@@ -750,7 +750,7 @@ void PMFPathFinder::writePath(const QString &filename) const {
   QFile ofs_file(filename);
   if (ofs_file.open(QFile::WriteOnly)) {
     QTextStream out_stream(&ofs_file);
-    out_stream.setRealNumberNotation(QTextStream::FixedNotation);
+    out_stream.setRealNumberNotation(QTextStream::ScientificNotation);
     const auto &path = mResult.mPathNodes;
     for (size_t i = 0; i < path.size(); ++i) {
       const auto pos = mHistogram.reverseAddress(path[i]);
@@ -777,7 +777,7 @@ void PMFPathFinder::writeVisitedRegion(const QString &filename) const {
   QFile ofs_file(filename);
   if (ofs_file.open(QFile::WriteOnly)) {
     QTextStream out_stream(&ofs_file);
-    out_stream.setRealNumberNotation(QTextStream::FixedNotation);
+    out_stream.setRealNumberNotation(QTextStream::ScientificNotation);
     for (size_t i = 0; i < mHistogram.histogramSize(); ++i) {
       if (mResult.mVisitedNodes[i] == true) {
         const auto pos = mHistogram.reverseAddress(i);
