@@ -291,8 +291,7 @@ void SumHillsThread::run() {
         numStep = tmpFields[0].toLongLong(&read_ok);
         for (size_t i = 0; i < mMetaD->dimension(); ++i) {
           centers[bufferIndex][i] = tmpFields[i + 1].toDouble(&read_ok);
-          sigmas[bufferIndex][i] =
-            0.5 * tmpFields[mMetaD->dimension() + i + 1].toDouble(&read_ok);
+          sigmas[bufferIndex][i] = tmpFields[mMetaD->dimension() + i + 1].toDouble(&read_ok);
         }
         heights[bufferIndex] = tmpFields[2 * mMetaD->dimension() + 1].toDouble(&read_ok);
         if (!read_ok) {
