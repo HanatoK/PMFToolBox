@@ -176,16 +176,13 @@ std::vector<double> HistogramBase::reverseAddress(size_t address,
 std::pair<size_t, bool>
 HistogramBase::neighbor(const std::vector<double> &position, size_t axisIndex,
                         bool previous) const {
-  const double bin_width_i = mAxes[axisIndex].width();
-  std::vector<double> pos_next(position);
-  if (previous == true) {
-    pos_next[axisIndex] -= bin_width_i;
-  } else {
-    pos_next[axisIndex] += bin_width_i;
+  bool check = true;
+  const auto idx = index(position, &check);
+  if (!check) {
+    return std::make_pair(0, check);
   }
-  bool inBoundary;
-  const size_t addr_neighbor = address(pos_next, &inBoundary);
-  return std::make_pair(addr_neighbor, inBoundary);
+  const auto addr_neighbor = neighborByIndex(idx, axisIndex, previous);
+  return addr_neighbor;
 }
 
 std::pair<size_t, bool> HistogramBase::neighborByAddress(size_t address,
