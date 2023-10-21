@@ -2,7 +2,15 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++2a qwt
+#CONFIG += c++2a qwt
+CONFIG += c++2a
+equals(QT_MAJOR_VERSION, 5) {
+  CONFIG += qwt
+}
+equals(QT_MAJOR_VERSION, 6) {
+  CONFIG += link_pkgconfig
+  PKGCONFIG += Qt6Qwt6
+}
 
 # use armadillo
 LIBS += -larmadillo
