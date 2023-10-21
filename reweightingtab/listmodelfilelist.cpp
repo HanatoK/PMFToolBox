@@ -61,11 +61,9 @@ QVariant ListModelFileList::data(const QModelIndex &index, int role) const {
 
 bool ListModelFileList::insertRows(int row, int count,
                                    const QModelIndex &parent) {
-  row = qBound(0, row, row);
+  row = row < 0 ? 0 : row;
   beginInsertRows(parent, row, row + count - 1);
-  for (int i = 0; i < count; ++i) {
-    mFileNameList.insert(row, "");
-  }
+  mFileNameList.insert(row, count, "");
   endInsertRows();
   return true;
 }
@@ -73,9 +71,11 @@ bool ListModelFileList::insertRows(int row, int count,
 bool ListModelFileList::removeRows(int row, int count,
                                    const QModelIndex &parent) {
   beginRemoveRows(parent, row, row + count - 1);
-  for (int i = 0; i < count; ++i) {
-    if (row >= 0 && row < mFileNameList.size())
-      mFileNameList.removeAt(row);
+  if (row >= 0 && row < mFileNameList.size()) {
+    if (row + count > mFileNameList.size()) {
+      count = mFileNameList.size() - row;
+    }
+    mFileNameList.erase(mFileNameList.begin() + row, mFileNameList.begin() + row + count);
   }
   endRemoveRows();
   return true;
@@ -85,7 +85,7 @@ void ListModelFileList::addItem(const QString &name,
                                 const QModelIndex &currentIndex) {
   qDebug() << Q_FUNC_INFO;
   insertRows(currentIndex.row(), 1);
-  int row = qBound(0, currentIndex.row(), currentIndex.row());
+  const int row = currentIndex.row() < 0 ? 0 : currentIndex.row();
   mFileNameList[row] = name;
   emit layoutChanged();
   dumpList();
@@ -96,7 +96,7 @@ void ListModelFileList::addItems(const QStringList &names,
   qDebug() << Q_FUNC_INFO;
   const int numRows = names.length();
   insertRows(currentIndex.row(), numRows);
-  int row = qBound(0, currentIndex.row(), currentIndex.row());
+  const int row = currentIndex.row() < 0 ? 0 : currentIndex.row();
   for (int i = 0; i < numRows; ++i) {
     mFileNameList[row + i] = names[i];
   }
