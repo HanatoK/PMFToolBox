@@ -622,7 +622,7 @@ void HistogramVector<T>::generate(
     const size_t addr = address(pos);
     const std::vector<T> result = func(pos);
     for (size_t k = 0; k < mMultiplicity; ++k) {
-      mData[addr + k] = result[k];
+      mData[addr * mMultiplicity + k] = result[k];
     }
   }
 }
