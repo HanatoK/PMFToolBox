@@ -63,7 +63,8 @@ bool ListModelFileList::insertRows(int row, int count,
                                    const QModelIndex &parent) {
   row = row < 0 ? 0 : row;
   beginInsertRows(parent, row, row + count - 1);
-  mFileNameList.insert(row, count, "");
+//  mFileNameList.insert(row, count, "");
+  for (int i = 0; i < count; ++i) mFileNameList.insert(row, "");
   endInsertRows();
   return true;
 }
