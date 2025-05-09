@@ -5,13 +5,20 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 #CONFIG += c++2a qwt
 CONFIG += c++2a
 equals(QT_MAJOR_VERSION, 5) {
-#  CONFIG += qwt
-  CONFIG += link_pkgconfig
-  PKGCONFIG += Qt5Qwt6
+  packagesExist(qwt) {
+    CONFIG += qwt
+  } else {
+    CONFIG += link_pkgconfig
+    PKGCONFIG += Qt5Qwt6
+  }
 }
 equals(QT_MAJOR_VERSION, 6) {
-  CONFIG += link_pkgconfig
-  PKGCONFIG += Qt6Qwt6
+  packagesExist(qwt) {
+    CONFIG += qwt
+  } else {
+    CONFIG += link_pkgconfig
+    PKGCONFIG += Qt6Qwt6
+  }
 }
 
 # use armadillo

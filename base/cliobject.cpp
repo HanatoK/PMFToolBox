@@ -1,6 +1,7 @@
 #include "cliobject.h"
 
 #include <QFile>
+#include <QDebug>
 #include <QJsonParseError>
 
 CLIObject::CLIObject(QObject *parent)
